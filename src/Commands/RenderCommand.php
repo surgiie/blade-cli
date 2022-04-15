@@ -1,9 +1,8 @@
 <?php
+
 namespace BladeCLI\Commands;
 
 use BladeCLI\Support\Command;
-
-
 class RenderCommand extends Command
 {
     /**
