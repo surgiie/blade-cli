@@ -9,10 +9,8 @@ use Symfony\Component\Console\Application;
 
 define('BLADE_CLI_VERSION', '0.0.1');
 
-$console = new Application();
+$app = new Application('Blade CLI', BLADE_CLI_VERSION);
 
-$console->setName('Blade CLI');
+$app->add(new RenderCommand);
 
-$console->add(new RenderCommand);
-
-$console->run();
+$app->run();

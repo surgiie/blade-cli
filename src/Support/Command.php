@@ -1,11 +1,25 @@
 <?php
 namespace BladeCLI\Support;
 
+use BladeCLI\Blade;
 use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Console\Command as BaseCommand;
 
 class Command extends BaseCommand
 {
+    /**
+     * The container instance.
+     *
+     * @var Container
+     */
+    protected Container $container;
+    /**
+     * The filesystem instance.
+     *
+     * @var \Illuminate\Filesystem\Filesystem
+     */
+    protected Filesystem $filesystem;
     /**
      * Create a new console command instance.
      *
@@ -14,6 +28,20 @@ class Command extends BaseCommand
     public function __construct()
     {
         $this->laravel = new Container;
+
+        $this->filesystem = new Filesystem;
+
         parent::__construct();
+    }
+    /**
+     * Get the blade engine ready for rendering.
+     *
+     * @return \BladeCLI\Blade
+     */
+    protected function blade(): Blade
+    {
+        $blade = new Blade($this->laravel, $this->filesystem);
+
+        return $blade;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace BladeCLI\Commands;
 
+use BladeCLI\Blade;
 use BladeCLI\Support\Command;
+
 class RenderCommand extends Command
 {
     /**
@@ -10,7 +12,7 @@ class RenderCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'render';
+    protected $signature = 'render {file}';
 
     /**
      * The command's description.
@@ -27,5 +29,30 @@ class RenderCommand extends Command
     public function handle()
     {
         $this->info("Rendering...");
+
+        $file = $this->argument('file');
+
+        if(is_file($file)){
+            return $this->renderFile($file);
+        }
+
+        if(is_dir($file)){
+           return $this->renderDirectoryFiles($file);
+        }
+
+        if(!file_exists($file)){
+            $this->error("File [$file] does not exist.");
+            return 1;
+        }
+    }
+
+    /**
+     * Render template file.
+     *
+     * @return int
+     */
+    protected function renderFile(string $file): int
+    {
+        return 0;
     }
 }
