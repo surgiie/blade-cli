@@ -36,12 +36,15 @@ class Command extends BaseCommand
     /**
      * Get the blade engine ready for rendering.
      *
+     * @param string $filePath
      * @return \BladeCLI\Blade
      */
-    protected function blade(): Blade
+    protected function blade(string $filePath): Blade
     {
-        $blade = new Blade($this->laravel, $this->filesystem);
-
-        return $blade;
+        return new Blade(
+            container: $this->laravel,
+            filesystem: $this->filesystem,
+            renderFilePath: $filePath
+        );
     }
 }

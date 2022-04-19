@@ -28,22 +28,23 @@ class RenderCommand extends Command
      */
     public function handle()
     {
-        $this->info("Rendering...");
 
         $file = $this->argument('file');
+
+        if(!file_exists($file)){
+            $this->error("The file or directory '$file' does not exist.");
+            return 1;
+        }
 
         if(is_file($file)){
             return $this->renderFile($file);
         }
 
         if(is_dir($file)){
-           return $this->renderDirectoryFiles($file);
+            return $this->renderDirectoryFiles($file);
         }
 
-        if(!file_exists($file)){
-            $this->error("File [$file] does not exist.");
-            return 1;
-        }
+        $this->info("Rendered $file.");
     }
 
     /**
@@ -53,6 +54,10 @@ class RenderCommand extends Command
      */
     protected function renderFile(string $file): int
     {
+        $blade = $this->blade($file);
+
+        $blade->render();
+
         return 0;
     }
 }
