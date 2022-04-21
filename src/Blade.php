@@ -17,7 +17,7 @@ class Blade
     /**
      * The container instance.
      *
-     * @var Container
+     * @var \Illuminate\Container\Container
      */
     protected Container $container;
     /**
