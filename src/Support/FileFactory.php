@@ -1,7 +1,6 @@
 <?php
 namespace BladeCLI\Support;
 
-
 use Illuminate\Support\Arr;
 use Illuminate\View\Factory;
 use InvalidArgumentException;
@@ -9,7 +8,6 @@ use BladeCLI\Support\RenderFile;
 
 class FileFactory extends Factory
 {
-
     /**
      * Disable dota notation normalization.
      *
@@ -32,12 +30,12 @@ class FileFactory extends Factory
         $extensions = array_keys($this->extensions);
 
         $extension = Arr::first($extensions, function ($value) use ($path) {
-            return str_ends_with($path, '.'.$value);
+            return str_ends_with($path, "." . $value);
         });
 
         return $extension ?? "";
     }
-       /**
+    /**
      * Get the appropriate view engine for the given path.
      *
      * @param  string  $path
@@ -69,5 +67,4 @@ class FileFactory extends Factory
     {
         return new RenderFile($this, $this->getEngineFromPath($path), $view, $path, $data);
     }
-
 }

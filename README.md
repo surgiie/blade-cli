@@ -1,7 +1,10 @@
 ### Blade CLI
 
-Use the Laravel blade engine as a CLI for rendering template files.
+Use Laravel blade engine as a CLI for rendering files from templates.
 
 ### Use
 
-`php blade render ./example.txt --foo=bar`
+`php blade render ./person.yml --name=Bob`
+
+
+

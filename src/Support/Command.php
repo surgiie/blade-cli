@@ -30,13 +30,12 @@ class Command extends BaseCommand
      */
     public function __construct()
     {
-        $this->laravel = new Container;
+        $this->laravel = new Container();
 
-        $this->filesystem = new Filesystem;
+        $this->filesystem = new Filesystem();
 
         parent::__construct();
     }
-
 
     /**
      * Get the blade engine ready for rendering.

@@ -1,7 +1,6 @@
 <?php
 namespace BladeCLI\Support;
 
-
 use Throwable;
 use Illuminate\View\Engines\CompilerEngine as Compiler;
 
@@ -30,5 +29,19 @@ class CompilerEngine extends Compiler
         }
 
         return ob_get_clean();
+    }
+    /**
+     * Get the exception message for an exception.
+     *
+     * @param  \Throwable  $e
+     * @return string
+     */
+    protected function getMessage(Throwable $e)
+    {
+        $msg = $e->getMessage();
+
+        $message = str_contains($msg, "Undefined variable") ? "" : $msg;
+
+        return $message . " (View: " . realpath(last($this->lastCompiled)) . ")";
     }
 }
