@@ -1,9 +1,0 @@
-name: "Bob"
-relationship: "Uncle"
-gamer_tag: {{ $gamerTag }}
-@if($includeDogs ?? false)
-dogs:
-  - "Rex"
-  - "Charlie"
-@endif
-@include('includes/foo.yaml')

@@ -5,7 +5,7 @@ Use Laravel blade engine as a CLI for rendering files from templates.
 
 ### Introduction
 
-This package customizes/extends several classes used by the blade engine to be able to use simple features (i.e variable, @if, @includes, @foreach, etc.)
+This package customizes/extends several classes used by the blade engine to be able to use simple features (i.e variable, `@if`, `@include`, `@foreach`, etc.)
 on files. That said, the more advanced features are the engine are out of scope of what this package is meant for and may not be supported.
 
 ### Installation
