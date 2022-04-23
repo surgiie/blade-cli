@@ -1,12 +1,11 @@
 <?php
 namespace BladeCLI\Support;
 
-use Illuminate\Support\Arr;
 use Illuminate\View\Factory;
 use InvalidArgumentException;
 use BladeCLI\Support\RenderFile;
 
-class FileFactory extends Factory
+class RenderFileFactory extends Factory
 {
     /**
      * Disable dota notation normalization.
@@ -27,13 +26,7 @@ class FileFactory extends Factory
      */
     protected function getExtension($path)
     {
-        $extensions = array_keys($this->extensions);
-
-        $extension = Arr::first($extensions, function ($value) use ($path) {
-            return str_ends_with($path, "." . $value);
-        });
-
-        return $extension ?? "";
+        return pathinfo($path)['extension'] ?? '';
     }
     /**
      * Get the appropriate view engine for the given path.
@@ -45,14 +38,7 @@ class FileFactory extends Factory
      */
     public function getEngineFromPath($path)
     {
-        $extension = $this->getExtension($path);
-        if (!array_key_exists($extension, $this->extensions)) {
-            throw new InvalidArgumentException("Unrecognized extension in file: {$path}.");
-        }
-
-        $engine = $this->extensions[$extension];
-
-        return $this->engines->resolve($engine);
+        return $this->engines->resolve('blade');
     }
 
     /**

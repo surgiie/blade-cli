@@ -4,7 +4,7 @@ namespace BladeCLI\Support;
 use Throwable;
 use Illuminate\View\Engines\CompilerEngine as Compiler;
 
-class CompilerEngine extends Compiler
+class RenderFileCompilerEngine extends Compiler
 {
     /**
      * Overwritten to not ltrim outbutput buffer, this makes includes preserve indentation as is.

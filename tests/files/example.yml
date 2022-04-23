@@ -6,3 +6,4 @@ dogs:
   - "Rex"
   - "Charlie"
 @endif
+@include('includes/foo.yaml')

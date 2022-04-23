@@ -1,6 +1,4 @@
 name: "Bob"
 relationship: "Uncle"
-gamer_tag: foo
-dogs:
-  - "Rex"
-  - "Charlie"
+gamer_tag: `Sergio
+foo: bar

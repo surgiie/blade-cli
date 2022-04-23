@@ -1,4 +1,5 @@
 <?php
+
 namespace BladeCLI\Support;
 
 use Illuminate\View\View as BaseView;
@@ -6,7 +7,7 @@ use Illuminate\View\View as BaseView;
 class RenderFile extends BaseView
 {
     /**
-     * Get the evaluated contents of the view.
+     * Get the evaluated contents of the compiled file.
      *
      * @return string
      */
@@ -21,7 +22,6 @@ class RenderFile extends BaseView
         $compiledContents = file_get_contents(
             $compiledPath = $compiler->getCompiledPath($this->path)
         );
-
 
         $compiledContents = $this->modifyCompiledContent($compiledContents);
 
@@ -40,7 +40,7 @@ class RenderFile extends BaseView
     protected function modifyCompiledContent(string $contents)
     {
         // moving open/end tags to the end of the previous line allow nesting to be preserved which
-        // is important for files like yaml or files that have semantical formatting requirements.
+        // is important for files like yaml or files that have semantical/nesting formatting requirements.
         $contents = preg_replace(
             '/\\s+\<\?php (\$__currentLoopData|endforeach)(.*) \?\>/',
             "<?php $1$2 ?>\n",

@@ -2,17 +2,16 @@
 
 namespace BladeCLI;
 
-use ErrorException;
 use InvalidArgumentException;
-use BladeCLI\Support\FileFinder;
-use BladeCLI\Support\FileFactory;
 use Illuminate\Events\Dispatcher;
+use Illuminate\View\ViewException;
 use Illuminate\Container\Container;
-use BladeCLI\Support\CompilerEngine;
 use Illuminate\Filesystem\Filesystem;
+use BladeCLI\Support\RenderFileFinder;
+use BladeCLI\Support\RenderFileFactory;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Compilers\BladeCompiler;
-use Illuminate\View\ViewException;
+use BladeCLI\Support\RenderFileCompilerEngine;
 
 class Blade
 {
@@ -37,17 +36,17 @@ class Blade
     protected string $renderFilePath;
 
     /**
-     * The view factory.
+     * The render file factory.
      *
-     * @var FileFactory
+     * @var \BladeCLI\Support\RenderFileFactory
      */
-    protected \BladeCLI\Support\FileFactory $fileFactory;
+    protected \BladeCLI\Support\RenderFileFactory $fileFactory;
     /**
      * The view finder.
      *
-     * @var \BladeCLI\Support\FileFinder
+     * @var \BladeCLI\Support\RenderFileFinder
      */
-    protected \BladeCLI\Support\FileFinder $fileFinder;
+    protected RenderFileFinder $fileFinder;
 
     /**
      * Metadata about the current render file.
@@ -73,22 +72,18 @@ class Blade
 
         $this->setRenderFilePath($renderFilePath);
 
-        $this->fileFinder = new FileFinder($this->filesystem, [$this->metadata["dirname"]]);
+        $this->fileFinder = new RenderFileFinder($this->filesystem, [$this->metadata["dirname"]]);
 
-        $this->engineResolver = $this->getEngineResolver();
-
-        $this->eventDispatcher = new Dispatcher($this->container);
-
-        $this->fileFactory = new FileFactory(
-            $this->engineResolver,
+        $this->fileFactory = new RenderFileFactory(
+            $resolver = $this->getEngineResolver(),
             $this->fileFinder,
-            $this->eventDispatcher
+            new Dispatcher($this->container)
         );
 
         $this->compiler = $this->getCompiler();
 
-        $this->engineResolver->register("blade", function () {
-            return new CompilerEngine($this->compiler);
+        $resolver->register("blade", function () {
+            return new RenderFileCompilerEngine($this->compiler);
         });
     }
 
@@ -99,7 +94,17 @@ class Blade
      */
     public function getCompiler()
     {
-        return new BladeCompiler($this->filesystem, realpath(__DIR__ . "/../.compiled"));
+        return new BladeCompiler($this->filesystem, $this->getCompiledPath());
+    }
+
+    /**
+     * Get the compiled path to where rendered files go.
+     *
+     * @return string
+     */
+    protected function getCompiledPath()
+    {
+        return realpath(__DIR__ . "/../.compiled");
     }
 
     /**
@@ -111,6 +116,7 @@ class Blade
     {
         return new EngineResolver();
     }
+
     /**
      * Set the render file path.
      *
@@ -131,6 +137,7 @@ class Blade
 
         $extension = pathinfo($file)["extension"] ?? "";
 
+        // save some basic metadata about the file to reference.
         $this->metadata = [
             "basename" => $file,
             "extension" => $extension,
@@ -150,7 +157,7 @@ class Blade
     {
         // we will set a custom handler to throw an exception on missing data instead of a warning.
         return function ($severity, $message, $file, $line) {
-            if($severity != E_WARNING){
+            if ($severity != E_WARNING) {
                 return;
             }
             preg_match('/Undefined variable \$(.*)/', $message, $match);
@@ -188,21 +195,24 @@ class Blade
 
         $this->saveRenderedContents($contents, $options);
 
+        $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
+
         return $template;
     }
 
     /**
-     * Normalize a path from linux to windows if needed.
+     * Normalize a path from linux to windows or vice versa.
      *
      * @param string $path
      * @return string
      */
     protected function normalizePath(string $path)
     {
-        if (DIRECTORY_SEPARATOR == '\\') {
-            return str_replace('/', '\\', $path);
+        if (DIRECTORY_SEPARATOR == "\\") {
+            return str_replace("/", "\\", $path);
+        }else{
+            return str_replace("\\", "/", $path);
         }
-        return $path;
     }
 
     /**
@@ -219,12 +229,15 @@ class Blade
 
         $filename = $this->metadata["filename_no_extension"];
 
-        if(!$absolute){
-            return $this->normalizePath(dirname($this->renderFilePath).DIRECTORY_SEPARATOR. $filename . ".rendered" . ".$extension");
+        if (!$absolute) {
+            $dir = dirname($this->renderFilePath);
         }
 
-        return $this->normalizePath($dir . DIRECTORY_SEPARATOR . $filename . ".rendered" . ".$extension");
+        return $this->normalizePath(
+            $dir . DIRECTORY_SEPARATOR . $filename . ".rendered" . ".$extension"
+        );
     }
+
     /**
      * Save the contents of a rendered file.
      *
@@ -239,6 +252,7 @@ class Blade
         if (!$saveTo) {
             $saveTo = $this->getDefaultSaveFileLocation();
         }
+
         // todo handle custom location (ie make sure lcoation exists, etc.)
 
         return $this->filesystem->put($saveTo, $contents);

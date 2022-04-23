@@ -4,6 +4,7 @@ namespace BladeCLI\Commands;
 
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
+use BladeCLI\Support\CommandOptionsParser;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -28,7 +29,7 @@ class RenderCommand extends Command
         "verbose",
         "version",
         "ansi",
-        'save-to',
+        "save-to",
         "no-interaction",
     ];
     /**
@@ -47,26 +48,14 @@ class RenderCommand extends Command
     {
         parent::__construct();
 
+        global $argv;
+
         $this->ignoreValidationErrors();
 
-        global $argv;
-        // parse options to be used as template/var data.
-        foreach (array_slice($argv, 3) as $token) {
-            // match for a value option
-            preg_match("/--(.*)=(.*)/", $token, $match);
+        $parser = new CommandOptionsParser(array_slice($argv, 3));
 
-            if ($match) {
-                $this->registerDynamicOption(name: $match[1], mode: InputOption::VALUE_REQUIRED);
-                continue;
-            }
-            // otherwise match a boolean option.
-            preg_match("/--(.*)/", $token, $match);
-            if ($match) {
-                $this->registerDynamicOption(name: $match[1], mode: InputOption::VALUE_NONE);
-                continue;
-            }
-            // encountered something that is not --option=value or --option format.
-            throw new InvalidArgumentException("Invalid or unaccepted argument/option: $token");
+        foreach ($parser->parse() as $name => $mode) {
+            $this->registerDynamicOption($name, $mode);
         }
     }
     /**
@@ -92,7 +81,6 @@ class RenderCommand extends Command
         if (is_dir($file)) {
             return $this->renderDirectoryFiles($file, $data);
         }
-
     }
     /**
      * Register a dynamic option parsed from args.
@@ -103,7 +91,7 @@ class RenderCommand extends Command
      */
     protected function registerDynamicOption($name, $mode)
     {
-        if($this->isReservedOption($name)){
+        if ($this->isReservedOption($name)) {
             return false;
         }
 
@@ -130,19 +118,22 @@ class RenderCommand extends Command
      */
     protected function getRenderFileData()
     {
-        $vars = array_filter($this->options(), function ($k) {
-            return !$this->isReservedOption($k);
-        }, ARRAY_FILTER_USE_KEY);
+        $vars = array_filter(
+            $this->options(),
+            function ($k) {
+                return !$this->isReservedOption($k);
+            },
+            ARRAY_FILTER_USE_KEY
+        );
 
         $data = [];
 
-        foreach($vars as $k=>$v){
+        foreach ($vars as $k => $v) {
             $data[Str::camel($k)] = $v;
         }
 
         return $data;
     }
-
 
     /**
      * Render template file.
@@ -157,7 +148,7 @@ class RenderCommand extends Command
 
         $blade->render(options: $this->options(), data: $data);
 
-        $file = $this->option('save-to')?:$blade->getDefaultSaveFileLocation(absolute: false);
+        $file = $this->option("save-to") ?: $blade->getDefaultSaveFileLocation(absolute: false);
 
         $this->info("Rendered $file");
 
