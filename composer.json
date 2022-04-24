@@ -1,25 +1,30 @@
 {
-  "name": "surgiie/blade-cli",
-  "description": "Use Laravel's blade engine for rendering templates",
-  "type": "template",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Sergio Compean",
-      "email": "scompean24@gmail.com"
+    "name": "surgiie/blade-cli",
+    "description": "Use Laravel's blade engine via cli for rendering template files",
+    "type": "template",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergio Compean",
+            "email": "scompean24@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "BladeCLI\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "BladeCLI\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "illuminate/console": "^9.0",
+        "illuminate/view": "^9.0",
+        "symfony/console": "^6.0"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^6.0"
     }
-  ],
-  "autoload": {
-    "psr-4": {
-      "BladeCLI\\": "src/"
-    }
-  },
-  "require": {
-    "illuminate/console": "^9.0",
-    "illuminate/view": "^9.0",
-    "symfony/console": "^6.0"
-  },
-  "require-dev": {
-    "symfony/var-dumper": "^6.0"
-  }
 }

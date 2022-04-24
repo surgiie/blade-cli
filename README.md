@@ -38,13 +38,41 @@ php blade render ./person.yml \
 ```
 
 
-#### Render Variables
+#### Variable Data
 
-Variables for your files are passed as options where the files reference variables in camel case versions of the options you pass.
+There are 2 options for passing variable data to your files being rendered:
 
-As you may have noticed in the above example variables in the file to be rendered (person.yml) are defined in camel case while the options were not.
-Since options are often defined as kebab/slug case but php does not support kebab variables, ALL variables in your template/render files should be
-defined as camel case or an exception for undefined variables will be thrown. Since this package parses the command line options for dynamic options,
-you have the flexibility to define options in kebab, camel, or snake case and it will be extracted automatically to a camel case variable at render time.
+1. As you saw the 1st was through options to the `render` command. `--example-var=value`
 
-So for example the `--favorite-pizza` option could of been `--favorite_pizza` or `--favoritePizza`.
+2. Using json files via the `--from-json` option to pass a path to a json file. Maybe passed multiple times to load from many files. Note that options take precedence over the data loaded from json files.
+
+
+##### Variable Naming Convention
+
+Options or keys in your json file can be defined in any naming convention you prefer, but your actual variable reference should be camel case.
+This is because php doesnt support kebab cased variables which is often the format for command line options. That said, since camel case is usually standard, that is the format we decided to stick with. Your options will automatically get converted to data using camel case. To clarify a bit more through example:
+
+Either one of these option formats can be used `--favorite-food`, `--favoriteFood`, --favorite_food` to reference a `{{ $favoriteFood }}` variable in your file.
+
+
+##### Variable Types
+
+These are the current supported way to pass variables for different types/purposes:
+
+###### String/Single Value Variables
+
+Use simple option key/value format for passing variables for single/string values:
+
+`--foo=bar --bar=baz`
+
+###### Array Value Variables
+
+For array variables, just pass the option more than once:
+
+`--names=Steve --names=Ricky --names=Bob`
+
+###### Boolean Value Variables
+
+For boolean variables, just pass the option with no value:
+
+`--force`

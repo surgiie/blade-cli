@@ -5,17 +5,17 @@ namespace BladeCLI\Commands;
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
 use BladeCLI\Support\CommandOptionsParser;
-use InvalidArgumentException;
-use Symfony\Component\Console\Input\InputOption;
+use BladeCLI\Support\Concerns\LoadsJsonFiles;
 
 class RenderCommand extends Command
 {
+    use LoadsJsonFiles;
     /**
      * The command's signature.
      *
      * @var string
      */
-    protected $signature = "render {file}{--save-to=}";
+    protected $signature = "render {file}{--save-to=}{--from-json=*}";
 
     /**
      * The options that are reserved for the command
@@ -30,6 +30,7 @@ class RenderCommand extends Command
         "version",
         "ansi",
         "save-to",
+        "from-json",
         "no-interaction",
     ];
     /**
@@ -72,7 +73,7 @@ class RenderCommand extends Command
             return 1;
         }
 
-        $data = $this->getRenderFileData();
+        $data = $this->getFileVariableData();
 
         if (is_file($file)) {
             return $this->renderFile($file, $data);
@@ -112,27 +113,39 @@ class RenderCommand extends Command
     }
 
     /**
+     * Get the data from json files.
+     *
+     * @return array
+     */
+    public function getJsonFileData($merge = [])
+    {
+        $json = [];
+        $jsonFiles = $this->option("from-json");
+
+        foreach($jsonFiles as $file){
+            $json = array_merge($json, $this->loadJsonFile($file));
+        }
+
+        return array_merge($json, $merge);
+    }
+
+    /**
      * Get the data to use for the render file.
      *
      * @return void
      */
-    protected function getRenderFileData()
+    protected function getFileVariableData()
     {
-        $vars = array_filter(
-            $this->options(),
-            function ($k) {
-                return !$this->isReservedOption($k);
-            },
-            ARRAY_FILTER_USE_KEY
-        );
+        $vars = [];
 
-        $data = [];
-
-        foreach ($vars as $k => $v) {
-            $data[Str::camel($k)] = $v;
+        foreach($this->getJsonFileData(merge: $this->options()) as $k=>$v){
+            if($this->isReservedOption($k)){
+                continue;
+            }
+            $vars[Str::camel($k)] = $v;
         }
 
-        return $data;
+        return $vars;
     }
 
     /**
