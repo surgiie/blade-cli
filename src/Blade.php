@@ -12,6 +12,8 @@ use BladeCLI\Support\RenderFileFactory;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Compilers\BladeCompiler;
 use BladeCLI\Support\RenderFileCompilerEngine;
+use Error;
+use ErrorException;
 
 class Blade
 {
@@ -75,7 +77,7 @@ class Blade
         $this->fileFinder = new RenderFileFinder($this->filesystem, [$this->metadata["dirname"]]);
 
         $this->fileFactory = new RenderFileFactory(
-            $resolver = $this->getEngineResolver(),
+            ($resolver = $this->getEngineResolver()),
             $this->fileFinder,
             new Dispatcher($this->container)
         );
@@ -164,7 +166,7 @@ class Blade
 
             if ($match) {
                 throw new ViewException(
-                    "Undefined variable \$$match[1] on line $line. Did you pass the --$match[1] option or use camel case for variable names?"
+                    "Undefined variable \$$match[1] on line $line. Did you pass the --$match[1] option or forget to use camel case for variable names?"
                 );
             }
         };
@@ -194,7 +196,7 @@ class Blade
         restore_error_handler();
 
         $this->saveRenderedContents($contents, $options);
-
+        // cleanup .compiled
         $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
 
         return $template;
@@ -210,34 +212,54 @@ class Blade
     {
         if (DIRECTORY_SEPARATOR == "\\") {
             return str_replace("/", "\\", $path);
-        }else{
+        } else {
             return str_replace("\\", "/", $path);
         }
     }
 
     /**
-     * Get the default save location for the rendered result.
+     * Get the file name for the rendered file.
      *
-     * @param bool $absolute
      * @return string
      */
-    public function getDefaultSaveFileLocation(bool $absolute = true)
+    protected function getFileRenderedName()
     {
-        $dir = $this->metadata["dirname"];
-
         $extension = $this->metadata["extension"];
 
         $filename = $this->metadata["filename_no_extension"];
 
-        if (!$absolute) {
-            $dir = dirname($this->renderFilePath);
-        }
+        return $filename . ".rendered" . ($extension ? ".$extension" : "");
+    }
+    /**
+     * Get the default save location relative path for the rendered file.
+     *
+     * @return string
+     */
+    protected function getDefaultRelativeSaveFileLocation()
+    {
+        $dir = $this->metadata["dirname"];
 
-        return $this->normalizePath(
-            $dir . DIRECTORY_SEPARATOR . $filename . ".rendered" . ".$extension"
-        );
+        return $dir . DIRECTORY_SEPARATOR . $this->getFileRenderedName();
     }
 
+    /**
+     * Get the absolute save location path.
+     *
+     * @param string|null $saveDir
+     * @return string
+     */
+    public function getSaveLocation(?string $saveDir = null)
+    {
+        $saveTo = rtrim($saveDir ?? "", "\\/");
+
+        if (!$saveTo) {
+            $path = $this->getDefaultRelativeSaveFileLocation();
+        } else {
+            $path = $saveTo . DIRECTORY_SEPARATOR . $this->getFileRenderedName();
+        }
+
+        return $this->normalizePath($path);
+    }
     /**
      * Save the contents of a rendered file.
      *
@@ -247,14 +269,25 @@ class Blade
      */
     protected function saveRenderedContents(string $contents, array $options)
     {
-        $saveTo = $options["save-to"] ?? "";
+        if ($options["save-dir"] ?? false) {
 
-        if (!$saveTo) {
-            $saveTo = $this->getDefaultSaveFileLocation();
+            $directory = dirname($options["save-dir"]);
+
+            @mkdir(
+                $directory == "." ? $options['save-dir']: $directory,
+                recursive: $directory != "."
+            );
+
         }
 
-        // todo handle custom location (ie make sure lcoation exists, etc.)
+        $saveTo = $this->getSaveLocation($options["save-dir"]);
 
-        return $this->filesystem->put($saveTo, $contents);
+        $success = $this->filesystem->put($saveTo, $contents);
+
+        if (!$success) {
+            throw new ErrorException("Could not write/save file to $saveTo");
+        }
+
+        return $success;
     }
 }

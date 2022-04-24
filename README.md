@@ -37,6 +37,25 @@ php blade render ./person.yml \
                 --include-address
 ```
 
+This will render and save the file to the same directory as `person.rendered.yml`
+
+### Custom Save Directory
+
+All files will get saved to the current directory as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension.
+If you wish to save to a custom directory use the `--save-dir='custom-dir'` option to specify a directory to write the file to:
+
+```
+php blade render ./person.yml \
+                --name="Bob"
+                --relationship="Uncle"
+                --favorite-food="Pizza"
+                --include-address
+                --save-dir="rendered-files/"
+
+```
+
+
+The blade class will attempt to automatically ensure the directory exists if it can write to it.
 
 #### Variable Data
 

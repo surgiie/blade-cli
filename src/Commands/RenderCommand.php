@@ -10,12 +10,13 @@ use BladeCLI\Support\Concerns\LoadsJsonFiles;
 class RenderCommand extends Command
 {
     use LoadsJsonFiles;
+
     /**
      * The command's signature.
      *
      * @var string
      */
-    protected $signature = "render {file}{--save-to=}{--from-json=*}";
+    protected $signature = "render {file}{--save-dir=}{--from-json=*}";
 
     /**
      * The options that are reserved for the command
@@ -29,7 +30,7 @@ class RenderCommand extends Command
         "verbose",
         "version",
         "ansi",
-        "save-to",
+        "save-dir",
         "from-json",
         "no-interaction",
     ];
@@ -161,7 +162,7 @@ class RenderCommand extends Command
 
         $blade->render(options: $this->options(), data: $data);
 
-        $file = $this->option("save-to") ?: $blade->getDefaultSaveFileLocation(absolute: false);
+        $file =  $blade->getSaveLocation($this->option("save-dir"));
 
         $this->info("Rendered $file");
 

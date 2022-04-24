@@ -1,5 +1,6 @@
 <?php
-namespace BladeCLI;
+
+namespace BladeCLI\Tests;
 
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
