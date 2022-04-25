@@ -4,7 +4,7 @@ namespace BladeCLI\Commands;
 
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
-use BladeCLI\Support\CommandOptionsParser;
+use BladeCLI\Support\ArgvOptionsParser;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 
 class RenderCommand extends Command
@@ -54,7 +54,7 @@ class RenderCommand extends Command
 
         $this->ignoreValidationErrors();
 
-        $parser = new CommandOptionsParser(array_slice($argv, 3));
+        $parser = new ArgvOptionsParser(array_slice($argv, 3));
 
         foreach ($parser->parse() as $name => $mode) {
             $this->registerDynamicOption($name, $mode);

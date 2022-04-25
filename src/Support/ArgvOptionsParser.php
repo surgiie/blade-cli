@@ -4,7 +4,7 @@ namespace BladeCLI\Support;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
 
-class CommandOptionsParser
+class ArgvOptionsParser
 {
 
     /**
@@ -14,7 +14,11 @@ class CommandOptionsParser
      */
     protected array $options = [];
 
-
+    /**
+     * Construct new instance.
+     *
+     * @param array $options
+     */
     public function __construct(array $options)
     {
         $this->setOptions($options);
@@ -34,21 +38,15 @@ class CommandOptionsParser
     }
 
     /**
-     * Parse a token for an input option or raise exception if
-     * it does not meet --option or --option=value format.
+     * Parse a token for an --option or --option=value format.
      *
      * @param string $token
-     * @throws InvalidArgumentException
      * @return array
      */
-    protected function parseOptionOrFail(string $token)
+    protected function parseOption(string $token)
     {
         // match for a --option or --option=value string.
         preg_match("/--([^=]+)=?(.*)/", $token, $match);
-
-        if (!$match) {
-            throw new InvalidArgumentException("Invalid or unaccepted option: $token");
-        }
 
         return $match;
     }
@@ -64,7 +62,13 @@ class CommandOptionsParser
 
         // parse options to be used as template/var data.
         foreach ($this->options as $token) {
-            $match = $this->parseOptionOrFail($token);
+
+            $match = $this->parseOption($token);
+
+            if(!$match){
+                trigger_error("Ignored encountered '$token' as it is not --option or --option=value format.");
+                continue;
+            }
 
             $name = $match[1];
             $value = $match[2] ?? false;

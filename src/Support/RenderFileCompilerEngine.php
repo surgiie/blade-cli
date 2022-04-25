@@ -7,7 +7,9 @@ use Illuminate\View\Engines\CompilerEngine as Compiler;
 class RenderFileCompilerEngine extends Compiler
 {
     /**
-     * Overwritten to not ltrim outbutput buffer, this makes includes preserve indentation as is.
+     * Overwritten to not ltrim outbutput buffer.
+     *
+     * This assists with @includes preserving indentation as is.
      *
      * @param  string  $path
      * @param  array  $data
@@ -30,6 +32,7 @@ class RenderFileCompilerEngine extends Compiler
 
         return ob_get_clean();
     }
+
     /**
      * Get the exception message for an exception.
      *
