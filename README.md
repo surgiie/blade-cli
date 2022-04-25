@@ -61,7 +61,7 @@ The blade class will attempt to automatically ensure the directory exists if it 
 
 There are 2 options for passing variable data to your files being rendered:
 
-1. As you saw the 1st was through options to the `render` command. `--example-var=value`
+1. As you saw in the earlier example above, the first method is through options to the `render` command. `--example-var=value`
 
 2. Using json files via the `--from-json` option to pass a path to a json file. Maybe passed multiple times to load from many files. Note that options take precedence over the data loaded from json files.
 
@@ -69,7 +69,7 @@ There are 2 options for passing variable data to your files being rendered:
 ##### Variable Naming Convention
 
 Options or keys in your json file can be defined in any naming convention you prefer, but your actual variable reference should be camel case.
-This is because php doesnt support kebab cased variables which is often the format for command line options. That said, since camel case is usually standard, that is the format we decided to stick with. Your options will automatically get converted to data using camel case. To clarify a bit more through example:
+This is because php doesnt support kebab cased variables which is often the format for command line options. That said, since camel case is usually standard, that is the format we decided to stick with. Your options will automatically get converted to data using camel case. To clarify a bit:
 
 Either one of these option formats can be used `--favorite-food`, `--favoriteFood`, --favorite_food` to reference a `{{ $favoriteFood }}` variable in your file.
 
