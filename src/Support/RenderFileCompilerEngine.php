@@ -45,6 +45,6 @@ class RenderFileCompilerEngine extends Compiler
 
         $message = str_contains($msg, "Undefined variable") ? "" : $msg;
 
-        return $message . " (View: " . realpath(last($this->lastCompiled)) . ")";
+        return $message . " (View: " . realpath(end($this->lastCompiled)) . ")";
     }
 }

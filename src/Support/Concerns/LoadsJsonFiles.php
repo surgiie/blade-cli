@@ -1,8 +1,8 @@
 <?php
 namespace BladeCLI\Support\Concerns;
 
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use JsonException;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
 
 trait LoadsJsonFiles
 {
@@ -40,6 +40,7 @@ trait LoadsJsonFiles
         if(!file_exists($path)){
             throw new FileNotFoundException("The $path json file does not exist.");
         }
+
         $data = json_decode(file_get_contents($path), JSON_OBJECT_AS_ARRAY);
 
         $error = json_last_error();

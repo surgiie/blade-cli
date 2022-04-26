@@ -12,7 +12,7 @@
     processIsolation="false"
     stopOnFailure="false"
     executionOrder="random"
-    failOnWarning="true"
+    failOnWarning="false"
     failOnRisky="true"
     failOnEmptyTestSuite="true"
     beStrictAboutOutputDuringTests="true"

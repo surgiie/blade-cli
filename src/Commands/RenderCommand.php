@@ -16,7 +16,10 @@ class RenderCommand extends Command
      *
      * @var string
      */
-    protected $signature = "render {file}{--save-dir=}{--from-json=*}";
+    protected $signature = "render {file}
+                                   {--save-dir=}
+                                   {--from-json=*}
+                                   {--use-collections}";
 
     /**
      * The options that are reserved for the command
@@ -32,6 +35,7 @@ class RenderCommand extends Command
         "ansi",
         "save-dir",
         "from-json",
+        "use-collections",
         "no-interaction",
     ];
     /**
@@ -63,7 +67,7 @@ class RenderCommand extends Command
     /**
      * Execute the command.
      *
-     * @return void
+     * @return int
      */
     public function handle()
     {
@@ -77,12 +81,14 @@ class RenderCommand extends Command
         $data = $this->getFileVariableData();
 
         if (is_file($file)) {
-            return $this->renderFile($file, $data);
+            $this->renderFile($file, $data);
         }
 
         if (is_dir($file)) {
-            return $this->renderDirectoryFiles($file, $data);
+            $this->renderDirectoryFiles($file, $data);
         }
+
+        return 0;
     }
     /**
      * Register a dynamic option parsed from args.
@@ -118,7 +124,7 @@ class RenderCommand extends Command
      *
      * @return array
      */
-    public function getJsonFileData($merge = [])
+    public function getJsonFileData($merge = []): array
     {
         $json = [];
         $jsonFiles = $this->option("from-json");
@@ -133,9 +139,9 @@ class RenderCommand extends Command
     /**
      * Get the data to use for the render file.
      *
-     * @return void
+     * @return array
      */
-    protected function getFileVariableData()
+    protected function getFileVariableData() : array
     {
         $vars = [];
 
@@ -150,13 +156,13 @@ class RenderCommand extends Command
     }
 
     /**
-     * Render template file.
+     * Renders a template file from path using given data.
      *
      * @param string $file
      * @param array $data
-     * @return int
+     * @return \BladeCLI\Blade
      */
-    protected function renderFile(string $file, array $data = []): int
+    protected function renderFile(string $file, array $data = []): Blade
     {
         $blade = $this->blade($file);
 
@@ -166,6 +172,6 @@ class RenderCommand extends Command
 
         $this->info("Rendered $file");
 
-        return 0;
+        return $blade;
     }
 }

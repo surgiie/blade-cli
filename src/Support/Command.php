@@ -5,8 +5,6 @@ use BladeCLI\Blade;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Console\Command as BaseCommand;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputDefinition;
 
 class Command extends BaseCommand
 {
@@ -38,7 +36,7 @@ class Command extends BaseCommand
     }
 
     /**
-     * Get the blade engine ready for rendering.
+     * Return a render ready blade instance for a given file.
      *
      * @param string $filePath
      * @return \BladeCLI\Blade

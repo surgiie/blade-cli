@@ -19,12 +19,16 @@
             "BladeCLI\\Tests\\": "tests/"
         }
     },
+    "scripts": {
+        "test": "vendor/bin/phpunit tests"
+    },
     "require": {
         "illuminate/console": "^9.0",
         "illuminate/view": "^9.0",
         "symfony/console": "^6.0"
     },
     "require-dev": {
+        "phpunit/phpunit": "^9.3",
         "symfony/var-dumper": "^6.0"
     }
 }
