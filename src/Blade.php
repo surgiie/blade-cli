@@ -312,7 +312,6 @@ class Blade
      */
     protected function saveRenderedContents(string $contents)
     {
-
         $this->ensureSaveDirectoryExists();
 
         $saveTo = $this->getSaveLocation();
