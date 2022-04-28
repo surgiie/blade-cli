@@ -5,8 +5,21 @@ namespace BladeCLI\Support;
 use InvalidArgumentException;
 use Illuminate\View\FileViewFinder;
 
-class RenderFileFinder extends FileViewFinder
+class FileFinder extends FileViewFinder
 {
+
+    /**
+     * Set the active file paths.
+     *
+     * @param  array  $paths
+     * @return $this
+     */
+    public function setPaths($paths)
+    {
+        $this->paths = array_map([$this, 'resolvePath'], $paths);
+
+        return $this;
+    }
     /**
      * Overwritten to disable dot notation.
      *
@@ -15,7 +28,7 @@ class RenderFileFinder extends FileViewFinder
      */
     protected function getPossibleViewFiles($name)
     {
-        // allows includes to be rendered.
+        // allows includes to be rendered on the fly.
         $ext = pathinfo($name)["extension"] ?? "";
 
         if ($ext) {

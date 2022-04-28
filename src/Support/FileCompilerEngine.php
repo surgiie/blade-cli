@@ -2,9 +2,9 @@
 namespace BladeCLI\Support;
 
 use Throwable;
-use Illuminate\View\Engines\CompilerEngine as Compiler;
+use Illuminate\View\Engines\CompilerEngine;
 
-class RenderFileCompilerEngine extends Compiler
+class FileCompilerEngine extends CompilerEngine
 {
     /**
      * Overwritten to not ltrim outbutput buffer.

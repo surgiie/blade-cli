@@ -2,9 +2,9 @@
 
 namespace BladeCLI\Support;
 
-use Illuminate\View\View as BaseView;
+use Illuminate\View\View;
 
-class RenderFile extends BaseView
+class File extends View
 {
     /**
      * Get the evaluated contents of the compiled file.
@@ -32,10 +32,10 @@ class RenderFile extends BaseView
     }
 
     /**
-     * Modify compiled contents.
+     * Modify compiled contents to modify php tags to previous lines.
      *
      * @param string $contents
-     * @return void
+     * @return string
      */
     protected function modifyCompiledContent(string $contents)
     {

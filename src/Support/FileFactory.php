@@ -3,12 +3,12 @@ namespace BladeCLI\Support;
 
 use Illuminate\View\Factory;
 use InvalidArgumentException;
-use BladeCLI\Support\RenderFile;
+use BladeCLI\Support\File;
 
-class RenderFileFactory extends Factory
+class FileFactory extends Factory
 {
     /**
-     * Disable dota notation normalization.
+     * Disable dot notation normalization.
      *
      * @param string $name
      * @return void
@@ -51,6 +51,6 @@ class RenderFileFactory extends Factory
      */
     protected function viewInstance($view, $path, $data)
     {
-        return new RenderFile($this, $this->getEngineFromPath($path), $view, $path, $data);
+        return new File($this, $this->getEngineFromPath($path), $view, $path, $data);
     }
 }

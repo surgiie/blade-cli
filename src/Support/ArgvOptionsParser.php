@@ -1,9 +1,9 @@
 <?php
 namespace BladeCLI\Support;
 
+
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
-
 class ArgvOptionsParser
 {
 
@@ -14,22 +14,15 @@ class ArgvOptionsParser
      */
     protected array $options = [];
 
-    /**
-     * Whether or not to fail on tokens that are not
-     * in --option or --option=value format.
-     *
-     * @var boolean
-     */
-    protected bool $failOnInvalidFormatTokens = true;
+
     /**
      * Construct new instance.
      *
      * @param array $options
      */
-    public function __construct(array $options, bool $failOnInvalidFormatTokens = true)
+    public function __construct(array $options)
     {
         $this->setOptions($options);
-        $this->failOnInvalidFormatTokens = $failOnInvalidFormatTokens;
     }
 
     /**
@@ -62,6 +55,7 @@ class ArgvOptionsParser
     /**
      * Parse the set options.
      *
+     * @throws \InvalidArgumentException
      * @return array
      */
     public function parse()
@@ -73,8 +67,8 @@ class ArgvOptionsParser
 
             $match = $this->parseOption($token);
 
-            if(!$match && $this->failOnInvalidFormatTokens){
-                throw new InvalidArgumentException("Ignored encountered '$token' as it is not --option or --option=value format.");
+            if(!$match){
+                throw new InvalidArgumentException("Encountered invalid '$token' as it is not --option or --option=value format.");
             }
 
             $name = $match[1];

@@ -2,8 +2,10 @@
 
 namespace BladeCLI\Commands;
 
+use BladeCLI\Blade;
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
+use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\ArgvOptionsParser;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 
@@ -17,9 +19,12 @@ class RenderCommand extends Command
      * @var string
      */
     protected $signature = "render {file}
-                                   {--save-dir=}
-                                   {--from-json=*}
-                                   {--use-collections}";
+                                   {--save-directory= : The custom directory to save the .rendered files to. }
+                                   {--from-json=* : A file to load variable data from. }
+                                   {--use-collections : Convert array options to collection instances.}
+                                   {--force : Force render or overwrite files.}";
+
+
 
     /**
      * The options that are reserved for the command
@@ -33,8 +38,9 @@ class RenderCommand extends Command
         "verbose",
         "version",
         "ansi",
-        "save-dir",
+        "save-directory",
         "from-json",
+        "force",
         "use-collections",
         "no-interaction",
     ];
@@ -90,6 +96,60 @@ class RenderCommand extends Command
 
         return 0;
     }
+
+    /**
+     * Get a new finder instance.
+     *
+     * @return \Symfony\Component\Finder\Finder
+     */
+    public function finder()
+    {
+        return new Finder();
+    }
+
+    /**
+     * Renders a template file from path using given data.
+     *
+     * @param string $file
+     * @param array $data
+     * @return static
+     */
+    protected function renderFile(string $file, array $data = []): static
+    {
+        $options = $this->options();
+
+        $blade = $this->blade($file, $options);
+
+        $result = $blade->render(data: $data);
+
+        if($result !== false){
+            $file =  $blade->getSaveLocation();
+
+            $this->info("Rendered $file");
+        }
+
+        return $this;
+    }
+
+    /**
+     * Render a directory of files.
+     *
+     * @param string $directory
+     * @param array $data
+     * @return static
+     */
+    protected function renderDirectoryFiles(string $directory, array $data = []): static
+    {
+        $finder = $this->finder();
+        $files = $finder->in($directory)->files();
+
+        foreach ($files as $file) {
+            $this->renderFile($file->getPathName(), $data);
+        }
+
+        return $this;
+    }
+
     /**
      * Register a dynamic option parsed from args.
      *
@@ -97,7 +157,7 @@ class RenderCommand extends Command
      * @param int $mode
      * @return bool
      */
-    protected function registerDynamicOption($name, $mode)
+    protected function registerDynamicOption($name, $mode): bool
     {
         if ($this->isReservedOption($name)) {
             return false;
@@ -155,23 +215,4 @@ class RenderCommand extends Command
         return $vars;
     }
 
-    /**
-     * Renders a template file from path using given data.
-     *
-     * @param string $file
-     * @param array $data
-     * @return \BladeCLI\Blade
-     */
-    protected function renderFile(string $file, array $data = []): Blade
-    {
-        $blade = $this->blade($file);
-
-        $blade->render(options: $this->options(), data: $data);
-
-        $file =  $blade->getSaveLocation($this->option("save-dir"));
-
-        $this->info("Rendered $file");
-
-        return $blade;
-    }
 }

@@ -2,18 +2,19 @@
 
 namespace BladeCLI;
 
+
+use ErrorException;
 use InvalidArgumentException;
+use BladeCLI\Support\FileFinder;
+use BladeCLI\Support\FileFactory;
 use Illuminate\Events\Dispatcher;
 use Illuminate\View\ViewException;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
-use BladeCLI\Support\RenderFileFinder;
-use BladeCLI\Support\RenderFileFactory;
+use BladeCLI\Support\FileCompilerEngine;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Compilers\BladeCompiler;
-use BladeCLI\Support\RenderFileCompilerEngine;
-use Error;
-use ErrorException;
+use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
 
 class Blade
 {
@@ -35,20 +36,20 @@ class Blade
      *
      * @var string
      */
-    protected string $renderFilePath;
+    protected string $filePath;
 
     /**
      * The render file factory.
      *
-     * @var \BladeCLI\Support\RenderFileFactory
+     * @var \BladeCLI\Support\FileFactory
      */
-    protected \BladeCLI\Support\RenderFileFactory $fileFactory;
+    protected \BladeCLI\Support\FileFactory $fileFactory;
     /**
      * The view finder.
      *
-     * @var \BladeCLI\Support\RenderFileFinder
+     * @var \BladeCLI\Support\FileFinder
      */
-    protected RenderFileFinder $fileFinder;
+    protected FileFinder $fileFinder;
 
     /**
      * Metadata about the current render file.
@@ -56,47 +57,45 @@ class Blade
      * @var array
      */
     protected array $metadata = [];
+
+    /**
+     * The options for rendering.
+     *
+     * @var array
+     */
+    protected array $options = [];
+
     /**
      * Construct a new Blade instance.
      *
      * @param \Illuminate\Container\Container $container
      * @param \Illuminate\Filesystem\Filesystem $filesystem
-     * @param string $renderFilePath
+     * @param string $filePath
+     * @param array $options
      */
-    public function __construct(
-        Container $container,
-        Filesystem $filesystem,
-        string $renderFilePath
-    ) {
+    public function __construct(Container $container, Filesystem $filesystem, string $filePath, array $options)
+    {
         $this->container = $container;
 
         $this->filesystem = $filesystem;
 
-        $this->setRenderFilePath($renderFilePath);
+        $this->options = $options;
 
-        $this->fileFinder = new RenderFileFinder($this->filesystem, [$this->metadata["dirname"]]);
+        $this->fileFinder = new FileFinder($this->filesystem, []);
 
-        $this->fileFactory = new RenderFileFactory(
-            ($resolver = $this->getEngineResolver()),
+        $this->setFilePath($filePath);
+
+        $resolver = new EngineResolver();
+
+        $resolver->register("blade", function () {
+            return new FileCompilerEngine(new BladeCompiler($this->filesystem, $this->getCompiledPath()));
+        });
+
+        $this->fileFactory = new FileFactory(
+            $resolver,
             $this->fileFinder,
             new Dispatcher($this->container)
         );
-
-        $this->compiler = $this->getCompiler();
-
-        $resolver->register("blade", function () {
-            return new RenderFileCompilerEngine($this->compiler);
-        });
-    }
-
-    /**
-     * Return the compiler for the blade engine.
-     *
-     * @return \Illuminate\View\Compilers\BladeCompiler
-     */
-    public function getCompiler()
-    {
-        return new BladeCompiler($this->filesystem, $this->getCompiledPath());
     }
 
     /**
@@ -109,45 +108,49 @@ class Blade
         return realpath(__DIR__ . "/../.compiled");
     }
 
-    /**
-     * Return the engine resolver.
-     *
-     * @return \Illuminate\View\Engines\EngineResolver
-     */
-    public function getEngineResolver()
-    {
-        return new EngineResolver();
-    }
 
     /**
      * Set the render file path.
      *
-     * @param string $renderFilePath
+     * @param string $filePath
      * @return static
      */
-    public function setRenderFilePath(string $renderFilePath)
+    public function setFilePath(string $filePath)
     {
-        if (!is_file($renderFilePath)) {
+        if (!is_file($filePath)) {
             throw new InvalidArgumentException(
-                "File $renderFilePath is not a file or does not exist."
+                "File $filePath is not a file or does not exist."
             );
         }
 
-        $this->renderFilePath = $renderFilePath;
+        $this->filePath = $filePath;
 
-        $file = basename($this->renderFilePath);
+        // save some basic metadata about the file to reference.
+        $this->metadata = $this->deriveFileMetaData($this->filePath);
+
+        // update paths on finder
+        $this->fileFinder->setPaths([$this->metadata["dirname"]]);
+
+        return $this;
+    }
+    /**
+     * Determine some useful metadata about the file to utilize.
+     *
+     * @param string
+     * @return array
+     */
+    protected function deriveFileMetaData(string $path)
+    {
+        $file = basename($path);
 
         $extension = pathinfo($file)["extension"] ?? "";
 
-        // save some basic metadata about the file to reference.
-        $this->metadata = [
+        return [
             "basename" => $file,
             "extension" => $extension,
-            "filename_no_extension" => basename(rtrim($this->renderFilePath, ".$extension")),
-            "dirname" => dirname(realpath($this->renderFilePath)),
+            "filename_no_extension" => basename(rtrim($path, ".$extension")),
+            "dirname" => dirname(realpath($path)),
         ];
-
-        return $this;
     }
 
     /**
@@ -173,14 +176,37 @@ class Blade
     }
 
     /**
+     * Check if the current file we're process should render.
+     *
+     * @return boolean
+     */
+    protected function shouldRender()
+    {
+        return realpath($this->filePath) != $this->getSaveLocation();
+    }
+
+    /**
+     * Get the directory name.
+     *
+     * @return string
+     */
+    protected function getSaveDirectory()
+    {
+        return $this->options['save-directory'] ?? $this->metadata['dirname'];
+    }
+
+    /**
      * Render the template file.
      *
-     * @param array $options
      * @param array $data
-     * @return \BladeCLI\Support\RenderFile
+     * @return \BladeCLI\Support\RenderFile|bool
      */
-    public function render(array $options = [], array $data = [])
+    public function render(array $data = [])
     {
+        if(!$this->shouldRender()){
+            return false;
+        }
+
         $extension = $this->metadata["extension"];
 
         $this->fileFactory->addExtension($extension, "blade");
@@ -195,7 +221,7 @@ class Blade
 
         restore_error_handler();
 
-        $this->saveRenderedContents($contents, $options);
+        $this->saveRenderedContents($contents);
         // cleanup .compiled
         $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
 
@@ -228,16 +254,16 @@ class Blade
 
         $filename = $this->metadata["filename_no_extension"];
 
-        return $filename . ".rendered" . ($extension ? ".$extension" : "");
+        return str_replace('.rendered', "", $filename) . ".rendered" . ($extension ? ".$extension" : "");
     }
+
     /**
      * Get the default save location relative path for the rendered file.
      *
      * @return string
      */
     protected function getDefaultRelativeSaveFileLocation()
-    {
-        $dir = $this->metadata["dirname"];
+    {        $dir = $this->metadata["dirname"];
 
         return $dir . DIRECTORY_SEPARATOR . $this->getFileRenderedName();
     }
@@ -245,12 +271,11 @@ class Blade
     /**
      * Get the absolute save location path.
      *
-     * @param string|null $saveDir
      * @return string
      */
-    public function getSaveLocation(?string $saveDir = null)
+    public function getSaveLocation()
     {
-        $saveTo = rtrim($saveDir ?? "", "\\/");
+        $saveTo = rtrim($this->getSaveDirectory() ?? "", "\\/");
 
         if (!$saveTo) {
             $path = $this->getDefaultRelativeSaveFileLocation();
@@ -260,27 +285,41 @@ class Blade
 
         return $this->normalizePath($path);
     }
+
+    /**
+     * Ensure the save directory exists.
+     *
+     * @return void
+     */
+    protected function ensureSaveDirectoryExists()
+    {
+        $dir = $this->getSaveDirectory();
+
+        if ($dir ?? false) {
+            $directory = dirname($dir);
+            @mkdir(
+                $directory == "." ? $dir: $directory,
+                recursive: $directory != "."
+            );
+        }
+    }
+
     /**
      * Save the contents of a rendered file.
      *
      * @param string $contents
-     * @param array $options
      * @return bool
      */
-    protected function saveRenderedContents(string $contents, array $options)
+    protected function saveRenderedContents(string $contents)
     {
-        if ($options["save-dir"] ?? false) {
 
-            $directory = dirname($options["save-dir"]);
+        $this->ensureSaveDirectoryExists();
 
-            @mkdir(
-                $directory == "." ? $options['save-dir']: $directory,
-                recursive: $directory != "."
-            );
+        $saveTo = $this->getSaveLocation();
 
+        if(file_exists($saveTo)){
+            throw new FileAlreadyExistsException("The file $saveTo already exists");
         }
-
-        $saveTo = $this->getSaveLocation($options["save-dir"]);
 
         $success = $this->filesystem->put($saveTo, $contents);
 
