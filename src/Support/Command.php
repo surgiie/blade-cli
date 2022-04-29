@@ -52,7 +52,7 @@ class Command extends BaseCommand
     protected function blade(string $filePath, array $options = []): Blade
     {
         if(!is_null($this->bladeInstance)){
-            return $this->bladeInstance->setFilePath($filePath);
+            return $this->bladeInstance->setFilePath($filePath)->setOptions($options);
         }
 
         return $this->bladeInstance = new Blade(

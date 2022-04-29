@@ -14,10 +14,13 @@ use Illuminate\Filesystem\Filesystem;
 use BladeCLI\Support\FileCompilerEngine;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Compilers\BladeCompiler;
+use BladeCLI\Support\Concerns\NormalizesPaths;
 use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
 
 class Blade
 {
+    use NormalizesPaths;
     /**
      * The container instance.
      *
@@ -32,7 +35,7 @@ class Blade
     protected Filesystem $filesystem;
 
     /**
-     * The path to the template/directory being rendered.
+     * The path to the file being rendered.
      *
      * @var string
      */
@@ -44,8 +47,9 @@ class Blade
      * @var \BladeCLI\Support\FileFactory
      */
     protected \BladeCLI\Support\FileFactory $fileFactory;
+
     /**
-     * The view finder.
+     * The file finder.
      *
      * @var \BladeCLI\Support\FileFinder
      */
@@ -66,7 +70,7 @@ class Blade
     protected array $options = [];
 
     /**
-     * Construct a new Blade instance.
+     * Construct a new Blade instance and configure engine.
      *
      * @param \Illuminate\Container\Container $container
      * @param \Illuminate\Filesystem\Filesystem $filesystem
@@ -99,7 +103,7 @@ class Blade
     }
 
     /**
-     * Get the compiled path to where rendered files go.
+     * Get the compiled path to where compil files go.
      *
      * @return string
      */
@@ -119,7 +123,7 @@ class Blade
     {
         if (!is_file($filePath)) {
             throw new InvalidArgumentException(
-                "File $filePath is not a file or does not exist."
+                "File $filePath is not a file."
             );
         }
 
@@ -127,7 +131,6 @@ class Blade
 
         // save some basic metadata about the file to reference.
         $this->metadata = $this->deriveFileMetaData($this->filePath);
-
         // update paths on finder
         $this->fileFinder->setPaths([$this->metadata["dirname"]]);
 
@@ -182,7 +185,21 @@ class Blade
      */
     protected function shouldRender()
     {
+        // if the file we are rendering is the rendered file location, then we are processing
+        // a already rendered file. This happens on subsequent render calls on a directory.
         return realpath($this->filePath) != $this->getSaveLocation();
+    }
+
+    /**
+     * Get the directory name.
+     *
+     * @return static
+     */
+    public function setOptions(array $options)
+    {
+        $this->options= $options;
+
+        return $this;
     }
 
     /**
@@ -192,7 +209,7 @@ class Blade
      */
     protected function getSaveDirectory()
     {
-        return $this->options['save-directory'] ?? $this->metadata['dirname'];
+        return $this->getOption('save-directory',  $this->metadata['dirname']);
     }
 
     /**
@@ -203,7 +220,7 @@ class Blade
      */
     public function render(array $data = [])
     {
-        if(!$this->shouldRender()){
+        if (!$this->shouldRender()) {
             return false;
         }
 
@@ -228,20 +245,6 @@ class Blade
         return $template;
     }
 
-    /**
-     * Normalize a path from linux to windows or vice versa.
-     *
-     * @param string $path
-     * @return string
-     */
-    protected function normalizePath(string $path)
-    {
-        if (DIRECTORY_SEPARATOR == "\\") {
-            return str_replace("/", "\\", $path);
-        } else {
-            return str_replace("\\", "/", $path);
-        }
-    }
 
     /**
      * Get the file name for the rendered file.
@@ -263,7 +266,8 @@ class Blade
      * @return string
      */
     protected function getDefaultRelativeSaveFileLocation()
-    {        $dir = $this->metadata["dirname"];
+    {
+        $dir = $this->metadata["dirname"];
 
         return $dir . DIRECTORY_SEPARATOR . $this->getFileRenderedName();
     }
@@ -275,8 +279,7 @@ class Blade
      */
     public function getSaveLocation()
     {
-        $saveTo = rtrim($this->getSaveDirectory() ?? "", "\\/");
-
+        $saveTo = $this->removeTrailingSlash($this->getSaveDirectory() ?? "");
         if (!$saveTo) {
             $path = $this->getDefaultRelativeSaveFileLocation();
         } else {
@@ -295,13 +298,22 @@ class Blade
     {
         $dir = $this->getSaveDirectory();
 
-        if ($dir ?? false) {
-            $directory = dirname($dir);
-            @mkdir(
-                $directory == "." ? $dir: $directory,
-                recursive: $directory != "."
-            );
-        }
+        @mkdir(
+            $dir,
+            recursive:true
+        );
+    }
+
+    /**
+     * Get an option value or default.
+     *
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    protected function getOption($key, $default = null)
+    {
+        return array_key_exists($key, $this->options) ? $this->options[$key] : $default;
     }
 
     /**
@@ -316,7 +328,7 @@ class Blade
 
         $saveTo = $this->getSaveLocation();
 
-        if(file_exists($saveTo)){
+        if (file_exists($saveTo) && $this->getOption('force', false) !== true) {
             throw new FileAlreadyExistsException("The file $saveTo already exists");
         }
 

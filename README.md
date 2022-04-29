@@ -39,6 +39,7 @@ php blade render ./person.yml \
 
 This will render and save the file to the same directory as `person.rendered.yml`
 
+
 ### Custom Save Directory
 
 All files will get saved to the current directory as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension.
@@ -91,8 +92,40 @@ For array variables, just pass the option more than once:
 
 `--names=Steve --names=Ricky --names=Bob`
 
-###### Boolean Value Variables
+###### True Boolean Value Variables
 
-For boolean variables, just pass the option with no value:
+For boolean true variables, just pass the option with no value:
 
-`--force`
+`--should-do-thing`
+
+**Note** Since variable options are dynamic the "negate/false" options are not supported. Instead do something like this in your files `{{ $shouldDoSomething ?? false }}` to default
+to false and then use true options to "negate" the value.
+
+### Force write
+
+If you try to render a file that already exists an exception will be raised, you may consider force write via the `--force` flag.
+
+```
+php blade render ./person.yml \
+                --name="Bob"
+                --relationship="Uncle"
+                --favorite-food="Pizza"
+                --include-address
+                --force # force overwrite person.rendered.yml if it already exists.
+
+```
+
+
+### Processing an entire directory
+
+You may also pass the path to a directory instead of a single file:
+
+`php blade some-dir --some-data=foo`
+
+This will recursively process every file in this directory and save the file in the current directory of the file being rendered.
+
+When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed:
+
+`php blade some-dir --some-data=foo --save-directory="/home/bob/files/"`
+
+In this example `/home/bob/files/` will have a directory structure that matches `some-dir`.

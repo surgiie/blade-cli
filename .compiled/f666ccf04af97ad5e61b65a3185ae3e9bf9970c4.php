@@ -1,1 +1,0 @@
-name: <?php echo e($name); ?><?php /**PATH C:\Users\surgiie\Desktop\projects\blade-cli\dir/example.yml ENDPATH**/ ?>

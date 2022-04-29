@@ -8,10 +8,11 @@ use BladeCLI\Support\Command;
 use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\ArgvOptionsParser;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
+use BladeCLI\Support\Concerns\NormalizesPaths;
 
 class RenderCommand extends Command
 {
-    use LoadsJsonFiles;
+    use LoadsJsonFiles, NormalizesPaths;
 
     /**
      * The command's signature.
@@ -87,11 +88,11 @@ class RenderCommand extends Command
         $data = $this->getFileVariableData();
 
         if (is_file($file)) {
-            $this->renderFile($file, $data);
+            $this->renderFile($file, $data, $this->options());
         }
 
         if (is_dir($file)) {
-            $this->renderDirectoryFiles($file, $data);
+            $this->renderDirectoryFiles($file, $data, $this->options());
         }
 
         return 0;
@@ -114,15 +115,13 @@ class RenderCommand extends Command
      * @param array $data
      * @return static
      */
-    protected function renderFile(string $file, array $data = []): static
+    protected function renderFile(string $file, array $data, array $options): static
     {
-        $options = $this->options();
-
         $blade = $this->blade($file, $options);
 
         $result = $blade->render(data: $data);
 
-        if($result !== false){
+        if ($result !== false) {
             $file =  $blade->getSaveLocation();
 
             $this->info("Rendered $file");
@@ -136,15 +135,27 @@ class RenderCommand extends Command
      *
      * @param string $directory
      * @param array $data
+     * @param array $options
      * @return static
      */
-    protected function renderDirectoryFiles(string $directory, array $data = []): static
+    protected function renderDirectoryFiles(string $directory, array $data, array $options): static
     {
         $finder = $this->finder();
         $files = $finder->in($directory)->files();
 
+        $saveDirectory = $this->removeTrailingSlash($options['save-directory'] ?? "");
+
         foreach ($files as $file) {
-            $this->renderFile($file->getPathName(), $data);
+            $options['save-directory'] = dirname($pathName = $file->getPathName());
+
+            if ($saveDirectory) {
+                $relativePath = $this->removeLeadingSlash(Str::after($pathName, $directory));
+
+                $options['save-directory'] =  dirname($this->normalizePath(
+                    $saveDirectory . DIRECTORY_SEPARATOR . $relativePath
+                ));
+            }
+            $this->renderFile($pathName, $data, $options);
         }
 
         return $this;
@@ -189,7 +200,7 @@ class RenderCommand extends Command
         $json = [];
         $jsonFiles = $this->option("from-json");
 
-        foreach($jsonFiles as $file){
+        foreach ($jsonFiles as $file) {
             $json = array_merge($json, $this->loadJsonFile($file));
         }
 
@@ -201,12 +212,12 @@ class RenderCommand extends Command
      *
      * @return array
      */
-    protected function getFileVariableData() : array
+    protected function getFileVariableData(): array
     {
         $vars = [];
 
-        foreach($this->getJsonFileData(merge: $this->options()) as $k=>$v){
-            if($this->isReservedOption($k)){
+        foreach ($this->getJsonFileData(merge: $this->options()) as $k => $v) {
+            if ($this->isReservedOption($k)) {
                 continue;
             }
             $vars[Str::camel($k)] = $v;
@@ -214,5 +225,4 @@ class RenderCommand extends Command
 
         return $vars;
     }
-
 }
