@@ -5,18 +5,17 @@ namespace BladeCLI\Tests\Support\Contracts;
 interface TestableFile
 {
     /**
+     * The filename.
+     *
+     * @return string
+     */
+    public function filename(): string;
+    /**
      * The content of the file.
      *
      * @return string
      */
     public function content(): string;
-
-    /**
-     * The expected rendered content of the file.
-     *
-     * @return string
-     */
-    public function expectedContent(): string;
 
     /**
      * The data for rendering.
@@ -25,11 +24,11 @@ interface TestableFile
      */
     public function data(): array;
 
-
     /**
-     * The save location.
+     * The expected rendered content of the file.
      *
-     * @return array
+     * @return string
      */
-    public function saveLocation(): array;
+    public function expectedContent(): string;
+
 }
