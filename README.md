@@ -115,17 +115,20 @@ php blade render ./person.yml \
 
 ```
 
-
 ### Processing an entire directory
 
 You may also pass the path to a directory instead of a single file:
 
-`php blade some-dir --some-data=foo`
+`php blade render templates/ --some-data=foo`
+
+This might be useful if you like to group template files in a directory and
+
+want to render them all with a single command. This will prompt you for confirmation unless you pass the `--force` flag.
 
 This will recursively process every file in this directory and save the file in the current directory of the file being rendered.
 
 When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed:
 
-`php blade some-dir --some-data=foo --save-directory="/home/bob/files/"`
+`php blade render templates/ --some-data=foo --save-directory="/home/bob/templates/"`
 
-In this example `/home/bob/files/` will have a directory structure that matches `some-dir`.
+In this example `/home/bob/files/` will have a directory structure that matches `templates/`.

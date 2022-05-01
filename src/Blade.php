@@ -2,13 +2,11 @@
 
 namespace BladeCLI;
 
-
 use ErrorException;
 use InvalidArgumentException;
 use BladeCLI\Support\FileFinder;
 use BladeCLI\Support\FileFactory;
 use Illuminate\Events\Dispatcher;
-use Illuminate\View\ViewException;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use BladeCLI\Support\FileCompilerEngine;
@@ -16,7 +14,7 @@ use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Compilers\BladeCompiler;
 use BladeCLI\Support\Concerns\NormalizesPaths;
 use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
+use BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class Blade
 {
@@ -91,6 +89,7 @@ class Blade
 
         $resolver = new EngineResolver();
 
+        @mkdir($this->getCompiledPath());
         $resolver->register("blade", function () {
             return new FileCompilerEngine(new BladeCompiler($this->filesystem, $this->getCompiledPath()));
         });
@@ -103,13 +102,13 @@ class Blade
     }
 
     /**
-     * Get the compiled path to where compil files go.
+     * Get the compiled path to where compiled files go.
      *
      * @return string
      */
     protected function getCompiledPath()
     {
-        return realpath(__DIR__ . "/../.compiled");
+        return __DIR__ . "/../.compiled";
     }
 
 
@@ -171,7 +170,7 @@ class Blade
             preg_match('/Undefined variable \$(.*)/', $message, $match);
 
             if ($match) {
-                throw new ViewException(
+                throw new UndefinedVariableException(
                     "Undefined variable \$$match[1] on line $line. Did you pass the --$match[1] option or forget to use camel case for variable names?"
                 );
             }
@@ -186,24 +185,25 @@ class Blade
     protected function shouldRender()
     {
         // if the file we are rendering is the rendered file location, then we are processing
-        // a already rendered file. This happens on subsequent render calls on a directory.
+        // an already rendered file. This happens on subsequent render calls on a directory
+        // where we saved a render file previously.
         return realpath($this->filePath) != $this->getSaveLocation();
     }
 
     /**
-     * Get the directory name.
+     * Set the options for rendering.
      *
      * @return static
      */
     public function setOptions(array $options)
     {
-        $this->options= $options;
+        $this->options = $options;
 
         return $this;
     }
 
     /**
-     * Get the directory name.
+     * Get the save location directory.
      *
      * @return string
      */
@@ -228,7 +228,7 @@ class Blade
 
         $this->fileFactory->addExtension($extension, "blade");
 
-        $filename = $this->metadata["filename_no_extension"];
+        $filename = $this->metadata["basename"];
 
         $template = $this->fileFactory->make($filename, $data);
 
@@ -239,6 +239,7 @@ class Blade
         restore_error_handler();
 
         $this->saveRenderedContents($contents);
+
         // cleanup .compiled
         $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
 
@@ -300,7 +301,7 @@ class Blade
 
         @mkdir(
             $dir,
-            recursive:true
+            recursive: true
         );
     }
 
@@ -329,13 +330,13 @@ class Blade
         $saveTo = $this->getSaveLocation();
 
         if (file_exists($saveTo) && $this->getOption('force', false) !== true) {
-            throw new FileAlreadyExistsException("The file $saveTo already exists");
+            throw new FileAlreadyExistsException("The file $saveTo already exists.");
         }
 
         $success = $this->filesystem->put($saveTo, $contents);
 
         if (!$success) {
-            throw new ErrorException("Could not write/save file to $saveTo");
+            throw new ErrorException("Could not write/save file to: $saveTo");
         }
 
         return $success;

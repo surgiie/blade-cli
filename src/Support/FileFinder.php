@@ -7,6 +7,12 @@ use Illuminate\View\FileViewFinder;
 
 class FileFinder extends FileViewFinder
 {
+    /**
+     * The file extensions.
+     *
+     * @var array
+     */
+    protected $extensions = [];
 
     /**
      * Set the active file paths.
@@ -63,6 +69,6 @@ class FileFinder extends FileViewFinder
             }
         }
 
-        throw new InvalidArgumentException("View [{$name}] not found.");
+        throw new InvalidArgumentException("File [{$name}] not found.");
     }
 }

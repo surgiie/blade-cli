@@ -2,6 +2,7 @@
 
 namespace BladeCLI\Commands;
 
+use SplFileInfo;
 use BladeCLI\Blade;
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
@@ -9,6 +10,7 @@ use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\ArgvOptionsParser;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 use BladeCLI\Support\Concerns\NormalizesPaths;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
 
 class RenderCommand extends Command
 {
@@ -78,21 +80,21 @@ class RenderCommand extends Command
      */
     public function handle()
     {
+        $options = $this->options();
         $file = $this->argument("file");
 
         if (!file_exists($file)) {
-            $this->error("The file or directory '$file' does not exist.");
-            return 1;
+            throw new FileNotFoundException("The file or directory '$file' does not exist.");
         }
 
         $data = $this->getFileVariableData();
-
+        // process single file.
         if (is_file($file)) {
-            $this->renderFile($file, $data, $this->options());
+            $this->renderFile($file, $data, $options);
         }
-
-        if (is_dir($file)) {
-            $this->renderDirectoryFiles($file, $data, $this->options());
+        // process an entire directory
+        else if (is_dir($file) && $this->option('force') || $this->confirm("Are you sure you want to render files in the $file directory?")) {
+            $this->renderDirectoryFiles($file, $data, $options);
         }
 
         return 0;
@@ -131,6 +133,31 @@ class RenderCommand extends Command
     }
 
     /**
+     * Updates the save directory for a file being
+     * rendered during a directory render so that
+     * it gets rendered in a mirrored location to its
+     * current directory/location.
+     *
+     * @param array $options
+     * @param string $filePath
+     * @param array $options
+     * @return array
+     */
+    protected function getSaveDirForDirectoryFileRender(string $directory, string $filePath, array $options)
+    {
+        $saveDirectory = $this->removeTrailingSlash($options['save-directory'] ?? "");
+
+        if ($saveDirectory) {
+            $relativePath = $this->removeLeadingSlash(Str::after($filePath, $directory));
+
+            $options['save-directory'] =  dirname($this->normalizePath(
+                $saveDirectory . DIRECTORY_SEPARATOR . $relativePath
+            ));
+        }
+
+        return $options;
+    }
+    /**
      * Render a directory of files.
      *
      * @param string $directory
@@ -141,21 +168,12 @@ class RenderCommand extends Command
     protected function renderDirectoryFiles(string $directory, array $data, array $options): static
     {
         $finder = $this->finder();
+
         $files = $finder->in($directory)->files();
-
-        $saveDirectory = $this->removeTrailingSlash($options['save-directory'] ?? "");
-
         foreach ($files as $file) {
-            $options['save-directory'] = dirname($pathName = $file->getPathName());
-
-            if ($saveDirectory) {
-                $relativePath = $this->removeLeadingSlash(Str::after($pathName, $directory));
-
-                $options['save-directory'] =  dirname($this->normalizePath(
-                    $saveDirectory . DIRECTORY_SEPARATOR . $relativePath
-                ));
-            }
-            $this->renderFile($pathName, $data, $options);
+            $pathName = $file->getPathName();
+            $renderOptions = $this->getSaveDirForDirectoryFileRender($directory, $pathName, $options);
+            $this->renderFile($pathName, $data, $renderOptions);
         }
 
         return $this;
