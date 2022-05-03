@@ -2,9 +2,9 @@
 
 namespace BladeCLI\Support\Exceptions;
 
-use Exception;
+use ErrorException;
 
-class UndefinedVariableException extends Exception
+class UndefinedVariableException extends ErrorException
 {
 
 }

@@ -2,9 +2,9 @@
 
 namespace BladeCLI\Support\Exceptions;
 
-use Exception;
+use ErrorException;
 
-class FileAlreadyExistsException extends Exception
+class FileAlreadyExistsException extends ErrorException
 {
 
 }

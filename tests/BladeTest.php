@@ -4,8 +4,11 @@ namespace BladeCLI;
 
 use BladeCLI\Tests\TestCase;
 use Illuminate\Filesystem\Filesystem;
-use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use BladeCLI\Tests\Files\TestJsonFile;
+use BladeCLI\Tests\Support\Contracts\TestableFile;
 use BladeCLI\Support\Exceptions\FileNotFoundException;
+use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class BladeTest extends TestCase
 {
@@ -39,33 +42,41 @@ class BladeTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         $fs = new Filesystem;
-        // $fs->deleteDirectory(static::getTestTemplatesPath());
+        $fs->deleteDirectory(static::getTestTemplatesPath());
     }
-
-    // /**
-    //  * @test
-    //  */
-    // public function file_must_exist()
-    // {
-    //     $this->expectException(FileNotFoundException::class);
-
-    //     $this->renderCommand(['file'=>"i-dont-exist.error"]);
-    // }
-
 
     /**
      * @test
      */
-    public function it_can_render_files()
+    public function file_must_exist()
     {
+        $this->expectException(FileNotFoundException::class);
 
-        static::processTestFiles(function($testFile){
-            $templateDir = static::getTestTemplatesPath();
+        $this->renderCommand(['file'=>"i-dont-exist.error"]);
+    }
 
-            $path = $templateDir.DIRECTORY_SEPARATOR.$testFile->filename();
-            $this->renderCommand(array_merge(['file'=>$path], $testFile->options()));
+    /**
+     * Make a absolute file path to the template/test files.
+     *
+     * @param \BladeCLI\Tests\Support\Contracts\TestableFile $path
+     * @return void
+     */
+    protected function makeAbsoluteTestFilePath(TestableFile $testFile)
+    {
+        $templateDir = static::getTestTemplatesPath();
 
-        });
+        return $templateDir.DIRECTORY_SEPARATOR.$testFile->filename();
+    }
 
+    /**
+     * @test
+     */
+    public function it_throws_undefined_variable_exceptions()
+    {
+        $testFile = new TestJsonFile;
+
+        $this->expectException(UndefinedVariableException::class);
+
+        $this->renderCommand(['file'=>$this->makeAbsoluteTestFilePath($testFile)]);
     }
 }

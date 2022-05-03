@@ -2,9 +2,9 @@
 
 namespace BladeCLI\Support\Exceptions;
 
-use Exception;
+use ErrorException;
 
-class FileNotFoundException extends Exception
+class FileNotFoundException extends ErrorException
 {
 
 }

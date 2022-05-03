@@ -4,7 +4,8 @@ namespace BladeCLI\Support;
 
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
-class ArgvOptionsParser
+
+class OptionsParser
 {
 
     /**
@@ -14,6 +15,15 @@ class ArgvOptionsParser
      */
     protected array $options = [];
 
+    /**
+     * Parse options for registration.
+     */
+    const REGISTRATION_MODE = 1;
+
+    /**
+     * Parse options with values.
+     */
+    const VALUE_MODE = 2;
 
     /**
      * Construct new instance.
@@ -53,13 +63,29 @@ class ArgvOptionsParser
     }
 
     /**
+     * Escapes a token through escapeshellarg if it contains unsafe chars.
+     *
+     * @see Symfony\Component\Console\Input\Input@escapeToken.
+     */
+    public function escapeToken(string $token): string
+    {
+        return preg_match('{^[\w-]+$}', $token) ? $token : escapeshellarg($token);
+    }
+
+    /**
      * Parse the set options.
      *
+     *
+     * @param int $mode - Return options with value or just options with Input modes for registration with symfony input binding.
      * @throws \InvalidArgumentException
      * @return array
      */
-    public function parse()
+    public function parse(int $mode =1)
     {
+        if(!in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])){
+            throw new InvalidArgumentException("Invalid parsing mode given");
+        }
+
         $options = [];
 
         // parse options to be used as template/var data.
@@ -77,11 +103,14 @@ class ArgvOptionsParser
             $optionExists = array_key_exists($name, $options);
 
             if($value && $optionExists){
-                $options[$name] = InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY;
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY : $this->escapeToken($value);
+                $options[$name] = $value;
             }else if($value){
-                $options[$name] = InputOption::VALUE_REQUIRED;
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED: $this->escapeToken($value);
+                $options[$name] = $value;
             }else if(!$optionExists){
-                $options[$name] = InputOption::VALUE_NONE;
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE: true;
+                $options[$name] = $value;
             }else{
                 throw new InvalidArgumentException("The '$name' option has already been provided.");
             }

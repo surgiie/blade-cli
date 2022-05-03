@@ -7,7 +7,7 @@ use BladeCLI\Blade;
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
 use Symfony\Component\Finder\Finder;
-use BladeCLI\Support\ArgvOptionsParser;
+use BladeCLI\Support\OptionsParser;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 use BladeCLI\Support\Concerns\NormalizesPaths;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,6 +37,13 @@ class RenderCommand extends Command
      * @var boolean
      */
     protected static $testing = false;
+
+    /**
+     * Set the options for the command.
+     *
+     * @var array
+     */
+    protected array $options = [];
 
     /**
      * The options that are reserved for the command
@@ -71,30 +78,8 @@ class RenderCommand extends Command
     public function __construct()
     {
         parent::__construct();
-
+        // ignore validation errors for dynamic options to work.
         $this->ignoreValidationErrors();
-
-    }
-
-    /**
-     * Initialize command.
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return void
-     */
-    protected function initialize(InputInterface $input, OutputInterface $output)
-    {
-        // todo check if testing/parse input options already set from calling CommandTester->run
-        global $argv;
-        $parser = new ArgvOptionsParser(array_slice($argv, 3));
-
-        foreach ($parser->parse() as $name => $mode) {
-            $this->registerDynamicOption($name, $mode);
-        }
-
-        //rebind input definition
-        $input->bind($this->getDefinition());
     }
 
     /**
@@ -108,20 +93,85 @@ class RenderCommand extends Command
     }
 
     /**
+     * The $argv variable is not available in testing context since
+     * we do not call/execute the command from the command line, so
+     * when using Symfony's \Symfony\Component\Console\Tester\CommandTester
+     * class during tests, options are binded directly on the input class, so
+     * to allow us to test this command in tests, we need to parse options
+     * values ourselves directly from the already binded input.
+     *
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @return void
+     */
+    protected function parseOptionsForTesting(InputInterface $input)
+    {
+        $arguments = array_values($input->getArguments());
+
+        array_unshift($arguments, 'render');
+
+        $arguments = array_values($arguments);
+
+        $parser = new OptionsParser(array_slice($arguments, 3));
+
+        $this->options = $parser->parse(OptionsParser::VALUE_MODE);
+    }
+
+    /**
+     * Parse options when executing command directly.
+     *
+     * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @return void
+     */
+    protected function parseOptionsForCommand(InputInterface $input)
+    {
+        global $argv;
+
+        $arguments = $argv;
+
+        $parser = new OptionsParser(array_slice($arguments, 3));
+
+        foreach ($parser->parse() as $name => $mode) {
+            $this->registerDynamicOption($name, $mode);
+        }
+
+        //rebind input definition
+        $input->bind($this->getDefinition());
+
+        $this->options = $this->options();
+    }
+    /**
+     * Initialize command.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        // todo check if testing/parse input options already set from calling CommandTester->run
+        if(static::$testing){
+            $this->parseOptionsForTesting($input);
+        }else{
+            $this->parseOptionsForCommand($input);
+        }
+    }
+
+    /**
      * Execute the command.
      *
      * @return int
      */
     public function handle()
     {
-        $options = $this->options();
+        $options = $this->options;
+
         $file = $this->argument("file");
 
         if (!file_exists($file)) {
             throw new FileNotFoundException("The file or directory '$file' does not exist.");
         }
 
-        $data = $this->getFileVariableData();
+        $data = $this->getFileVariableData($options);
 
         // process single file.
         if (is_file($file)) {
@@ -263,13 +313,14 @@ class RenderCommand extends Command
     /**
      * Get the data to use for the render file.
      *
+     * @param array $options
      * @return array
      */
-    protected function getFileVariableData(): array
+    protected function getFileVariableData(array $options = []): array
     {
         $vars = [];
 
-        foreach ($this->getJsonFileData(merge: $this->options()) as $k => $v) {
+        foreach ($this->getJsonFileData(merge: $options) as $k => $v) {
             if ($this->isReservedOption($k)) {
                 continue;
             }

@@ -1,8 +1,12 @@
 <?php
+
 namespace BladeCLI\Support;
 
 use Throwable;
+use Illuminate\View\ViewException;
+use Illuminate\View\Engines\PhpEngine;
 use Illuminate\View\Engines\CompilerEngine;
+use BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class FileCompilerEngine extends CompilerEngine
 {
@@ -31,6 +35,24 @@ class FileCompilerEngine extends CompilerEngine
         }
 
         return ob_get_clean();
+    }
+
+    /**
+     * Handle a view exception.
+     *
+     * @param  \Throwable  $e
+     * @param  int  $obLevel
+     * @return void
+     *
+     * @throws \Throwable
+     */
+    protected function handleViewException(Throwable $e, $obLevel)
+    {
+        $class = get_class($e);
+
+        $e =  new $class($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
+
+        PhpEngine::handleViewException($e, $obLevel);
     }
 
     /**
