@@ -10,6 +10,8 @@ use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\ArgvOptionsParser;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 use BladeCLI\Support\Concerns\NormalizesPaths;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use BladeCLI\Support\Exceptions\FileNotFoundException;
 
 class RenderCommand extends Command
@@ -28,6 +30,13 @@ class RenderCommand extends Command
                                    {--force : Force render or overwrite files.}";
 
 
+
+    /**
+     * A flag to determine if we are testing command.
+     *
+     * @var boolean
+     */
+    protected static $testing = false;
 
     /**
      * The options that are reserved for the command
@@ -63,16 +72,41 @@ class RenderCommand extends Command
     {
         parent::__construct();
 
-        global $argv;
-
         $this->ignoreValidationErrors();
 
+    }
+
+    /**
+     * Initialize command.
+     *
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return void
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output)
+    {
+        // todo check if testing/parse input options already set from calling CommandTester->run
+        global $argv;
         $parser = new ArgvOptionsParser(array_slice($argv, 3));
 
         foreach ($parser->parse() as $name => $mode) {
             $this->registerDynamicOption($name, $mode);
         }
+
+        //rebind input definition
+        $input->bind($this->getDefinition());
     }
+
+    /**
+     * Set the testing flag.
+     *
+     * @return void
+     */
+    public static function testing()
+    {
+        static::$testing = true;
+    }
+
     /**
      * Execute the command.
      *
@@ -88,6 +122,7 @@ class RenderCommand extends Command
         }
 
         $data = $this->getFileVariableData();
+
         // process single file.
         if (is_file($file)) {
             $this->renderFile($file, $data, $options);

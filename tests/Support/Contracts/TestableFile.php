@@ -18,11 +18,11 @@ interface TestableFile
     public function content(): string;
 
     /**
-     * The data for rendering.
+     * The data options for rendering.
      *
      * @return array
      */
-    public function data(): array;
+    public function options(): array;
 
     /**
      * The expected rendered content of the file.

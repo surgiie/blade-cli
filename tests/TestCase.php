@@ -43,20 +43,25 @@ abstract class TestCase extends BaseTestCase
      * Run render command.
      *
      * @param array $input
+     * @param array $options
      * @return \Symfony\Component\Console\Tester\CommandTester
      */
     protected function renderCommand(array $input)
     {
         $application = new Application();
+
+        RenderCommand::testing();
+
         $application->add(new RenderCommand());
 
         $command = $application->find('render');
 
         $commandTester = new CommandTester($command);
-
-        $commandTester->execute(array_merge([
-            'command' => $command->getName(),
-        ], $input));
+        $commandTester->execute(
+            array_merge([
+                'command' => $command->getName(),
+            ], $input),
+        );
 
         return $commandTester;
     }

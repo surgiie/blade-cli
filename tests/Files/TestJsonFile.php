@@ -31,15 +31,15 @@ class TestJsonFile implements TestableFile
     }
 
     /**
-     * The data for rendering.
+     * The data options for rendering.
      *
      * @return array
      */
-    public function data(): array
+    public function options(): array
     {
         return [
-            'key' => 'name',
-            'value' => 'Zoro',
+            '--key=name',
+            '--value=Zoro',
         ];
     }
 

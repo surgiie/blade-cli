@@ -39,17 +39,18 @@ class TestYamlFile implements TestableFile
     }
 
     /**
-     * The data for rendering.
+     * The data options for rendering.
      *
      * @return array
      */
-    public function data(): array
+    public function options(): array
     {
         return [
-            'name' => 'Bob',
-            'favorite-food' => 'Pizza',
-            'include-address' => true,
-            'dogs'=> ['Rex', 'Charlie']
+            '--name=Bob',
+            '--favorite-food=Pizza',
+            '--include-address',
+            '--dogs=Rex',
+            '--dogs=Charlie',
         ];
     }
 
