@@ -7,11 +7,11 @@ use InvalidArgumentException;
 use BladeCLI\Support\FileFinder;
 use BladeCLI\Support\FileFactory;
 use Illuminate\Events\Dispatcher;
+use BladeCLI\Support\FileCompiler;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use BladeCLI\Support\FileCompilerEngine;
 use Illuminate\View\Engines\EngineResolver;
-use Illuminate\View\Compilers\BladeCompiler;
 use BladeCLI\Support\Concerns\NormalizesPaths;
 use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
 use BladeCLI\Support\Exceptions\UndefinedVariableException;
@@ -91,7 +91,7 @@ class Blade
 
         @mkdir($this->getCompiledPath());
         $resolver->register("blade", function () {
-            return new FileCompilerEngine(new BladeCompiler($this->filesystem, $this->getCompiledPath()));
+            return new FileCompilerEngine(new FileCompiler($this->filesystem, $this->getCompiledPath()));
         });
 
         $this->fileFactory = new FileFactory(
@@ -150,7 +150,7 @@ class Blade
         return [
             "basename" => $file,
             "extension" => $extension,
-            "filename_no_extension" => basename(rtrim($path, ".$extension")),
+            "filename_no_extension" => basename($path, ".$extension"),
             "dirname" => dirname(realpath($path)),
         ];
     }
@@ -241,7 +241,7 @@ class Blade
         $this->saveRenderedContents($contents);
 
         // cleanup .compiled
-        $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
+        // $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
 
         return $template;
     }

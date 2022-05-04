@@ -3,10 +3,8 @@
 namespace BladeCLI\Support;
 
 use Throwable;
-use Illuminate\View\ViewException;
 use Illuminate\View\Engines\PhpEngine;
 use Illuminate\View\Engines\CompilerEngine;
-use BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class FileCompilerEngine extends CompilerEngine
 {
@@ -34,7 +32,7 @@ class FileCompilerEngine extends CompilerEngine
             $this->handleViewException($e, $obLevel);
         }
 
-        return ob_get_clean();
+        return rtrim(ob_get_clean());
     }
 
     /**

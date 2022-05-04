@@ -41,14 +41,8 @@ class File extends View
     {
         // moving open/end tags to the end of the previous line allow nesting to be preserved which
         // is important for files like yaml or files that have semantical/nesting formatting requirements.
-        $contents = preg_replace(
-            '/\\s+\<\?php (\$__currentLoopData|endforeach)(.*) \?\>/',
-            "<?php $1$2 ?>\n",
-            $contents
-        );
-
-        $contents = preg_replace("/\\s+\<\?php (if|endif)(.*) \?\>/", "<?php $1$2 ?>\n", $contents);
-
+        $contents = preg_replace('/\\s+\<\?php (\$__currentLoopData|endforeach)(.*) \?\>/', "\n<?php $1$2 ?>\n", $contents);
+        $contents = preg_replace('/\\s+\<\?php (if|else|else if|endif)(.*) \?\>/', "\n<?php $1$2 ?>\n", $contents);
         return $contents;
     }
 }

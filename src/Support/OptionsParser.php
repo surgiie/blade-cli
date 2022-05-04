@@ -1,20 +1,14 @@
 <?php
+
 namespace BladeCLI\Support;
 
-
+use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
+use BladeCLI\Support\Exceptions\DuplicateDataException;
 
 class OptionsParser
 {
-
-    /**
-     * The options to parse.
-     *
-     * @var array
-     */
-    protected array $options = [];
-
     /**
      * Parse options for registration.
      */
@@ -24,6 +18,12 @@ class OptionsParser
      * Parse options with values.
      */
     const VALUE_MODE = 2;
+    /**
+     * The options to parse.
+     *
+     * @var array
+     */
+    protected array $options = [];
 
     /**
      * Construct new instance.
@@ -62,17 +62,8 @@ class OptionsParser
         return $match;
     }
 
-    /**
-     * Escapes a token through escapeshellarg if it contains unsafe chars.
-     *
-     * @see Symfony\Component\Console\Input\Input@escapeToken.
-     */
-    public function escapeToken(string $token): string
-    {
-        return preg_match('{^[\w-]+$}', $token) ? $token : escapeshellarg($token);
-    }
 
-    /**
+  /**
      * Parse the set options.
      *
      *
@@ -82,13 +73,13 @@ class OptionsParser
      */
     public function parse(int $mode =1)
     {
+
         if(!in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])){
             throw new InvalidArgumentException("Invalid parsing mode given");
         }
 
         $options = [];
 
-        // parse options to be used as template/var data.
         foreach ($this->options as $token) {
 
             $match = $this->parseOption($token);
@@ -102,17 +93,20 @@ class OptionsParser
 
             $optionExists = array_key_exists($name, $options);
 
-            if($value && $optionExists){
-                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY : $this->escapeToken($value);
-                $options[$name] = $value;
+            if($value && $optionExists && $mode == static::REGISTRATION_MODE){
+                $options[$name] = InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY;
+            }
+            else if($value && $optionExists && $mode == static::VALUE_MODE){
+                $options[$name] = Arr::wrap($options[$name]);
+                $options[$name][] = $value;
             }else if($value){
-                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED: $this->escapeToken($value);
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED: $value;
                 $options[$name] = $value;
             }else if(!$optionExists){
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE: true;
                 $options[$name] = $value;
             }else{
-                throw new InvalidArgumentException("The '$name' option has already been provided.");
+                throw new DuplicateDataException("The '$name' option has already been provided.");
             }
         }
 

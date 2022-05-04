@@ -5,7 +5,6 @@ namespace BladeCLI;
 use BladeCLI\Tests\TestCase;
 use Illuminate\Filesystem\Filesystem;
 use BladeCLI\Tests\Files\TestJsonFile;
-use BladeCLI\Tests\Support\Contracts\TestableFile;
 use BladeCLI\Support\Exceptions\FileNotFoundException;
 use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
 use BladeCLI\Support\Exceptions\UndefinedVariableException;
@@ -19,6 +18,7 @@ class BladeTest extends TestCase
     public static function setUpBeforeClass(): void
     {
         @mkdir($templateDir = static::getTestTemplatesPath());
+
         // write test files to test rendering
         $fs = new Filesystem;
         $fs->deleteDirectory($templateDir, preserve: true);
@@ -42,7 +42,7 @@ class BladeTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         $fs = new Filesystem;
-        $fs->deleteDirectory(static::getTestTemplatesPath());
+        // $fs->deleteDirectory(static::getTestTemplatesPath());
     }
 
     /**
@@ -56,27 +56,40 @@ class BladeTest extends TestCase
     }
 
     /**
-     * Make a absolute file path to the template/test files.
-     *
-     * @param \BladeCLI\Tests\Support\Contracts\TestableFile $path
-     * @return void
-     */
-    protected function makeAbsoluteTestFilePath(TestableFile $testFile)
-    {
-        $templateDir = static::getTestTemplatesPath();
-
-        return $templateDir.DIRECTORY_SEPARATOR.$testFile->filename();
-    }
-
-    /**
      * @test
      */
-    public function it_throws_undefined_variable_exceptions()
+    public function it_throws_exception_on_undefined_variables()
     {
         $testFile = new TestJsonFile;
 
         $this->expectException(UndefinedVariableException::class);
 
-        $this->renderCommand(['file'=>$this->makeAbsoluteTestFilePath($testFile)]);
+        $this->renderCommand(['file'=>$this->makeAbsoluteTestFilePath($testFile->filename())]);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_render_files()
+    {
+        static::processTestFiles(function($testFile){
+            $this->renderCommand(
+                ['file'=>$this->makeAbsoluteTestFilePath($filename = $testFile->filename())],
+                $testFile->options()
+            );
+
+            $parts = explode('.', $filename);
+
+            $extension = $parts[1] ?? '';
+
+            $renderedFilePath = $this->makeAbsoluteTestFilePath($parts[0].".rendered". ($extension ? ".$extension" : ""));
+            // assert we have a rendered file
+            $this->assertTrue(file_exists($renderedFilePath));
+            // and that it's expected content matches what was rendered.
+            // dump($testFile->expectedContent(), file_get_contents($renderedFilePath));
+            $this->assertEquals($testFile->expectedContent(), file_get_contents($renderedFilePath));
+        });
+    }
+
+
 }

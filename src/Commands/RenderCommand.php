@@ -32,18 +32,18 @@ class RenderCommand extends Command
 
 
     /**
-     * A flag to determine if we are testing command.
+     * An array of options use statically if not using command from command line.
      *
-     * @var boolean
+     * @var array
      */
-    protected static $testing = false;
+    protected static ?array $staticOptions = null;
 
     /**
      * Set the options for the command.
      *
      * @var array
      */
-    protected array $options = [];
+    protected array $commandOptions = [];
 
     /**
      * The options that are reserved for the command
@@ -83,61 +83,41 @@ class RenderCommand extends Command
     }
 
     /**
-     * Set the testing flag.
+     * Set the options to use over parsed argv.
      *
+     * This is mostly useful for tests.
+     *
+     * @param array $options
      * @return void
      */
-    public static function testing()
+    public static function useOptions(array $options = [])
     {
-        static::$testing = true;
+        $parser = new OptionsParser($options);
+
+        $options = $parser->parse(OptionsParser::VALUE_MODE);
+
+        static::$staticOptions = $options;
     }
 
     /**
-     * The $argv variable is not available in testing context since
-     * we do not call/execute the command from the command line, so
-     * when using Symfony's \Symfony\Component\Console\Tester\CommandTester
-     * class during tests, options are binded directly on the input class, so
-     * to allow us to test this command in tests, we need to parse options
-     * values ourselves directly from the already binded input.
+     * Parse arguments for options to register with the command.
      *
      * @param \Symfony\Component\Console\Input\InputInterface $input
+     * @param array $arguments
      * @return void
      */
-    protected function parseOptionsForTesting(InputInterface $input)
+    protected function parseArgsForCommandOptions(InputInterface $input, array $arguments = [])
     {
-        $arguments = array_values($input->getArguments());
-
-        array_unshift($arguments, 'render');
-
-        $arguments = array_values($arguments);
-
-        $parser = new OptionsParser(array_slice($arguments, 3));
-
-        $this->options = $parser->parse(OptionsParser::VALUE_MODE);
-    }
-
-    /**
-     * Parse options when executing command directly.
-     *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @return void
-     */
-    protected function parseOptionsForCommand(InputInterface $input)
-    {
-        global $argv;
-
-        $arguments = $argv;
-
         $parser = new OptionsParser(array_slice($arguments, 3));
 
         foreach ($parser->parse() as $name => $mode) {
-            $this->registerDynamicOption($name, $mode);
+            $this->registerOption($name, $mode);
         }
 
         //rebind input definition
         $input->bind($this->getDefinition());
 
-        $this->options = $this->options();
+        $this->commandOptions = $this->options();
     }
     /**
      * Initialize command.
@@ -148,11 +128,14 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        // todo check if testing/parse input options already set from calling CommandTester->run
-        if(static::$testing){
-            $this->parseOptionsForTesting($input);
-        }else{
-            $this->parseOptionsForCommand($input);
+        if(!is_null(static::$staticOptions)){
+            $this->commandOptions = static::$staticOptions;
+        }else {
+            global $argv;
+
+            $arguments = $argv;
+
+            $this->parseArgsForCommandOptions($input, $arguments);
         }
     }
 
@@ -163,7 +146,7 @@ class RenderCommand extends Command
      */
     public function handle()
     {
-        $options = $this->options;
+        $options = $this->commandOptions;
 
         $file = $this->argument("file");
 
@@ -172,7 +155,6 @@ class RenderCommand extends Command
         }
 
         $data = $this->getFileVariableData($options);
-
         // process single file.
         if (is_file($file)) {
             $this->renderFile($file, $data, $options);
@@ -255,6 +237,7 @@ class RenderCommand extends Command
         $finder = $this->finder();
 
         $files = $finder->in($directory)->files();
+
         foreach ($files as $file) {
             $pathName = $file->getPathName();
             $renderOptions = $this->getSaveDirForDirectoryFileRender($directory, $pathName, $options);
@@ -271,7 +254,7 @@ class RenderCommand extends Command
      * @param int $mode
      * @return bool
      */
-    protected function registerDynamicOption($name, $mode): bool
+    public function registerOption($name, $mode): bool
     {
         if ($this->isReservedOption($name)) {
             return false;

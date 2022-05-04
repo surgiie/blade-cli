@@ -5,12 +5,16 @@ namespace BladeCLI\Tests;
 use Illuminate\Support\Str;
 use BladeCLI\Commands\RenderCommand;
 use Symfony\Component\Finder\Finder;
-use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Console\Application;
+use BladeCLI\Support\Concerns\NormalizesPaths;
+use BladeCLI\Support\OptionsParser;
+use PHPUnit\Framework\TestCase as BaseTestCase;
+use BladeCLI\Tests\Support\Contracts\TestableFile;
 use Symfony\Component\Console\Tester\CommandTester;
 
 abstract class TestCase extends BaseTestCase
 {
+    use NormalizesPaths;
     /**
      * Get path to test templates.
      *
@@ -39,30 +43,46 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
+
     /**
-     * Run render command.
+     * Make a absolute file path to the template/test files.
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function makeAbsoluteTestFilePath(string $path)
+    {
+        $templateDir = static::getTestTemplatesPath();
+
+        return $this->normalizePath($templateDir.DIRECTORY_SEPARATOR.$path);
+    }
+
+
+    /**
+     * Execute render command via command tester.
      *
      * @param array $input
      * @param array $options
      * @return \Symfony\Component\Console\Tester\CommandTester
      */
-    protected function renderCommand(array $input)
+    protected function renderCommand(array $input, array $options = [])
     {
-        $application = new Application();
+        // specify we are testing
+        RenderCommand::useOptions($options);
 
-        RenderCommand::testing();
+        $application = new Application();
 
         $application->add(new RenderCommand());
 
         $command = $application->find('render');
 
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(
+        $tester = new CommandTester($command);
+        $tester->execute(
             array_merge([
                 'command' => $command->getName(),
             ], $input),
         );
 
-        return $commandTester;
+        return $tester;
     }
 }
