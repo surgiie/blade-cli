@@ -17,13 +17,14 @@ class File extends View
         // compiled file that blade has generated.
         $compiler = $this->engine->getCompiler();
 
+        // so we need to force recompile so that
+        // our custom compiler compiles with our custom logic
         $compiler->compile($this->path);
 
+        // save new results
         $compiledContents = file_get_contents(
             $compiledPath = $compiler->getCompiledPath($this->path)
         );
-
-        $compiledContents = $this->modifyCompiledContent($compiledContents);
 
         file_put_contents($compiledPath, $compiledContents);
 
@@ -31,18 +32,5 @@ class File extends View
         return $this->engine->get($this->path, $this->gatherData());
     }
 
-    /**
-     * Modify compiled contents to modify php tags to previous lines.
-     *
-     * @param string $contents
-     * @return string
-     */
-    protected function modifyCompiledContent(string $contents)
-    {
-        // moving open/end tags to the end of the previous line allow nesting to be preserved which
-        // is important for files like yaml or files that have semantical/nesting formatting requirements.
-        $contents = preg_replace('/\\s+\<\?php (\$__currentLoopData|endforeach)(.*) \?\>/', "\n<?php $1$2 ?>\n", $contents);
-        $contents = preg_replace('/\\s+\<\?php (if|else|else if|endif)(.*) \?\>/', "\n<?php $1$2 ?>\n", $contents);
-        return $contents;
-    }
+
 }

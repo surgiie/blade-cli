@@ -4,7 +4,7 @@ namespace BladeCLI\Tests\Files;
 
 use BladeCLI\Tests\Support\Contracts\TestableFile;
 
-class TestYamlFile implements TestableFile
+class TestTextFile implements TestableFile
 {
     /**
      * The filename.
@@ -13,7 +13,7 @@ class TestYamlFile implements TestableFile
      */
     public function filename(): string
     {
-        return 'test_yaml.yaml';
+        return 'test_text.yaml';
     }
 
     /**
@@ -24,17 +24,12 @@ class TestYamlFile implements TestableFile
     public function content(): string
     {
         return <<<EOL
-        name: {{ \$name }}
-        favorite_food: {{ \$favoriteFood }}
-        pets:
-            @foreach(\$dogs as \$dog)
-            - {{ \$dog }}
+        Uncles:
+            @foreach (\$names as \$name)
+                @if (\str_starts_with(\$name, "Uncle"))
+            -   {{\$name}}
+                @endif
             @endforeach
-        contact_info:
-            phone: 1234567890
-            @if(\$includeAddress)
-            street_info: 123 Lane.
-            @endif
         EOL;
     }
 
@@ -46,11 +41,9 @@ class TestYamlFile implements TestableFile
     public function options(): array
     {
         return [
-            '--name=Bob',
-            '--favorite-food=Pizza',
-            '--include-address',
-            '--dogs=Rex',
-            '--dogs=Charlie',
+            '--names=Uncle Bob',
+            '--names=Uncle Billy',
+            '--names=Boe',
         ];
     }
 
@@ -62,14 +55,9 @@ class TestYamlFile implements TestableFile
     public function expectedContent(): string
     {
         return <<<EOL
-        name: Bob
-        favorite_food: Pizza
-        pets:
-            - Rex
-            - Charlie
-        contact_info:
-            phone: 1234567890
-            street_info: 123 Lane.
+        Uncles:
+            -   Uncle Bob
+            -   Uncle Billy
         EOL;
     }
 }

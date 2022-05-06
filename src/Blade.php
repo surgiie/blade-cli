@@ -171,7 +171,7 @@ class Blade
 
             if ($match) {
                 throw new UndefinedVariableException(
-                    "Undefined variable \$$match[1] on line $line. Did you pass the --$match[1] option or forget to use camel case for variable names?"
+                    "Undefined variable \$$match[1] on line $line. Did you pass the --$match[1] option or use camel case for this variable?"
                 );
             }
         };
@@ -241,7 +241,7 @@ class Blade
         $this->saveRenderedContents($contents);
 
         // cleanup .compiled
-        // $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
+        $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
 
         return $template;
     }

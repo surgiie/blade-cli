@@ -32,7 +32,8 @@ class FileCompilerEngine extends CompilerEngine
             $this->handleViewException($e, $obLevel);
         }
 
-        return rtrim(ob_get_clean());
+        $var = rtrim(ob_get_clean());
+        return $var;
     }
 
     /**
@@ -48,7 +49,7 @@ class FileCompilerEngine extends CompilerEngine
     {
         $class = get_class($e);
 
-        $e =  new $class($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
+        $e = new $class($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
 
         PhpEngine::handleViewException($e, $obLevel);
     }
@@ -62,9 +63,6 @@ class FileCompilerEngine extends CompilerEngine
     protected function getMessage(Throwable $e)
     {
         $msg = $e->getMessage();
-
-        $message = str_contains($msg, "Undefined variable") ? "" : $msg;
-
-        return $message . " (View: " . realpath(end($this->lastCompiled)) . ")";
+        return $msg . " (File: " . realpath(end($this->lastCompiled)) . ")";
     }
 }

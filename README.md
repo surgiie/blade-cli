@@ -5,7 +5,7 @@ Use Laravel's blade engine as a CLI for rendering files.
 
 ### Introduction
 
-This package customizes and extends several classes used by the blade engine to be able to use simple blade features (i.e variable, `@if`, `@include`, `@foreach`, etc.)
+This package customizes and extends several classes used by the blade engine to be able to use simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.)
 on files. That said, the more advanced features of the engine are out of scope of what this package was meant for and may not be supported.
 
 ### Installation
@@ -115,20 +115,29 @@ php blade render ./person.yml \
 
 ```
 
-### Processing an entire directory
+### Processing an entire directory of files
 
-You may also pass the path to a directory instead of a single file:
+You may also pass the path to a directory instead of a single file. This might be useful if you like to group template files in a directory and
+
+want to render them all with a single command:
 
 `php blade render templates/ --some-data=foo`
 
-This might be useful if you like to group template files in a directory and
+**Note** This will prompt you for confirmation.
 
-want to render them all with a single command. This will prompt you for confirmation unless you pass the `--force` flag.
+#### Force process directory
 
-This will recursively process every file in this directory and save the file in the current directory of the file being rendered.
+You may skip confirmation of rendering a directory's files with the `--force` flag:
 
-When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed:
+`php blade render templates/ --some-data=foo --force`
+
+
+#### Custom Directory:
+
+By default, files will get saved to the current directory the file being rendered is in, just you may specify
+a custom directory to save with the same `--save-directory` option specified earlier:
+
 
 `php blade render templates/ --some-data=foo --save-directory="/home/bob/templates/"`
 
-In this example `/home/bob/files/` will have a directory structure that matches `templates/`.
+**Note** When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed. In this example `/home/bob/files/` will have a directory structure that matches `templates/`.

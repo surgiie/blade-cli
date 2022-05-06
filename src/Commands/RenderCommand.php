@@ -200,7 +200,7 @@ class RenderCommand extends Command
     }
 
     /**
-     * Updates the save directory for a file being
+     * Updates/computes the save directory for a file being
      * rendered during a directory render so that
      * it gets rendered in a mirrored location to its
      * current directory/location.
@@ -210,7 +210,7 @@ class RenderCommand extends Command
      * @param array $options
      * @return array
      */
-    protected function getSaveDirForDirectoryFileRender(string $directory, string $filePath, array $options)
+    protected function computeSaveDirectoryForDirectoryRender(string $directory, string $filePath, array $options)
     {
         $saveDirectory = $this->removeTrailingSlash($options['save-directory'] ?? "");
 
@@ -240,7 +240,7 @@ class RenderCommand extends Command
 
         foreach ($files as $file) {
             $pathName = $file->getPathName();
-            $renderOptions = $this->getSaveDirForDirectoryFileRender($directory, $pathName, $options);
+            $renderOptions = $this->computeSaveDirectoryForDirectoryRender($directory, $pathName, $options);
             $this->renderFile($pathName, $data, $renderOptions);
         }
 

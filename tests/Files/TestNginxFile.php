@@ -29,13 +29,19 @@ class TestNginxFile implements TestableFile
 
             access_log   {{\$accessLogPath}}  main;
 
-            location /{{\$endpoint}} {
+            location /{{\$mainEndpoint}} {
                 @if(\$production ?? false)
-                    root /data/www/production
+                root /data/www/production
                 @else
-                    root /data/www/staging
+                root /data/www/staging
                 @endif
             }
+
+            @foreach(\$apiEndpoint as \$endpoint)
+            location {{\$endpoint}} {
+                proxy_pass  api.com{{\$endpoint}};
+            }
+            @endforeach
         }
         EOL;
     }
@@ -49,8 +55,11 @@ class TestNginxFile implements TestableFile
     {
         return [
             '--server-name=example.com',
-            '--endpoint=example',
-            '--access-log-path=/var/log/nginx.access_log'
+            '--main-endpoint=example',
+            '--access-log-path=/var/log/nginx.access_log',
+            '--api-endpoint=/api/v1/foo',
+            '--api-endpoint=/api/v1/bar',
+            '--api-endpoint=/api/v1/baz',
         ];
     }
 
@@ -68,7 +77,16 @@ class TestNginxFile implements TestableFile
             access_log   /var/log/nginx.access_log  main;
 
             location /example {
-                    root /data/www/staging
+                root /data/www/staging
+            }
+            location /api/v1/foo {
+                proxy_pass  api.com/api/v1/foo;
+            }
+            location /api/v1/bar {
+                proxy_pass  api.com/api/v1/bar;
+            }
+            location /api/v1/baz {
+                proxy_pass  api.com/api/v1/baz;
             }
         }
         EOL;

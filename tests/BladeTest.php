@@ -42,7 +42,7 @@ class BladeTest extends TestCase
     public static function tearDownAfterClass(): void
     {
         $fs = new Filesystem;
-        // $fs->deleteDirectory(static::getTestTemplatesPath());
+        $fs->deleteDirectory(static::getTestTemplatesPath());
     }
 
     /**
@@ -86,7 +86,6 @@ class BladeTest extends TestCase
             // assert we have a rendered file
             $this->assertTrue(file_exists($renderedFilePath));
             // and that it's expected content matches what was rendered.
-            // dump($testFile->expectedContent(), file_get_contents($renderedFilePath));
             $this->assertEquals($testFile->expectedContent(), file_get_contents($renderedFilePath));
         });
     }
