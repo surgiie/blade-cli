@@ -22,7 +22,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected static function getTestTemplatesPath()
     {
-        return __DIR__ . DIRECTORY_SEPARATOR."templates";
+        return __DIR__ . DIRECTORY_SEPARATOR . "templates";
     }
     /**
      * Process the test files using the given callback.
@@ -37,7 +37,7 @@ abstract class TestCase extends BaseTestCase
         $files = $finder->in(realpath(__DIR__ . "/Files"))->files();
 
         foreach ($files as $file) {
-            $class = str_replace('.php', '', Str::after($file->getPathName(), "tests".DIRECTORY_SEPARATOR));
+            $class = str_replace(['.php', '/'], ['', '\\'], Str::after($file->getPathName(), "tests" . DIRECTORY_SEPARATOR));
             $class = "BladeCLI\Tests\\$class";
             call_user_func($callback, new $class);
         }
@@ -54,7 +54,7 @@ abstract class TestCase extends BaseTestCase
     {
         $templateDir = static::getTestTemplatesPath();
 
-        return $this->normalizePath($templateDir.DIRECTORY_SEPARATOR.$path);
+        return $this->normalizePath($templateDir . DIRECTORY_SEPARATOR . $path);
     }
 
 
@@ -67,7 +67,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function renderCommand(array $input, array $options = [])
     {
-        // specify we are testing
+        // specify we options to use statically for testing
         RenderCommand::useOptions($options);
 
         $application = new Application();
