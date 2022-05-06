@@ -26,7 +26,6 @@ class RenderCommand extends Command
     protected $signature = "render {file}
                                    {--save-directory= : The custom directory to save the .rendered files to. }
                                    {--from-json=* : A file to load variable data from. }
-                                   {--use-collections : Convert array options to collection instances.}
                                    {--force : Force render or overwrite files.}";
 
 
@@ -60,7 +59,6 @@ class RenderCommand extends Command
         "save-directory",
         "from-json",
         "force",
-        "use-collections",
         "no-interaction",
     ];
     /**
@@ -128,9 +126,9 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if(!is_null(static::$staticOptions)){
+        if (!is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
-        }else {
+        } else {
             global $argv;
 
             $arguments = $argv;
