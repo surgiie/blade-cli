@@ -1,4 +1,5 @@
 <?php
+
 namespace BladeCLI\Support\Concerns;
 
 use JsonException;
@@ -37,7 +38,7 @@ trait LoadsJsonFiles
      */
     protected function loadJsonFile(string $path)
     {
-        if(!file_exists($path)){
+        if (!file_exists($path)) {
             throw new FileNotFoundException("The $path json file does not exist.");
         }
 

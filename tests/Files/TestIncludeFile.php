@@ -4,8 +4,15 @@ namespace BladeCLI\Tests\Files;
 
 use BladeCLI\Tests\Support\TestingFile;
 
-class TestJsonFile extends TestingFile
+class TestIncludeFile extends TestingFile
 {
+    /**
+     * Construct instance.
+     */
+    public function __construct()
+    {
+        $this->mainFile = new TestYamlFile;
+    }
     /**
      * The filename.
      *
@@ -13,7 +20,7 @@ class TestJsonFile extends TestingFile
      */
     public function filename(): string
     {
-        return 'test_json.yaml';
+        return 'test_include.yaml';
     }
 
     /**
@@ -23,10 +30,10 @@ class TestJsonFile extends TestingFile
      */
     public function content(): string
     {
+        $name = $this->mainFile->filename();
+
         return <<<EOL
-        {
-            "{{\$key}}": "{{ \$value }}"
-        }
+        @include('$name')
         EOL;
     }
 
@@ -37,10 +44,7 @@ class TestJsonFile extends TestingFile
      */
     public function options(): array
     {
-        return [
-            '--key=name',
-            '--value=Zoro',
-        ];
+        return $this->mainFile->options();
     }
 
     /**
@@ -50,10 +54,7 @@ class TestJsonFile extends TestingFile
      */
     public function jsonFileData(): array
     {
-        return [
-            'key' => 'name',
-            'value' => 'Zoro',
-        ];
+        return $this->mainFile->jsonFileData();
     }
 
 
@@ -64,10 +65,6 @@ class TestJsonFile extends TestingFile
      */
     public function expectedContent(): string
     {
-        return <<<EOL
-        {
-            "name": "Zoro"
-        }
-        EOL;
+        return $this->mainFile->expectedContent();
     }
 }

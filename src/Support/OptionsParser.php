@@ -63,7 +63,7 @@ class OptionsParser
     }
 
 
-  /**
+    /**
      * Parse the set options.
      *
      *
@@ -71,10 +71,10 @@ class OptionsParser
      * @throws \InvalidArgumentException
      * @return array
      */
-    public function parse(int $mode =1)
+    public function parse(int $mode = 1)
     {
 
-        if(!in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])){
+        if (!in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])) {
             throw new InvalidArgumentException("Invalid parsing mode given");
         }
 
@@ -84,7 +84,7 @@ class OptionsParser
 
             $match = $this->parseOption($token);
 
-            if(!$match){
+            if (!$match) {
                 throw new InvalidArgumentException("Encountered invalid '$token' as it is not --option or --option=value format.");
             }
 
@@ -93,19 +93,18 @@ class OptionsParser
 
             $optionExists = array_key_exists($name, $options);
 
-            if($value && $optionExists && $mode == static::REGISTRATION_MODE){
+            if ($value && $optionExists && $mode == static::REGISTRATION_MODE) {
                 $options[$name] = InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY;
-            }
-            else if($value && $optionExists && $mode == static::VALUE_MODE){
+            } else if ($value && $optionExists && $mode == static::VALUE_MODE) {
                 $options[$name] = Arr::wrap($options[$name]);
                 $options[$name][] = $value;
-            }else if($value){
-                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED: $value;
+            } else if ($value) {
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED : $value;
                 $options[$name] = $value;
-            }else if(!$optionExists){
-                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE: true;
+            } else if (!$optionExists) {
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE : true;
                 $options[$name] = $value;
-            }else{
+            } else {
                 throw new DuplicateDataException("The '$name' option has already been provided.");
             }
         }

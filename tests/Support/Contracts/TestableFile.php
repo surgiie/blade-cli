@@ -31,4 +31,12 @@ interface TestableFile
      */
     public function expectedContent(): string;
 
+    /**
+     * The json file data to test loading data
+     * from json files. Will write a json file
+     * next to the testing file.
+     *
+     * @return array
+     */
+    public function jsonFileData(): array;
 }

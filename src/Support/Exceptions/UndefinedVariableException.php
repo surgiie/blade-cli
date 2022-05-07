@@ -6,5 +6,4 @@ use ErrorException;
 
 class UndefinedVariableException extends ErrorException
 {
-
 }

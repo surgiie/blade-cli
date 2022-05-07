@@ -15,22 +15,26 @@ use Symfony\Component\Console\Tester\CommandTester;
 abstract class TestCase extends BaseTestCase
 {
     use NormalizesPaths;
+
     /**
-     * Get path to test templates.
+     * Make a file/directory path relative to tests directory
+     * for testing file rendering locations.
      *
+     * @param string $dirOrFile
      * @return string
      */
-    protected static function getTestTemplatesPath()
+    protected function makeTestFilePath(string $dirOrFile = "default"): string
     {
-        return __DIR__ . DIRECTORY_SEPARATOR . "templates";
+        return $this->normalizePath(__DIR__ . DIRECTORY_SEPARATOR . $dirOrFile);
     }
+
     /**
-     * Process the test files using the given callback.
+     * Iterate the test file classes using the given callback.
      *
      * @param callable $callback
      * @return void
      */
-    protected static function processTestFiles(callable $callback): void
+    protected function iterateTestFileClasses(callable $callback): void
     {
         $finder = new Finder;
 
@@ -43,20 +47,28 @@ abstract class TestCase extends BaseTestCase
         }
     }
 
-
     /**
-     * Make a absolute file path to the template/test files.
+     * Assert we rendered a file.
      *
-     * @param string $path
-     * @return string
+     * @param TestableFile $file
+     * @param string $directory - relative to tests.
+     * @return void
      */
-    protected function makeAbsoluteTestFilePath(string $path)
+    protected function assertFileWasRendered(TestableFile $file, string $directory = "default"): void
     {
-        $templateDir = static::getTestTemplatesPath();
+        $parts = explode('.', $file->filename());
 
-        return $this->normalizePath($templateDir . DIRECTORY_SEPARATOR . $path);
+        $extension = $parts[1] ?? '';
+
+        $renderedFilePath = $this->makeTestFilePath(
+            $directory . DIRECTORY_SEPARATOR . $parts[0] . ".rendered" . ($extension ? ".$extension" : ""),
+        );
+
+        // assert we have a rendered file
+        $this->assertTrue(file_exists($renderedFilePath));
+        // and that it's expected content matches what was rendered.
+        $this->assertEquals($file->expectedContent(), file_get_contents($renderedFilePath));
     }
-
 
     /**
      * Execute render command via command tester.
@@ -65,9 +77,9 @@ abstract class TestCase extends BaseTestCase
      * @param array $options
      * @return \Symfony\Component\Console\Tester\CommandTester
      */
-    protected function renderCommand(array $input, array $options = [])
+    protected function renderCommand(array $input, array $options = []): CommandTester
     {
-        // specify we options to use statically for testing
+        // specify options to use statically for testing
         RenderCommand::useOptions($options);
 
         $application = new Application();
@@ -77,6 +89,7 @@ abstract class TestCase extends BaseTestCase
         $command = $application->find('render');
 
         $tester = new CommandTester($command);
+
         $tester->execute(
             array_merge([
                 'command' => $command->getName(),

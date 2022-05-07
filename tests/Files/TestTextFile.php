@@ -2,9 +2,9 @@
 
 namespace BladeCLI\Tests\Files;
 
-use BladeCLI\Tests\Support\Contracts\TestableFile;
+use BladeCLI\Tests\Support\TestingFile;
 
-class TestTextFile implements TestableFile
+class TestTextFile extends TestingFile
 {
     /**
      * The filename.
@@ -46,6 +46,23 @@ class TestTextFile implements TestableFile
             '--names=Boe',
         ];
     }
+
+    /**
+     * The data to write to test loading data from json files.
+     *
+     * @return array
+     */
+    public function jsonFileData(): array
+    {
+        return [
+            'names' => [
+                'Uncle Bob',
+                'Uncle Billy',
+                'Boe'
+            ]
+        ];
+    }
+
 
     /**
      * The expected rendered content of the file.

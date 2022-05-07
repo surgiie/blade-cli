@@ -4,10 +4,11 @@ namespace BladeCLI\Commands;
 
 use SplFileInfo;
 use BladeCLI\Blade;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
-use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\OptionsParser;
+use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 use BladeCLI\Support\Concerns\NormalizesPaths;
 use Symfony\Component\Console\Input\InputInterface;
@@ -277,18 +278,19 @@ class RenderCommand extends Command
     /**
      * Get the data from json files.
      *
+     * @param array $options
      * @return array
      */
-    public function getJsonFileData($merge = []): array
+    public function getJsonFileData(array $options = []): array
     {
         $json = [];
-        $jsonFiles = $this->option("from-json");
+        $jsonFiles = Arr::wrap($options["from-json"] ?? []);
 
         foreach ($jsonFiles as $file) {
             $json = array_merge($json, $this->loadJsonFile($file));
         }
 
-        return array_merge($json, $merge);
+        return array_merge($json, $options);
     }
 
     /**
@@ -301,7 +303,7 @@ class RenderCommand extends Command
     {
         $vars = [];
 
-        foreach ($this->getJsonFileData(merge: $options) as $k => $v) {
+        foreach ($this->getJsonFileData(options: $options) as $k => $v) {
             if ($this->isReservedOption($k)) {
                 continue;
             }

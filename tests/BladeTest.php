@@ -13,36 +13,49 @@ class BladeTest extends TestCase
 {
 
     /**
-     * This method is called before the first test of this test class is run.
+     * The relative (to tests dir) directories being tested against.
+     *
+     * @var array
      */
-    public static function setUpBeforeClass(): void
+    protected array $testDirectories = [
+        'default',
+        'custom'
+    ];
+    /**
+     * Tests setup
+     */
+    public function setUp(): void
     {
-        @mkdir($templateDir = static::getTestTemplatesPath());
-
         // write test files to test rendering
         $fs = new Filesystem;
-        $fs->deleteDirectory($templateDir, preserve: true);
 
-        static::processTestFiles(function($testFile){
-            $templateDir = static::getTestTemplatesPath();
+        foreach ($this->testDirectories as $dir) {
+            @mkdir($templateDir = $this->makeTestFilePath($dir));
 
-            $path = $templateDir.DIRECTORY_SEPARATOR.$testFile->filename();
+            $fs->deleteDirectory($templateDir, preserve: true);
 
-            if(file_exists($path)){
-                throw new FileAlreadyExistsException("Duplicate filename on test file: $path");
-            }
+            $this->iterateTestFileClasses(function ($testFile) use ($dir) {
+                $templateDir =  $this->makeTestFilePath($dir);
 
-            file_put_contents($path, $testFile->content());
-        });
+                $path = $templateDir . DIRECTORY_SEPARATOR . $testFile->filename();
+                if (file_exists($path)) {
+                    throw new FileAlreadyExistsException("Duplicate filename on test file: $path");
+                }
+
+                file_put_contents($path, $testFile->content());
+            });
+        }
     }
 
     /**
-     * This method is called after the last test of this test class is run.
+     * Tests cleanup.
      */
-    public static function tearDownAfterClass(): void
+    public function tearDown(): void
     {
         $fs = new Filesystem;
-        $fs->deleteDirectory(static::getTestTemplatesPath());
+        foreach ($this->testDirectories as $dir) {
+            $fs->deleteDirectory($this->makeTestFilePath($dir));
+        }
     }
 
     /**
@@ -52,7 +65,7 @@ class BladeTest extends TestCase
     {
         $this->expectException(FileNotFoundException::class);
 
-        $this->renderCommand(['file'=>"i-dont-exist.error"]);
+        $this->renderCommand(['file' => "i-dont-exist.error"]);
     }
 
     /**
@@ -64,31 +77,65 @@ class BladeTest extends TestCase
 
         $this->expectException(UndefinedVariableException::class);
 
-        $this->renderCommand(['file'=>$this->makeAbsoluteTestFilePath($testFile->filename())]);
+        $path = "default/" . $testFile->filename();
+
+        $this->renderCommand(['file' => $this->makeTestFilePath($path)]);
     }
+
+
+    /**
+     * @test
+     */
+    public function it_can_load_data_from_json_files()
+    {
+        $this->iterateTestFileClasses(function ($testFile) {
+            $path = "default/" . $testFile->filename();
+
+            $json = json_encode($testFile->jsonFileData());
+
+            file_put_contents($jsonFilePath = $this->makeTestFilePath($path . ".json"), $json);
+
+            $this->renderCommand(
+                ['file' => $this->makeTestFilePath($path)],
+                ['--from-json=' . $jsonFilePath]
+            );
+
+            $this->assertFileWasRendered($testFile);
+        });
+    }
+
 
     /**
      * @test
      */
     public function it_can_render_files()
     {
-        static::processTestFiles(function($testFile){
+        $this->iterateTestFileClasses(function ($testFile) {
+            $path = "default/" . $testFile->filename();
+
             $this->renderCommand(
-                ['file'=>$this->makeAbsoluteTestFilePath($filename = $testFile->filename())],
+                ['file' => $this->makeTestFilePath($path)],
                 $testFile->options()
             );
 
-            $parts = explode('.', $filename);
-
-            $extension = $parts[1] ?? '';
-
-            $renderedFilePath = $this->makeAbsoluteTestFilePath($parts[0].".rendered". ($extension ? ".$extension" : ""));
-            // assert we have a rendered file
-            $this->assertTrue(file_exists($renderedFilePath));
-            // and that it's expected content matches what was rendered.
-            $this->assertEquals($testFile->expectedContent(), file_get_contents($renderedFilePath));
+            $this->assertFileWasRendered($testFile);
         });
     }
 
 
+    /**
+     * @test
+     */
+    public function it_can_render_files_in_custom_directory()
+    {
+        $this->iterateTestFileClasses(function ($testFile) {
+            $path = "default/" . $testFile->filename();
+            $this->renderCommand(
+                ['file' => $this->makeTestFilePath($path)],
+                array_merge(['--save-directory=' . $this->makeTestFilePath("custom"), '--force'], $testFile->options())
+            );
+
+            $this->assertFileWasRendered($testFile, "custom");
+        });
+    }
 }

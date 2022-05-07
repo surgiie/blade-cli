@@ -2,9 +2,9 @@
 
 namespace BladeCLI\Tests\Files;
 
-use BladeCLI\Tests\Support\Contracts\TestableFile;
+use BladeCLI\Tests\Support\TestingFile;
 
-class TestNginxFile implements TestableFile
+class TestNginxFile extends TestingFile
 {
     /**
      * The filename.
@@ -45,6 +45,26 @@ class TestNginxFile implements TestableFile
         }
         EOL;
     }
+
+    /**
+     * The data to write to test loading data from json files.
+     *
+     * @return array
+     */
+    public function jsonFileData(): array
+    {
+        return [
+            'server-name' => 'example.com',
+            'main-endpoint' => 'example',
+            'access-log-path' => '/var/log/nginx.access_log',
+            'api-endpoint' => [
+                '/api/v1/foo',
+                '/api/v1/bar',
+                '/api/v1/baz'
+            ]
+        ];
+    }
+
 
     /**
      * The data options for rendering.

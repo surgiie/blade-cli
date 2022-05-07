@@ -1,4 +1,5 @@
 <?php
+
 namespace BladeCLI\Support;
 
 use Illuminate\View\Factory;
