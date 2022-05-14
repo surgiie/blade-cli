@@ -134,8 +134,8 @@ You may skip confirmation of rendering a directory's files with the `--force` fl
 
 #### Custom Directory:
 
-By default, files will get saved to the current directory the file being rendered is in, just you may specify
-a custom directory to save with the same `--save-directory` option specified earlier:
+By default, files will get saved to the current directory the file being rendered is in, you may specify
+a custom directory to save rendered files in with the same `--save-directory` option specified earlier:
 
 
 `php blade render templates/ --some-data=foo --save-directory="/home/bob/templates/"`
