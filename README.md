@@ -73,7 +73,7 @@ There are 2 options for passing variable data to your files being rendered:
 Options or keys in your json file can be defined in any naming convention you prefer, but your actual variable reference should be camel case.
 This is because php doesnt support kebab cased variables which is often the format for command line options. That said, since camel case is usually standard, that is the format we decided to stick with. Your options will automatically get converted to data using camel case. To clarify a bit:
 
-Either one of these option formats can be used `--favorite-food`, `--favoriteFood`, --favorite_food` to reference a `{{ $favoriteFood }}` variable in your file.
+Either one of these option formats can be used `--favorite-food`, `--favoriteFood`, `--favorite_food` to reference a `{{ $favoriteFood }}` variable in your file.
 
 
 ##### Variable Types
