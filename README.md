@@ -5,17 +5,32 @@ Use Laravel's blade engine as a CLI for rendering files.
 
 ### Introduction
 
-This package customizes and extends several classes used by the blade engine to be able to use simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.)
-on files. That said, the more advanced features of the engine are out of scope of what this package was meant for and may not be supported.
+This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use 
+simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.) on files. That said, the more advanced 
+features of the engine are out of scope of what this package was meant for and may not be supported, keep that in mind if you are 
+attempting more advanced usages.
 
 ### Installation
 
-TODO
+Download specific tag version release from releases and make available in $PATH:
+
+```
+# in ~/.bashrc or equivalent
+PATH=/usr/local/bin/blade-cli:$PATH
+```
+
+Install dependencies:
+```
+composer install
+```
+
+Confirm is executable:
+```
+blade 
+```
+
 ### Use
-
-Best way to describe use is through example:
-
-Given this file exists in your current directory (person.yml):
+Lets work through example, given this file exists in your current directory (person.yml):
 
 ```yaml
 name: {{ $name }}
