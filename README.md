@@ -1,5 +1,7 @@
 ### Blade CLI
 
+![tests](https://github.com/surgiie/blade-cli/actions/workflows/tests.yml/badge.svg)
+
 Use Laravel's blade engine as a CLI for rendering files.
 
 
