@@ -31,6 +31,36 @@ Confirm is executable:
 blade 
 ```
 
+Or if you want to use the api directly as a package, you can install with composer:
+
+`composer require surgiie/blade-cli`
+
+and use the class directly
+
+
+```php
+
+use BladeCLI\Blade;
+use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
+
+$blade = new Blade(
+    container: new Container,
+    filesystem: new Filesystem,
+    filePath: '/path/to/file/to/render',
+    options: [
+        'force'=> true, // force overwrite existing rendered file
+        'save-directory'=>'save-to-dir' // optional directory to save rendered file to.
+    ]
+);
+
+// render the file with this data/vars
+$blade->render([
+    'var'=>'example'
+]);
+
+```
+
 ### Use
 Lets work through an example, given this file exists in your current directory (person.yml):
 
