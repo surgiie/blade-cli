@@ -44,7 +44,7 @@ class Blade
      *
      * @var \BladeCLI\Support\FileFactory
      */
-    protected \BladeCLI\Support\FileFactory $fileFactory;
+    protected FileFactory $fileFactory;
 
     /**
      * The file finder.
