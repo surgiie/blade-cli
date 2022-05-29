@@ -7,9 +7,9 @@ Use Laravel's blade engine as a CLI for rendering files.
 
 ### Introduction
 
-This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use 
-simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.) on files. That said, the more advanced 
-features of the engine are out of scope of what this package was meant for and may not be supported, keep that in mind if you are 
+This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use
+simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.) on files. That said, the more advanced
+features of the engine are out of scope of what this package was meant for and may not be supported, keep that in mind if you are
 attempting more advanced usages.
 
 ### Installation
@@ -28,7 +28,7 @@ composer install
 
 Confirm is executable:
 ```
-blade 
+blade
 ```
 
 Or if you want to use the api directly as a package, you can install with composer:
@@ -89,8 +89,8 @@ This will render and save the file to the same directory as `person.rendered.yml
 
 ### Custom Save Directory
 
-All files will get saved to the current directory as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension.
-If you wish to save to a custom directory use the `--save-directory='custom-dir'` option to specify a directory to write the file to:
+All files will get saved to the current directory as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension when you do not provide
+a custom directory to save the rendred file to. This is to avoid overwriting the file you are rendering. If you wish to save to a custom directory use the `--save-directory` option to specify a directory to write the file to:
 
 ```
 php blade render ./person.yml \
@@ -104,7 +104,7 @@ php blade render ./person.yml \
 
 
 The blade class will attempt to automatically ensure the directory exists if it can write to it. In the above example the the result of `./person.yml` would get written
-to `./rendered-files/person.rendered.yml`.
+to `./rendered-files/person.yml`.
 
 ### Variable Data
 

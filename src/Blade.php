@@ -258,7 +258,15 @@ class Blade
 
         $filename = $this->metadata["filename_no_extension"];
 
-        return str_replace('.rendered', "", $filename) . ".rendered" . ($extension ? ".$extension" : "");
+        $filename = str_replace('.rendered', "", $filename);
+
+        $extension = ($extension ? ".$extension" : "");
+
+        if($this->getOption('save-directory')){
+            return $filename.$extension;
+        }
+
+        return $filename . ".rendered" . $extension;
     }
 
     /**

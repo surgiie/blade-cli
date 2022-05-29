@@ -59,9 +59,12 @@ abstract class TestCase extends BaseTestCase
         $parts = explode('.', $file->filename());
 
         $extension = $parts[1] ?? '';
+        $extension = ($extension ? ".$extension" : "");
+
+        $rendered = $directory == "default" ? ".rendered": "";
 
         $renderedFilePath = $this->makeTestFilePath(
-            $directory . DIRECTORY_SEPARATOR . $parts[0] . ".rendered" . ($extension ? ".$extension" : ""),
+            $directory . DIRECTORY_SEPARATOR . $parts[0] . $rendered . $extension,
         );
 
         // assert we have a rendered file
