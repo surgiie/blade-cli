@@ -2,8 +2,6 @@
 
 namespace BladeCLI\Commands;
 
-use SplFileInfo;
-use BladeCLI\Blade;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
@@ -28,7 +26,6 @@ class RenderCommand extends Command
                                    {--save-directory= : The custom directory to save the .rendered files to. }
                                    {--from-json=* : A file to load variable data from. }
                                    {--force : Force render or overwrite files.}";
-
 
 
     /**
@@ -199,22 +196,19 @@ class RenderCommand extends Command
     }
 
     /**
-     * Updates/computes the save directory for a file being
-     * rendered during a directory render so that
-     * it gets rendered in a mirrored location to its
-     * current directory/location.
+     * Compute the save directory for a file being rendered during a "render directory files" call.
      *
      * @param array $options
      * @param string $filePath
      * @param array $options
      * @return array
      */
-    protected function computeSaveDirectoryForDirectoryRender(string $directory, string $filePath, array $options)
+    protected function computeSaveDirectory(string $currentDir, string $filePath, array $options)
     {
         $saveDirectory = $this->removeTrailingSlash($options['save-directory'] ?? "");
 
         if ($saveDirectory) {
-            $relativePath = $this->removeLeadingSlash(Str::after($filePath, $directory));
+            $relativePath = $this->removeLeadingSlash(Str::after($filePath, $currentDir));
 
             $options['save-directory'] =  dirname($this->normalizePath(
                 $saveDirectory . DIRECTORY_SEPARATOR . $relativePath
@@ -239,7 +233,7 @@ class RenderCommand extends Command
 
         foreach ($files as $file) {
             $pathName = $file->getPathName();
-            $renderOptions = $this->computeSaveDirectoryForDirectoryRender($directory, $pathName, $options);
+            $renderOptions = $this->computeSaveDirectory($directory, $pathName, $options);
             $this->renderFile($pathName, $data, $renderOptions);
         }
 

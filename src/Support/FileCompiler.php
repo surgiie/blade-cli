@@ -61,6 +61,6 @@ class FileCompiler extends BladeCompiler
      */
     public function isExpired($path)
     {
-        return false;
+        return true;
     }
 }

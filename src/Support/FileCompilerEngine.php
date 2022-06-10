@@ -8,6 +8,7 @@ use Illuminate\View\Engines\CompilerEngine;
 
 class FileCompilerEngine extends CompilerEngine
 {
+
     /**
      * Overwritten to not ltrim outbutput buffer.
      *
@@ -47,10 +48,6 @@ class FileCompilerEngine extends CompilerEngine
      */
     protected function handleViewException(Throwable $e, $obLevel)
     {
-        $class = get_class($e);
-
-        $e = new $class($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
-
         PhpEngine::handleViewException($e, $obLevel);
     }
 
