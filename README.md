@@ -61,6 +61,14 @@ $blade->render([
 
 ```
 
+### CLI Completion
+
+You may optionally source the provided completion script for bash completion:
+
+```bash
+source /usr/local/bin/blade-cli/completion
+```
+
 ### Use
 Lets work through an example, given this file exists in your current directory (person.yml):
 
