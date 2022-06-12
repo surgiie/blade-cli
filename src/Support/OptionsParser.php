@@ -2,22 +2,22 @@
 
 namespace BladeCLI\Support;
 
+use BladeCLI\Support\Exceptions\DuplicateDataException;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
-use BladeCLI\Support\Exceptions\DuplicateDataException;
 
 class OptionsParser
 {
     /**
      * Parse options for registration.
      */
-    const REGISTRATION_MODE = 1;
+    public const REGISTRATION_MODE = 1;
 
     /**
      * Parse options with values.
      */
-    const VALUE_MODE = 2;
+    public const VALUE_MODE = 2;
     /**
      * The options to parse.
      *
@@ -62,7 +62,6 @@ class OptionsParser
         return $match;
     }
 
-
     /**
      * Parse the set options.
      *
@@ -73,18 +72,16 @@ class OptionsParser
      */
     public function parse(int $mode = 1)
     {
-
-        if (!in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])) {
+        if (! in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])) {
             throw new InvalidArgumentException("Invalid parsing mode given");
         }
 
         $options = [];
 
         foreach ($this->options as $token) {
-
             $match = $this->parseOption($token);
 
-            if (!$match) {
+            if (! $match) {
                 throw new InvalidArgumentException("Encountered invalid '$token' as it is not --option or --option=value format.");
             }
 
@@ -95,13 +92,13 @@ class OptionsParser
 
             if ($value && $optionExists && $mode == static::REGISTRATION_MODE) {
                 $options[$name] = InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY;
-            } else if ($value && $optionExists && $mode == static::VALUE_MODE) {
+            } elseif ($value && $optionExists && $mode == static::VALUE_MODE) {
                 $options[$name] = Arr::wrap($options[$name]);
                 $options[$name][] = $value;
-            } else if ($value) {
+            } elseif ($value) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED : $value;
                 $options[$name] = $value;
-            } else if (!$optionExists) {
+            } elseif (! $optionExists) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE : true;
                 $options[$name] = $value;
             } else {

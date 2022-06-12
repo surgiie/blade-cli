@@ -4,7 +4,6 @@ namespace BladeCLI\Support\Concerns;
 
 trait NormalizesPaths
 {
-
     /**
      * Normalize a path from linux to windows or vice versa.
      *
@@ -19,6 +18,7 @@ trait NormalizesPaths
             return str_replace("\\", "/", $path);
         }
     }
+
     /**
      * Remove a trailing slash from end of path.
      *
@@ -29,6 +29,7 @@ trait NormalizesPaths
     {
         return rtrim($path, "\\/");
     }
+
     /**
      * Remove a leading slash from start of path.
      *

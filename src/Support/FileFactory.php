@@ -3,8 +3,6 @@
 namespace BladeCLI\Support;
 
 use Illuminate\View\Factory;
-use InvalidArgumentException;
-use BladeCLI\Support\File;
 
 class FileFactory extends Factory
 {
@@ -29,6 +27,7 @@ class FileFactory extends Factory
     {
         return pathinfo($path)['extension'] ?? '';
     }
+
     /**
      * Get the appropriate view engine for the given path.
      *

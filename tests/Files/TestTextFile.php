@@ -58,11 +58,10 @@ class TestTextFile extends TestingFile
             'names' => [
                 'Uncle Bob',
                 'Uncle Billy',
-                'Boe'
-            ]
+                'Boe',
+            ],
         ];
     }
-
 
     /**
      * The expected rendered content of the file.

@@ -32,6 +32,7 @@ class OptionsParserTest extends TestCase
             "force" => InputOption::VALUE_NONE,
         ], $parsed);
     }
+
     /**
      * @test
      */

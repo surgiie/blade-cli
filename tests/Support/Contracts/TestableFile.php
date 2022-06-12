@@ -10,6 +10,7 @@ interface TestableFile
      * @return string
      */
     public function filename(): string;
+
     /**
      * The content of the file.
      *

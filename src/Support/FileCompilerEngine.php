@@ -2,13 +2,12 @@
 
 namespace BladeCLI\Support;
 
-use Throwable;
-use Illuminate\View\Engines\PhpEngine;
 use Illuminate\View\Engines\CompilerEngine;
+use Illuminate\View\Engines\PhpEngine;
+use Throwable;
 
 class FileCompilerEngine extends CompilerEngine
 {
-
     /**
      * Overwritten to not ltrim outbutput buffer.
      *
@@ -34,6 +33,7 @@ class FileCompilerEngine extends CompilerEngine
         }
 
         $var = rtrim(ob_get_clean());
+
         return $var;
     }
 
@@ -60,6 +60,7 @@ class FileCompilerEngine extends CompilerEngine
     protected function getMessage(Throwable $e)
     {
         $msg = $e->getMessage();
+
         return $msg . " (File: " . realpath(end($this->lastCompiled)) . ")";
     }
 }

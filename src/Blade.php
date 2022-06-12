@@ -2,19 +2,19 @@
 
 namespace BladeCLI;
 
-use ErrorException;
-use InvalidArgumentException;
-use BladeCLI\Support\FileFinder;
-use BladeCLI\Support\FileFactory;
-use Illuminate\Events\Dispatcher;
-use BladeCLI\Support\FileCompiler;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
-use BladeCLI\Support\FileCompilerEngine;
-use Illuminate\View\Engines\EngineResolver;
 use BladeCLI\Support\Concerns\NormalizesPaths;
 use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
 use BladeCLI\Support\Exceptions\UndefinedVariableException;
+use BladeCLI\Support\FileCompiler;
+use BladeCLI\Support\FileCompilerEngine;
+use BladeCLI\Support\FileFactory;
+use BladeCLI\Support\FileFinder;
+use ErrorException;
+use Illuminate\Container\Container;
+use Illuminate\Events\Dispatcher;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\View\Engines\EngineResolver;
+use InvalidArgumentException;
 
 class Blade
 {
@@ -111,7 +111,6 @@ class Blade
         return __DIR__ . "/../.compiled";
     }
 
-
     /**
      * Set the render file path.
      *
@@ -120,7 +119,7 @@ class Blade
      */
     public function setFilePath(string $filePath)
     {
-        if (!is_file($filePath)) {
+        if (! is_file($filePath)) {
             throw new InvalidArgumentException(
                 "File $filePath is not a file."
             );
@@ -135,6 +134,7 @@ class Blade
 
         return $this;
     }
+
     /**
      * Determine some useful metadata about the file to utilize.
      *
@@ -180,7 +180,7 @@ class Blade
     /**
      * Check if the current file we're process should render.
      *
-     * @return boolean
+     * @return bool
      */
     protected function shouldRender()
     {
@@ -220,7 +220,7 @@ class Blade
      */
     public function render(array $data = [])
     {
-        if (!$this->shouldRender()) {
+        if (! $this->shouldRender()) {
             return false;
         }
 
@@ -246,7 +246,6 @@ class Blade
         return $template;
     }
 
-
     /**
      * Get the file name for the rendered file.
      *
@@ -262,7 +261,7 @@ class Blade
 
         $extension = ($extension ? ".$extension" : "");
 
-        if($this->getOption('save-directory')){
+        if ($this->getOption('save-directory')) {
             return $filename.$extension;
         }
 
@@ -289,7 +288,7 @@ class Blade
     public function getSaveLocation()
     {
         $saveTo = $this->removeTrailingSlash($this->getSaveDirectory() ?? "");
-        if (!$saveTo) {
+        if (! $saveTo) {
             $path = $this->getDefaultRelativeSaveFileLocation();
         } else {
             $path = $saveTo . DIRECTORY_SEPARATOR . $this->getFileRenderedName();
@@ -343,7 +342,7 @@ class Blade
 
         $success = $this->filesystem->put($saveTo, $contents);
 
-        if (!$success) {
+        if (! $success) {
             throw new ErrorException("Could not write/save file to: $saveTo");
         }
 

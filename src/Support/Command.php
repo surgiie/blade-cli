@@ -1,11 +1,12 @@
 <?php
-namespace BladeCLI\Support;
 
+namespace BladeCLI\Support;
 
 use BladeCLI\Blade;
 use Illuminate\Console\Command as BaseCommand;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+
 class Command extends BaseCommand
 {
     /**
@@ -51,7 +52,7 @@ class Command extends BaseCommand
      */
     protected function blade(string $filePath, array $options = []): Blade
     {
-        if(!is_null($this->bladeInstance)){
+        if (! is_null($this->bladeInstance)) {
             return $this->bladeInstance->setFilePath($filePath)->setOptions($options);
         }
 

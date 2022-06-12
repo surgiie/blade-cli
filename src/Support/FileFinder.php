@@ -2,8 +2,8 @@
 
 namespace BladeCLI\Support;
 
-use InvalidArgumentException;
 use Illuminate\View\FileViewFinder;
+use InvalidArgumentException;
 
 class FileFinder extends FileViewFinder
 {
@@ -26,6 +26,7 @@ class FileFinder extends FileViewFinder
 
         return $this;
     }
+
     /**
      * Overwritten to disable dot notation.
      *
