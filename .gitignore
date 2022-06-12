@@ -4,6 +4,7 @@ phpunit.xml
 .env
 .phpunit.result.cache
 .php-cs-fixer.cache
+package-lock.json
 node_modules
 tests/default/
 tests/custom/

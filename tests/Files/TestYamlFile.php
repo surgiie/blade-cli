@@ -62,16 +62,15 @@ class TestYamlFile extends TestingFile
     public function jsonFileData(): array
     {
         return [
-            'name'=> 'Bob',
-            'favorite-food'=>'Pizza',
-            'include-address'=> true,
-            'dogs'=>[
+            'name' => 'Bob',
+            'favorite-food' => 'Pizza',
+            'include-address' => true,
+            'dogs' => [
                 'Rex',
-                'Charlie'
-            ]
+                'Charlie',
+            ],
         ];
     }
-
 
     /**
      * The expected rendered content of the file.

@@ -11,8 +11,9 @@ class TestIncludeFile extends TestingFile
      */
     public function __construct()
     {
-        $this->mainFile = new TestYamlFile;
+        $this->mainFile = new TestYamlFile();
     }
+
     /**
      * The filename.
      *
@@ -56,7 +57,6 @@ class TestIncludeFile extends TestingFile
     {
         return $this->mainFile->jsonFileData();
     }
-
 
     /**
      * The expected rendered content of the file.

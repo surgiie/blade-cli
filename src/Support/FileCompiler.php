@@ -1,4 +1,5 @@
 <?php
+
 namespace BladeCLI\Support;
 
 use Illuminate\View\Compilers\BladeCompiler;
@@ -46,13 +47,14 @@ class FileCompiler extends BladeCompiler
             'for',
             'endfor',
             'while',
-            'endwhile'
+            'endwhile',
         ]);
 
         $value = preg_replace("/\\s+\@($keywords)/", "\n@$1", $value);
 
         return parent::compileStatements($value);
     }
+
     /**
      * Determine if the given view is expired.
      *

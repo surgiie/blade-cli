@@ -2,8 +2,8 @@
 
 namespace BladeCLI\Support\Concerns;
 
-use JsonException;
 use BladeCLI\Support\Exceptions\FileNotFoundException;
+use JsonException;
 
 trait LoadsJsonFiles
 {
@@ -30,6 +30,7 @@ trait LoadsJsonFiles
                 return " - Unknown error";
         }
     }
+
     /**
      * Loads a json file and returns parsed data as an array.
      *
@@ -38,7 +39,7 @@ trait LoadsJsonFiles
      */
     public function loadJsonFile(string $path)
     {
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             throw new FileNotFoundException("The $path json file does not exist.");
         }
 

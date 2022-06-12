@@ -2,20 +2,21 @@
 
 namespace BladeCLI\Commands;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use BladeCLI\Support\Command;
-use BladeCLI\Support\OptionsParser;
-use Symfony\Component\Finder\Finder;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
 use BladeCLI\Support\Concerns\NormalizesPaths;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
+use BladeCLI\Support\OptionsParser;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
+use Symfony\Component\Finder\Finder;
 
 class RenderCommand extends Command
 {
-    use LoadsJsonFiles, NormalizesPaths;
+    use LoadsJsonFiles;
+    use NormalizesPaths;
 
     /**
      * The command's signature.
@@ -115,6 +116,7 @@ class RenderCommand extends Command
 
         $this->commandOptions = $this->options();
     }
+
     /**
      * Initialize command.
      *
@@ -124,7 +126,7 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if (!is_null(static::$staticOptions)) {
+        if (! is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
         } else {
             global $argv;
@@ -146,7 +148,7 @@ class RenderCommand extends Command
 
         $file = $this->argument("file");
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             throw new FileNotFoundException("The file or directory '$file' does not exist.");
         }
 
@@ -156,7 +158,7 @@ class RenderCommand extends Command
             $this->renderFile($file, $data, $options);
         }
         // process an entire directory
-        else if (is_dir($file) && $this->option('force') || $this->confirm("Are you sure you want to render files in the $file directory?")) {
+        elseif (is_dir($file) && $this->option('force') || $this->confirm("Are you sure you want to render files in the $file directory?")) {
             $this->renderDirectoryFiles($file, $data, $options);
         }
 
@@ -187,7 +189,7 @@ class RenderCommand extends Command
         $result = $blade->render(data: $data);
 
         if ($result !== false) {
-            $file =  $blade->getSaveLocation();
+            $file = $blade->getSaveLocation();
 
             $this->info("Rendered $file");
         }
@@ -210,13 +212,14 @@ class RenderCommand extends Command
         if ($saveDirectory) {
             $relativePath = $this->removeLeadingSlash(Str::after($filePath, $currentDir));
 
-            $options['save-directory'] =  dirname($this->normalizePath(
+            $options['save-directory'] = dirname($this->normalizePath(
                 $saveDirectory . DIRECTORY_SEPARATOR . $relativePath
             ));
         }
 
         return $options;
     }
+
     /**
      * Render a directory of files.
      *
@@ -262,7 +265,7 @@ class RenderCommand extends Command
      * Check if the given option name is a reserved one.
      *
      * @param string $name
-     * @return boolean
+     * @return bool
      */
     protected function isReservedOption($name)
     {

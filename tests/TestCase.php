@@ -2,15 +2,14 @@
 
 namespace BladeCLI\Tests;
 
-use Illuminate\Support\Str;
 use BladeCLI\Commands\RenderCommand;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Console\Application;
 use BladeCLI\Support\Concerns\NormalizesPaths;
-use BladeCLI\Support\OptionsParser;
-use PHPUnit\Framework\TestCase as BaseTestCase;
 use BladeCLI\Tests\Support\Contracts\TestableFile;
+use Illuminate\Support\Str;
+use PHPUnit\Framework\TestCase as BaseTestCase;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Finder\Finder;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -36,14 +35,14 @@ abstract class TestCase extends BaseTestCase
      */
     protected function iterateTestFileClasses(callable $callback): void
     {
-        $finder = new Finder;
+        $finder = new Finder();
 
         $files = $finder->in(realpath(__DIR__ . "/Files"))->files();
 
         foreach ($files as $file) {
             $class = str_replace(['.php', '/'], ['', '\\'], Str::after($file->getPathName(), "tests" . DIRECTORY_SEPARATOR));
             $class = "BladeCLI\Tests\\$class";
-            call_user_func($callback, new $class);
+            call_user_func($callback, new $class());
         }
     }
 
@@ -61,7 +60,7 @@ abstract class TestCase extends BaseTestCase
         $extension = $parts[1] ?? '';
         $extension = ($extension ? ".$extension" : "");
 
-        $rendered = $directory == "default" ? ".rendered": "";
+        $rendered = $directory == "default" ? ".rendered" : "";
 
         $renderedFilePath = $this->makeTestFilePath(
             $directory . DIRECTORY_SEPARATOR . $parts[0] . $rendered . $extension,

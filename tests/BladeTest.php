@@ -2,16 +2,15 @@
 
 namespace BladeCLI;
 
+use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
+use BladeCLI\Support\Exceptions\UndefinedVariableException;
+use BladeCLI\Tests\Files\TestJsonFile;
 use BladeCLI\Tests\TestCase;
 use Illuminate\Filesystem\Filesystem;
-use BladeCLI\Tests\Files\TestJsonFile;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
-use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class BladeTest extends TestCase
 {
-
     /**
      * The relative (to tests dir) directories being tested against.
      *
@@ -19,15 +18,16 @@ class BladeTest extends TestCase
      */
     protected array $testDirectories = [
         'default',
-        'custom'
+        'custom',
     ];
+
     /**
      * Tests setup
      */
     public function setUp(): void
     {
         // write test files to test rendering
-        $fs = new Filesystem;
+        $fs = new Filesystem();
 
         foreach ($this->testDirectories as $dir) {
             @mkdir($templateDir = $this->makeTestFilePath($dir));
@@ -35,7 +35,7 @@ class BladeTest extends TestCase
             $fs->deleteDirectory($templateDir, preserve: true);
 
             $this->iterateTestFileClasses(function ($testFile) use ($dir) {
-                $templateDir =  $this->makeTestFilePath($dir);
+                $templateDir = $this->makeTestFilePath($dir);
 
                 $path = $templateDir . DIRECTORY_SEPARATOR . $testFile->filename();
                 if (file_exists($path)) {
@@ -52,7 +52,7 @@ class BladeTest extends TestCase
      */
     public function tearDown(): void
     {
-        $fs = new Filesystem;
+        $fs = new Filesystem();
         foreach ($this->testDirectories as $dir) {
             $fs->deleteDirectory($this->makeTestFilePath($dir));
         }
@@ -73,7 +73,7 @@ class BladeTest extends TestCase
      */
     public function it_throws_exception_on_undefined_variables()
     {
-        $testFile = new TestJsonFile;
+        $testFile = new TestJsonFile();
 
         $this->expectException(UndefinedVariableException::class);
 
@@ -81,7 +81,6 @@ class BladeTest extends TestCase
 
         $this->renderCommand(['file' => $this->makeTestFilePath($path)]);
     }
-
 
     /**
      * @test
@@ -104,7 +103,6 @@ class BladeTest extends TestCase
         });
     }
 
-
     /**
      * @test
      */
@@ -121,7 +119,6 @@ class BladeTest extends TestCase
             $this->assertFileWasRendered($testFile);
         });
     }
-
 
     /**
      * @test

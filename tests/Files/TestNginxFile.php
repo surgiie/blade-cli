@@ -60,11 +60,10 @@ class TestNginxFile extends TestingFile
             'api-endpoint' => [
                 '/api/v1/foo',
                 '/api/v1/bar',
-                '/api/v1/baz'
-            ]
+                '/api/v1/baz',
+            ],
         ];
     }
-
 
     /**
      * The data options for rendering.
