@@ -9,8 +9,7 @@ Use Laravel's blade engine as a CLI for rendering files.
 
 This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use
 simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.) on files. That said, the more advanced
-features of the engine are out of scope of what this package was meant for and may not be supported, keep that in mind if you are
-attempting more advanced usages.
+features of the engine are out of scope of what this package was meant for and may not be supported.
 
 ### Installation
 
@@ -50,7 +49,7 @@ $blade = new Blade(
     filePath: '/path/to/file/to/render',
     options: [
         'force'=> true, // force overwrite existing rendered file
-        'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is current directory.
+        'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is the directory the file is in.
     ]
 );
 

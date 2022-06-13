@@ -191,7 +191,7 @@ class RenderCommand extends Command
         if ($result !== false) {
             $file = $blade->getSaveLocation();
 
-            $this->info("Rendered $file");
+            $this->info("Rendered $file.");
         }
 
         return $this;

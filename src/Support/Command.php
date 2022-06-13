@@ -3,18 +3,20 @@
 namespace BladeCLI\Support;
 
 use BladeCLI\Blade;
-use Illuminate\Console\Command as BaseCommand;
+use BladeCLI\BladeX;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Console\Command as BaseCommand;
 
 class Command extends BaseCommand
 {
+  
     /**
      * The container instance.
      *
-     * @var Container
+     * @var \Illuminate\Container\Container
      */
-    protected Container $container;
+    protected $laravel;
     /**
      * The filesystem instance.
      *
@@ -25,9 +27,9 @@ class Command extends BaseCommand
     /**
      * A cached blade instance to utilize.
      *
-     * @var Blade|null
+     * @var BladeX|null
      */
-    protected ?Blade $bladeInstance = null;
+    protected ?BladeX $bladeInstance = null;
 
     /**
      * Create a new console command instance.
@@ -50,13 +52,13 @@ class Command extends BaseCommand
      * @param array $options
      * @return \BladeCLI\Blade
      */
-    protected function blade(string $filePath, array $options = []): Blade
+    protected function blade(string $filePath, array $options = []): BladeX
     {
         if (! is_null($this->bladeInstance)) {
-            return $this->bladeInstance->setFilePath($filePath)->setOptions($options);
+            return $this->bladeInstance->setOptions($options)->setFilePath($filePath);
         }
 
-        return $this->bladeInstance = new Blade(
+        return $this->bladeInstance = new BladeX(
             container: $this->laravel,
             filesystem: $this->filesystem,
             filePath: $filePath,
