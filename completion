@@ -22,7 +22,7 @@ _sf_blade() {
     local cur prev words cword
     _get_comp_words_by_ref -n := cur prev words cword
 
-    local completecmd=("$sf_cmd" "_complete" "-sbash" "-c$cword" "-S0.0.5")
+    local completecmd=("$sf_cmd" "_complete" "-sbash" "-c$cword" "-S0.1.0")
     for w in ${words[@]}; do
         w=$(printf -- '%b' "$w")
         # remove quotes from typed values

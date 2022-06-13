@@ -13,7 +13,7 @@ class TestJsonFile extends TestingFile
      */
     public function filename(): string
     {
-        return 'test_json.yaml';
+        return 'test_json.json';
     }
 
     /**

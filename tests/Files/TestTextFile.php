@@ -13,7 +13,7 @@ class TestTextFile extends TestingFile
      */
     public function filename(): string
     {
-        return 'test_text.yaml';
+        return 'test_text.txt';
     }
 
     /**
@@ -24,12 +24,11 @@ class TestTextFile extends TestingFile
     public function content(): string
     {
         return <<<EOL
-        Uncles:
-            @foreach (\$names as \$name)
-                @if (\str_starts_with(\$name, "Uncle"))
-            -   {{\$name}}
-                @endif
-            @endforeach
+        @foreach (\$names as \$name)
+            @if (\str_starts_with(\$name, "Uncle"))
+        -   {{\$name}}
+            @endif
+        @endforeach
         EOL;
     }
 
@@ -71,9 +70,8 @@ class TestTextFile extends TestingFile
     public function expectedContent(): string
     {
         return <<<EOL
-        Uncles:
-            -   Uncle Bob
-            -   Uncle Billy
+        -   Uncle Bob
+        -   Uncle Billy
         EOL;
     }
 }

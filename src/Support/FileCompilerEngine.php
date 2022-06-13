@@ -9,9 +9,9 @@ use Throwable;
 class FileCompilerEngine extends CompilerEngine
 {
     /**
-     * Overwritten to not ltrim outbutput buffer.
+     * Overwritten to not ltrim but to rtrim outbutput buffer.
      *
-     * This assists with @includes preserving indentation as is.
+     * This assists with preserving spacing/indentation from compiled file.
      *
      * @param  string  $path
      * @param  array  $data
@@ -32,9 +32,7 @@ class FileCompilerEngine extends CompilerEngine
             $this->handleViewException($e, $obLevel);
         }
 
-        $var = rtrim(ob_get_clean());
-
-        return $var;
+        return rtrim(ob_get_clean());
     }
 
     /**
@@ -48,7 +46,9 @@ class FileCompilerEngine extends CompilerEngine
      */
     protected function handleViewException(Throwable $e, $obLevel)
     {
-        PhpEngine::handleViewException($e, $obLevel);
+        $class = get_class($e);
+
+        PhpEngine::handleViewException(new $class($this->getMessage($e)), $obLevel);
     }
 
     /**

@@ -15,6 +15,16 @@ class TestIncludeFile extends TestingFile
     }
 
     /**
+     * Get the main file being included.
+     *
+     * @return \BladeCLI\Tests\Support\Contracts\TestableFile
+     */
+    public function getIncludeFile()
+    {
+        return $this->mainFile;
+    }
+
+    /**
      * The filename.
      *
      * @return string

@@ -6,29 +6,23 @@ use Illuminate\View\Compilers\BladeCompiler;
 
 class FileCompiler extends BladeCompiler
 {
+
     /**
      * Array of opening and closing tags for raw echos.
-     *
+     * 
      * @var string[]
      */
     protected $rawTags = ['{{', '}}'];
 
     /**
      * Compile Blade statements that start with "@" to be shifted
-     * to the start of the line should they be nested/have leading
-     * whitespace which is problematic for files that have semantical/spacing
+     * to the start of the line should they be have leading whitespace 
+     * which is problematic for files that have semantical/spacing
      * requirements, such as yaml files.
      *
      * PHP tags may leave behind unwanted whitespace:
      *
      * @see https://www.php.net/manual/en/language.basic-syntax.phptags.php
-     *
-     * "If a file contains only PHP code, it is preferable to omit the PHP closing tag at the end of the file.
-     * This prevents accidental whitespace or new lines being added after the PHP closing tag, which may cause
-     * unwanted effects because PHP will start output buffering when there is no intention from the programmer
-     * to send any output at that point in the script."
-     *
-     *
      *
      * @param  string  $value
      * @return string
@@ -49,7 +43,9 @@ class FileCompiler extends BladeCompiler
             'while',
             'endwhile',
         ]);
-
+        
+        // move @ directives that are nested to start of line 
+        // this will preserve nesting once file is rendered.
         $value = preg_replace("/\\s+\@($keywords)/", "\n@$1", $value);
 
         return parent::compileStatements($value);
