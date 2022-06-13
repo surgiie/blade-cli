@@ -40,7 +40,7 @@ class Blade
     protected Filesystem $filesystem;
 
     /**
-     * The file being rendred.
+     * The file being rendered.
      *
      * @var \SplFileInfo
      */
@@ -390,7 +390,6 @@ class Blade
         if ($saveDir = $this->getOption('save-directory')) {
             $saveDir = rtrim($saveDir, "\\/");
         }
-        // todo use test directory.
 
         if (self::isFaked() && $saveDir) {
             return self::testPath($saveDir);
