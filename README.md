@@ -96,7 +96,7 @@ This will render and save the file to the same directory as `person.rendered.yml
 
 ### Custom Save Directory
 
-All files will get saved to the current directory as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension when you do not provide
+All files will get saved to the same directory as the file being rendered as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension when you do not provide
 a custom directory to save the rendred file to. This is to avoid overwriting the file you are rendering. If you wish to save to a custom directory use the `--save-directory` option to specify a directory to write the file to:
 
 ```
@@ -188,7 +188,7 @@ You may skip confirmation of rendering a directory's files with the `--force` fl
 
 #### Custom Directory for directory files:
 
-By default, files will get saved to the current directory the file being rendered is in, as seen earlier, you may specify
+By default, files will get saved to the same directory the file being rendered is in, as seen earlier, you may specify
 a custom directory to save rendered files in with the same `--save-directory` option:
 
 
