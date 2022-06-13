@@ -3,13 +3,12 @@
 namespace BladeCLI\Support;
 
 use BladeCLI\Blade;
+use Illuminate\Console\Command as BaseCommand;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Console\Command as BaseCommand;
 
 class Command extends BaseCommand
 {
-  
     /**
      * The container instance.
      *

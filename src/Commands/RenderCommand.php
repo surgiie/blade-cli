@@ -2,18 +2,18 @@
 
 namespace BladeCLI\Commands;
 
-use Throwable;
 use BladeCLI\Blade;
+use BladeCLI\Support\Command;
+use BladeCLI\Support\Concerns\LoadsJsonFiles;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
+use BladeCLI\Support\OptionsParser;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use BladeCLI\Support\Command;
-use BladeCLI\Support\OptionsParser;
-use Symfony\Component\Finder\Finder;
-use BladeCLI\Support\Concerns\LoadsJsonFiles;
+use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
-use InvalidArgumentException;
+use Symfony\Component\Finder\Finder;
+use Throwable;
 
 class RenderCommand extends Command
 {
@@ -128,7 +128,7 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if (!is_null(static::$staticOptions)) {
+        if (! is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
         } else {
             global $argv;
@@ -141,7 +141,7 @@ class RenderCommand extends Command
      * Normalize key naming convention for the given data.
      *
      * @param array $data
-     * @return array 
+     * @return array
      */
     protected function normalizeRenderData(array $data)
     {
@@ -200,6 +200,7 @@ class RenderCommand extends Command
             return str_replace("\\", "/", $path);
         }
     }
+
     /**
      * Execute the command.
      *
@@ -211,7 +212,7 @@ class RenderCommand extends Command
 
         $file = $this->normalizePath($this->argument("file"));
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             throw new FileNotFoundException("The file or directory '$file' does not exist.");
         }
 
@@ -220,6 +221,7 @@ class RenderCommand extends Command
         // process single file.
         if (is_file($file)) {
             $this->renderFile($file, $data, $options);
+
             return 0;
         }
 
@@ -227,8 +229,10 @@ class RenderCommand extends Command
         // // process an entire directory
         if (is_dir($file) && ($this->option('force') || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
             $this->renderDirectoryFiles($file, $data, $options);
+
             return 0;
         }
+
         return 0;
     }
 
@@ -261,8 +265,9 @@ class RenderCommand extends Command
         foreach ($files as $file) {
             $pathName = $file->getPathName();
 
-            if (!$saveDirectory) {
+            if (! $saveDirectory) {
                 $this->renderFile($pathName, $data, $options);
+
                 continue;
             }
             // compute a save directory that mirrors the current location directory structure
@@ -275,7 +280,6 @@ class RenderCommand extends Command
             );
 
             $this->renderFile($pathName, $data, $options);
-
         }
 
         return $this;
@@ -305,7 +309,6 @@ class RenderCommand extends Command
         try {
             $result = $blade->render(data: $data);
         } catch (Throwable $e) {
-
             if (Blade::isFaked()) {
                 throw $e;
             }

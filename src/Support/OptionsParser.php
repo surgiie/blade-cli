@@ -18,7 +18,7 @@ class OptionsParser
      * Parsing mode for parsing option's values.
      */
     public const VALUE_MODE = 2;
-    
+
     /**
      * The options to parse.
      *

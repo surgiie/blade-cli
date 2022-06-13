@@ -6,17 +6,16 @@ use Illuminate\View\Compilers\BladeCompiler;
 
 class FileCompiler extends BladeCompiler
 {
-
     /**
      * Array of opening and closing tags for raw echos.
-     * 
+     *
      * @var string[]
      */
     protected $rawTags = ['{{', '}}'];
 
     /**
      * Compile Blade statements that start with "@" to be shifted
-     * to the start of the line should they be have leading whitespace 
+     * to the start of the line should they be have leading whitespace
      * which is problematic for files that have semantical/spacing
      * requirements, such as yaml files.
      *
@@ -43,8 +42,8 @@ class FileCompiler extends BladeCompiler
             'while',
             'endwhile',
         ]);
-        
-        // move @ directives that are nested to start of line 
+
+        // move @ directives that are nested to start of line
         // this will preserve nesting once file is rendered.
         $value = preg_replace("/\\s+\@($keywords)/", "\n@$1", $value);
 

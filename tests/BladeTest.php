@@ -2,20 +2,18 @@
 
 namespace BladeCLI;
 
-use BladeCLI\Blade;
-use BladeCLI\Tests\TestCase;
+use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
+use BladeCLI\Support\Exceptions\UndefinedVariableException;
+use BladeCLI\Tests\Files\TestIncludeFile;
 use BladeCLI\Tests\Files\TestJsonFile;
+use BladeCLI\Tests\Files\TestNginxFile;
 use BladeCLI\Tests\Files\TestTextFile;
 use BladeCLI\Tests\Files\TestYamlFile;
-use BladeCLI\Tests\Files\TestNginxFile;
-use BladeCLI\Tests\Files\TestIncludeFile;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
-use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use BladeCLI\Support\Exceptions\UndefinedVariableException;
+use BladeCLI\Tests\TestCase;
 
 class BladeTest extends TestCase
 {
-   
     /**
      * Tests cleanup.
      */
@@ -26,7 +24,7 @@ class BladeTest extends TestCase
 
     /**
      * Fake blade function call.
-     * 
+     *
      * @param string $directory
      * @return void
      */
@@ -42,8 +40,8 @@ class BladeTest extends TestCase
     {
         $this->fake();
 
-        $testFile = new TestNginxFile;
-        
+        $testFile = new TestNginxFile();
+
         $this->expectException(FileNotFoundException::class);
 
         $this->renderCommand(['file' => Blade::testPath($testFile->filename())]);
@@ -56,10 +54,10 @@ class BladeTest extends TestCase
     {
         $this->fake();
 
-        $testFile = new TestYamlFile;
-        
+        $testFile = new TestYamlFile();
+
         Blade::putTestFile('example.yaml',  $testFile->content());
-        
+
         $this->renderCommand(
             ['file' => Blade::testPath('example.yaml')],
             $testFile->options()
@@ -68,19 +66,19 @@ class BladeTest extends TestCase
         Blade::assertRendered("example.rendered.yaml", $testFile->expectedContent());
     }
 
-     /**
-     * @test
-     */
+    /**
+    * @test
+    */
     public function it_throws_exception_if_rendered_file_already_exists()
     {
         $this->fake();
 
-        $testFile = new TestYamlFile;
-        
+        $testFile = new TestYamlFile();
+
         Blade::putTestFile('example.yaml',  $testFile->content());
         Blade::putTestFile('example.rendered.yaml',  $testFile->expectedContent());
         $this->expectException(FileAlreadyExistsException::class);
-        
+
         $this->renderCommand(
             ['file' => Blade::testPath('example.yaml')],
             $testFile->options()
@@ -94,10 +92,10 @@ class BladeTest extends TestCase
     {
         $this->fake();
 
-        $testFile = new TestTextFile;
-        
+        $testFile = new TestTextFile();
+
         Blade::putTestFile($testFile->filename(),  $testFile->content());
-        
+
         $this->expectException(UndefinedVariableException::class);
 
         $this->renderCommand(['file' => Blade::testPath($testFile->filename())]);
@@ -110,7 +108,7 @@ class BladeTest extends TestCase
     {
         $this->fake();
 
-        $testFile = new TestJsonFile;
+        $testFile = new TestJsonFile();
         $filename = $testFile->filename();
 
         $info = pathinfo($filename);
@@ -129,7 +127,6 @@ class BladeTest extends TestCase
         Blade::assertRendered($basename.".rendered".".$ext", $testFile->expectedContent());
     }
 
- 
     /**
      * @test
      */
@@ -137,7 +134,7 @@ class BladeTest extends TestCase
     {
         $this->fake();
 
-        $testFile = new TestIncludeFile;
+        $testFile = new TestIncludeFile();
 
         Blade::putTestFile($testFile->filename(),  $testFile->content());
         Blade::putTestFile($testFile->getIncludeFile()->filename(),  $testFile->getIncludeFile()->content());

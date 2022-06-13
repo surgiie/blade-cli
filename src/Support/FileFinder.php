@@ -62,9 +62,9 @@ class FileFinder extends FileViewFinder
      */
     protected function findInPaths($name, $paths)
     {
-        try{
+        try {
             return parent::findInPaths($name, $paths);
-        }catch(InvalidArgumentException){
+        } catch (InvalidArgumentException) {
             throw new InvalidArgumentException("File [{$name}] not found.");
         }
     }

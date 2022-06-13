@@ -2,30 +2,29 @@
 
 namespace BladeCLI;
 
-use SplFileInfo;
-use BladeCLI\Support\FileFinder;
-use BladeCLI\Support\FileFactory;
-use Illuminate\Events\Dispatcher;
-use BladeCLI\Support\FileCompiler;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
-use BladeCLI\Support\FileCompilerEngine;
-use Illuminate\View\Engines\EngineResolver;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
 use BladeCLI\Support\Exceptions\CouldntWriteFileException;
 use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use BladeCLI\Support\Exceptions\FileNotFoundException;
 use BladeCLI\Support\Exceptions\UndefinedVariableException;
+use BladeCLI\Support\FileCompiler;
+use BladeCLI\Support\FileCompilerEngine;
+use BladeCLI\Support\FileFactory;
+use BladeCLI\Support\FileFinder;
+use Illuminate\Container\Container;
+use Illuminate\Events\Dispatcher;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\View\Engines\EngineResolver;
 use PHPUnit\Framework\Assert as PHPUnit;
+use SplFileInfo;
 
 class Blade
 {
-
     /**
      * Get the engine name for resolver registration.
-     * 
+     *
      * @var string
      */
-    const ENGINE_NAME = "blade";
+    public const ENGINE_NAME = "blade";
     /**
      * The container instance.
      *
@@ -42,7 +41,7 @@ class Blade
 
     /**
      * The file being rendred.
-     * 
+     *
      * @var \SplFileInfo
      */
     protected \SplFileInfo $file;
@@ -88,8 +87,8 @@ class Blade
      * @var array
      */
     protected static array $testing = [
-        'directory'=>null,
-        'test-files'=>[]
+        'directory' => null,
+        'test-files' => [],
     ];
 
     /**
@@ -140,12 +139,13 @@ class Blade
      */
     public static function tearDown()
     {
-        if(self::isFaked()){
-            (new Filesystem)->deleteDirectory(self::$testing['directory']);
+        if (self::isFaked()) {
+            (new Filesystem())->deleteDirectory(self::$testing['directory']);
             self::$testing['test-files'] = [];
             self::$testing['directory'] = null;
         }
     }
+
     /**
      * Generate a path to the testing directory.
      *
@@ -154,12 +154,13 @@ class Blade
      */
     public static function testPath(string $path)
     {
-        if(self::isFaked()){
+        if (self::isFaked()) {
             $path = trim($path, "\\/");
-        
+
             return self::$testing['directory'].DIRECTORY_SEPARATOR.$path;
         }
     }
+
     /**
      * Write test file to testing directory.
      *
@@ -169,11 +170,12 @@ class Blade
      */
     public static function putTestFile(string $file, string $contents)
     {
-        if(self::isFaked()){
+        if (self::isFaked()) {
             file_put_contents($file = self::testPath($file), $contents);
             self::$testing['test-files'][] = $file;
         }
     }
+
     /**
      * Assert file was rendered.
      *
@@ -183,30 +185,34 @@ class Blade
      */
     public static function assertRendered(string $file, string $expected = null)
     {
-        if(self::isFaked()){
+        if (self::isFaked()) {
             clearstatcache();
 
             $path = self::testPath($file);
 
             PHPUnit::assertTrue(
-                !in_array($path, self::$testing['test-files']) && file_exists($path), "Unable to find rendered file at [{$path}]."
+                ! in_array($path, self::$testing['test-files']) && file_exists($path),
+                "Unable to find rendered file at [{$path}]."
             );
 
-            if(!is_null($expected)){
+            if (! is_null($expected)) {
                 PHPUnit::assertEquals(
-                    $expected, file_get_contents($path), "Rendered file $file does not match expected content."
+                    $expected,
+                    file_get_contents($path),
+                    "Rendered file $file does not match expected content."
                 );
             }
         }
     }
+
     /**
      * Check if the rendering is being faked.
      *
-     * @return boolean
+     * @return bool
      */
     public static function isFaked()
     {
-        return !is_null(self::$testing['directory']);
+        return ! is_null(self::$testing['directory']);
     }
 
     /**
@@ -216,7 +222,7 @@ class Blade
      */
     public function getFileFinder()
     {
-        if (!is_null($this->fileFinder)) {
+        if (! is_null($this->fileFinder)) {
             return $this->fileFinder;
         }
 
@@ -230,9 +236,10 @@ class Blade
      */
     protected function getEngineResolver()
     {
-        if (!is_null($this->resolver)) {
+        if (! is_null($this->resolver)) {
             return $this->resolver;
         }
+
         return $this->resolver = new EngineResolver();
     }
 
@@ -243,7 +250,7 @@ class Blade
      */
     protected function getFileFactory()
     {
-        if (!is_null($this->fileFactory)) {
+        if (! is_null($this->fileFactory)) {
             return $this->fileFactory;
         }
 
@@ -261,7 +268,7 @@ class Blade
      */
     protected function getCompilerEngine()
     {
-        if (!is_null($this->compilerEngine)) {
+        if (! is_null($this->compilerEngine)) {
             return $this->compilerEngine;
         }
 
@@ -275,7 +282,7 @@ class Blade
      */
     protected function getFileCompiler()
     {
-        if (!is_null($this->fileCompiler)) {
+        if (! is_null($this->fileCompiler)) {
             return $this->fileCompiler;
         }
 
@@ -311,7 +318,7 @@ class Blade
      */
     public function setFilePath(string $filePath)
     {
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new FileNotFoundException(
                 "File $filePath does not exists."
             );
@@ -325,7 +332,6 @@ class Blade
 
         return $this;
     }
-
 
     /**
      * Get the realpath directory of the file.
@@ -386,7 +392,7 @@ class Blade
         }
         // todo use test directory.
 
-        if(self::isFaked() && $saveDir){
+        if (self::isFaked() && $saveDir) {
             return self::testPath($saveDir);
         }
 
@@ -451,7 +457,7 @@ class Blade
      * Save the contents of the rendered file.
      *
      * @param string $contents
-     * @throws \BladeCLI\Support\Exceptions\FileAlreadyExistsException 
+     * @throws \BladeCLI\Support\Exceptions\FileAlreadyExistsException
      * @throws \BladeCLI\Support\Exceptions\CouldntWriteFileException
      * @return bool
      */
@@ -462,7 +468,6 @@ class Blade
         $saveTo = $this->getSaveLocation();
 
         if (file_exists($saveTo) && $this->getOption('force', false) !== true) {
-
             $saveTo = realpath($saveTo);
 
             throw new FileAlreadyExistsException("The file $saveTo already exists.");
@@ -470,8 +475,9 @@ class Blade
 
         $success = $this->filesystem->put($saveTo, $contents);
 
-        if (!$success) {
+        if (! $success) {
             $saveTo = realpath($saveTo);
+
             throw new CouldntWriteFileException("Could not write/save file to: $saveTo");
         }
 
@@ -501,7 +507,7 @@ class Blade
      */
     public function render(array $data = [])
     {
-        if (!$this->shouldRender()) {
+        if (! $this->shouldRender()) {
             return false;
         }
 
