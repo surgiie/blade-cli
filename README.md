@@ -9,8 +9,7 @@ Use Laravel's blade engine as a CLI for rendering files.
 
 This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use
 simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.) on files. That said, the more advanced
-features of the engine are out of scope of what this package was meant for and may not be supported, keep that in mind if you are
-attempting more advanced usages.
+features of the engine are out of scope of what this package was meant for and may not be supported.
 
 ### Installation
 
@@ -50,7 +49,7 @@ $blade = new Blade(
     filePath: '/path/to/file/to/render',
     options: [
         'force'=> true, // force overwrite existing rendered file
-        'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is current directory.
+        'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is the directory the file is in.
     ]
 );
 
@@ -187,12 +186,66 @@ You may skip confirmation of rendering a directory's files with the `--force` fl
 `php blade render templates/ --some-data=foo --force`
 
 
-#### Custom Directory:
+#### Custom Directory for directory files:
 
-By default, files will get saved to the current directory the file being rendered is in, you may specify
-a custom directory to save rendered files in with the same `--save-directory` option specified earlier:
+By default, files will get saved to the current directory the file being rendered is in, as seen earlier, you may specify
+a custom directory to save rendered files in with the same `--save-directory` option:
 
 
 `php blade render templates/ --some-data=foo --save-directory="/home/bob/templates/"`
 
-**Note** When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed. In this example `/home/bob/files/` will have a directory structure that matches `templates/`.
+**Note** When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed. In this example `/home/bob/templates/` will have a directory structure that matches `templates/`.
+
+
+
+### Unit Testing
+
+If utilizing the `\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
+
+
+```
+<?php
+
+// turns on testing mode and will write files into the given testing directory.
+Blade::fake('./testing-directory');
+
+// write ./testing-directory/example.yaml to test render call on
+Blade::putTestFile('example.yaml', 
+<<<EOL
+name: {{ \$name }}
+favorite_food: {{ \$favoriteFood }}
+pets:
+    @foreach(\$dogs as \$dog)
+    - {{ \$dog }}
+    @endforeach
+contact_info:
+    phone: 1234567890
+    @if(\$includeAddress)
+    street_info: 123 Lane.
+    @endif
+EOL
+);
+
+// generates a path to the testing directory, ie ./testing-directory/example.yaml
+Blade::testPath('example.yaml');
+
+// asserts that file exists in ./testing-directory/example.rendered.yaml
+Blade::assertRendered('example.rendered.yaml');
+
+// assert the rendered file exists and matches the expected content
+Blade::assertRendered('example.rendered.yaml', 
+<<<EOL
+name: Bob
+favorite_food: Pizza
+pets:
+    - Rex
+    - Charlie
+contact_info:
+    phone: 1234567890
+    street_info: 123 Lane.
+EOL);
+
+// removes current testing directory and turns off testing mode
+Blade::tearDown();
+
+```

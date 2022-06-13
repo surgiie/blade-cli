@@ -12,9 +12,9 @@ class Command extends BaseCommand
     /**
      * The container instance.
      *
-     * @var Container
+     * @var \Illuminate\Container\Container
      */
-    protected Container $container;
+    protected $laravel;
     /**
      * The filesystem instance.
      *
@@ -53,7 +53,7 @@ class Command extends BaseCommand
     protected function blade(string $filePath, array $options = []): Blade
     {
         if (! is_null($this->bladeInstance)) {
-            return $this->bladeInstance->setFilePath($filePath)->setOptions($options);
+            return $this->bladeInstance->setOptions($options)->setFilePath($filePath);
         }
 
         return $this->bladeInstance = new Blade(

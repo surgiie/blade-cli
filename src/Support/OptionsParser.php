@@ -10,14 +10,15 @@ use Symfony\Component\Console\Input\InputOption;
 class OptionsParser
 {
     /**
-     * Parse options for registration.
+     * Parsing mode for parsing options to pass to symfony's input binding.
      */
     public const REGISTRATION_MODE = 1;
 
     /**
-     * Parse options with values.
+     * Parsing mode for parsing option's values.
      */
     public const VALUE_MODE = 2;
+
     /**
      * The options to parse.
      *
@@ -43,7 +44,7 @@ class OptionsParser
      */
     public function setOptions(array $options)
     {
-        $this->options = $options;
+        $this->options = array_filter($options);
 
         return $this;
     }

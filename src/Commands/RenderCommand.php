@@ -2,21 +2,22 @@
 
 namespace BladeCLI\Commands;
 
+use BladeCLI\Blade;
 use BladeCLI\Support\Command;
 use BladeCLI\Support\Concerns\LoadsJsonFiles;
-use BladeCLI\Support\Concerns\NormalizesPaths;
 use BladeCLI\Support\Exceptions\FileNotFoundException;
 use BladeCLI\Support\OptionsParser;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use Throwable;
 
 class RenderCommand extends Command
 {
     use LoadsJsonFiles;
-    use NormalizesPaths;
 
     /**
      * The command's signature.
@@ -45,7 +46,7 @@ class RenderCommand extends Command
 
     /**
      * The options that are reserved for the command
-     * and cannot be used as template data options.
+     * and cannot be used as variable data options.
      *
      * @var array
      */
@@ -60,6 +61,7 @@ class RenderCommand extends Command
         "force",
         "no-interaction",
     ];
+
     /**
      * The command's description.
      *
@@ -131,9 +133,71 @@ class RenderCommand extends Command
         } else {
             global $argv;
 
-            $arguments = $argv;
+            $this->parseArgsForCommandOptions($input, $argv);
+        }
+    }
 
-            $this->parseArgsForCommandOptions($input, $arguments);
+    /**
+     * Normalize key naming convention for the given data.
+     *
+     * @param array $data
+     * @return array
+     */
+    protected function normalizeRenderData(array $data)
+    {
+        $result = [];
+
+        foreach ($data as $k => $v) {
+            $result[Str::camel($k)] = $v;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Gather the data to be used to render.
+     *
+     * @return array
+     */
+    protected function gatherRenderData()
+    {
+        $data = $this->normalizeRenderData($this->gatherFileVariableData());
+
+        return array_merge($data, $this->normalizeRenderData($this->gatherOptionVariableData()));
+    }
+
+    /**
+     * Gather the data for rendering from command line options.
+     *
+     * @return array
+     */
+    protected function gatherOptionVariableData()
+    {
+        $vars = [];
+
+        foreach ($this->commandOptions as $k => $v) {
+            if ($this->isReservedOption($k)) {
+                continue;
+            }
+
+            $vars[$k] = $v;
+        }
+
+        return $vars;
+    }
+
+    /**
+     * Normalize a path from linux to windows or vice versa.
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function normalizePath(string $path)
+    {
+        if (DIRECTORY_SEPARATOR == "\\") {
+            return str_replace("/", "\\", $path);
+        } else {
+            return str_replace("\\", "/", $path);
         }
     }
 
@@ -146,23 +210,79 @@ class RenderCommand extends Command
     {
         $options = $this->commandOptions;
 
-        $file = $this->argument("file");
+        $file = $this->normalizePath($this->argument("file"));
 
         if (! file_exists($file)) {
             throw new FileNotFoundException("The file or directory '$file' does not exist.");
         }
 
-        $data = $this->getFileVariableData($options);
+        $data = $this->gatherRenderData();
+
         // process single file.
         if (is_file($file)) {
             $this->renderFile($file, $data, $options);
+
+            return 0;
         }
-        // process an entire directory
-        elseif (is_dir($file) && $this->option('force') || $this->confirm("Are you sure you want to render files in the $file directory?")) {
+
+        $file = rtrim($file, "\\/");
+        // // process an entire directory
+        if (is_dir($file) && ($this->option('force') || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
             $this->renderDirectoryFiles($file, $data, $options);
+
+            return 0;
         }
 
         return 0;
+    }
+
+    /**
+     * Render a directory of files.
+     *
+     * @param string $directory
+     * @param array $data
+     * @param array $options
+     * @return static
+     */
+    protected function renderDirectoryFiles(string $directory, array $data, array $options): static
+    {
+        $finder = $this->finder();
+
+        $files = $finder->in($directory)->files();
+
+        $saveDirectory = rtrim($options['save-directory'] ?? "", "\\/");
+
+        // validate save directory isnt the current directory being processed.
+        if ($saveDirectory == $directory) {
+            $error = "The save directory is the directory you are rendering, select different directory.";
+            if (Blade::isFaked()) {
+                throw new InvalidArgumentException($error);
+            }
+            $this->error($error);
+            exit(1);
+        }
+
+        foreach ($files as $file) {
+            $pathName = $file->getPathName();
+
+            if (! $saveDirectory) {
+                $this->renderFile($pathName, $data, $options);
+
+                continue;
+            }
+            // compute a save directory that mirrors the current location directory structure
+            $computedDirectory = rtrim($saveDirectory, "\\/");
+
+            $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
+
+            $options['save-directory'] = dirname(
+                $computedDirectory . DIRECTORY_SEPARATOR . $relativePath
+            );
+
+            $this->renderFile($pathName, $data, $options);
+        }
+
+        return $this;
     }
 
     /**
@@ -186,58 +306,22 @@ class RenderCommand extends Command
     {
         $blade = $this->blade($file, $options);
 
-        $result = $blade->render(data: $data);
+        try {
+            $result = $blade->render(data: $data);
+        } catch (Throwable $e) {
+            if (Blade::isFaked()) {
+                throw $e;
+            }
+
+            $message = $e->getMessage();
+            $this->error($message);
+            exit(1);
+        }
 
         if ($result !== false) {
             $file = $blade->getSaveLocation();
 
-            $this->info("Rendered $file");
-        }
-
-        return $this;
-    }
-
-    /**
-     * Compute the save directory for a file being rendered during a "render directory files" call.
-     *
-     * @param array $options
-     * @param string $filePath
-     * @param array $options
-     * @return array
-     */
-    protected function computeSaveDirectory(string $currentDir, string $filePath, array $options)
-    {
-        $saveDirectory = $this->removeTrailingSlash($options['save-directory'] ?? "");
-
-        if ($saveDirectory) {
-            $relativePath = $this->removeLeadingSlash(Str::after($filePath, $currentDir));
-
-            $options['save-directory'] = dirname($this->normalizePath(
-                $saveDirectory . DIRECTORY_SEPARATOR . $relativePath
-            ));
-        }
-
-        return $options;
-    }
-
-    /**
-     * Render a directory of files.
-     *
-     * @param string $directory
-     * @param array $data
-     * @param array $options
-     * @return static
-     */
-    protected function renderDirectoryFiles(string $directory, array $data, array $options): static
-    {
-        $finder = $this->finder();
-
-        $files = $finder->in($directory)->files();
-
-        foreach ($files as $file) {
-            $pathName = $file->getPathName();
-            $renderOptions = $this->computeSaveDirectory($directory, $pathName, $options);
-            $this->renderFile($pathName, $data, $renderOptions);
+            $this->info("Rendered $file.");
         }
 
         return $this;
@@ -278,33 +362,32 @@ class RenderCommand extends Command
      * @param array $options
      * @return array
      */
-    public function getJsonFileData(array $options = []): array
+    public function gatherJsonFileData(): array
     {
         $json = [];
-        $jsonFiles = Arr::wrap($options["from-json"] ?? []);
+        $jsonFiles = Arr::wrap($this->commandOptions["from-json"] ?? []);
 
         foreach ($jsonFiles as $file) {
             $json = array_merge($json, $this->loadJsonFile($file));
         }
 
-        return array_merge($json, $options);
+        return $json;
     }
 
     /**
-     * Get the data to use for the render file.
+     * Get variable data from files.
      *
-     * @param array $options
      * @return array
      */
-    protected function getFileVariableData(array $options = []): array
+    protected function gatherFileVariableData(): array
     {
         $vars = [];
 
-        foreach ($this->getJsonFileData(options: $options) as $k => $v) {
+        foreach ($this->gatherJsonFileData() as $k => $v) {
             if ($this->isReservedOption($k)) {
                 continue;
             }
-            $vars[Str::camel($k)] = $v;
+            $vars[$k] = $v;
         }
 
         return $vars;

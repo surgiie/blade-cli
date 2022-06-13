@@ -62,14 +62,10 @@ class FileFinder extends FileViewFinder
      */
     protected function findInPaths($name, $paths)
     {
-        foreach ((array) $paths as $path) {
-            foreach ($this->getPossibleViewFiles($name) as $file) {
-                if ($this->files->exists($viewPath = $path . "/" . $file)) {
-                    return $viewPath;
-                }
-            }
+        try {
+            return parent::findInPaths($name, $paths);
+        } catch (InvalidArgumentException) {
+            throw new InvalidArgumentException("File [{$name}] not found.");
         }
-
-        throw new InvalidArgumentException("File [{$name}] not found.");
     }
 }
