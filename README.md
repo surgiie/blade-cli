@@ -203,11 +203,7 @@ a custom directory to save rendered files in with the same `--save-directory` op
 If utilizing the `\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
 
 
-<<<<<<< HEAD
 ```php
-=======
-```
->>>>>>> 5e284ba8c35ab7dd17485fe1aede65ba93b01332
 <?php
 
 // turns on testing mode and will write files into the given testing directory.
