@@ -210,7 +210,7 @@ If utilizing the `\BladeCLI\Blade` class directly in an app, the following metho
 Blade::fake('./testing-directory');
 
 // write ./testing-directory/example.yaml to test render call on
-Blade::writeTestFile('example.yaml', 
+Blade::putTestFile('example.yaml', 
 <<<EOL
 name: {{ \$name }}
 favorite_food: {{ \$favoriteFood }}

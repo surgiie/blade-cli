@@ -167,7 +167,7 @@ class Blade
      * @param string $contents
      * @return void
      */
-    public static function writeTestFile(string $file, string $contents)
+    public static function putTestFile(string $file, string $contents)
     {
         if(self::isFaked()){
             file_put_contents($file = self::testPath($file), $contents);

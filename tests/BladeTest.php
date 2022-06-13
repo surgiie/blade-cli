@@ -58,7 +58,7 @@ class BladeTest extends TestCase
 
         $testFile = new TestYamlFile;
         
-        Blade::writeTestFile('example.yaml',  $testFile->content());
+        Blade::putTestFile('example.yaml',  $testFile->content());
         
         $this->renderCommand(
             ['file' => Blade::testPath('example.yaml')],
@@ -77,8 +77,8 @@ class BladeTest extends TestCase
 
         $testFile = new TestYamlFile;
         
-        Blade::writeTestFile('example.yaml',  $testFile->content());
-        Blade::writeTestFile('example.rendered.yaml',  $testFile->expectedContent());
+        Blade::putTestFile('example.yaml',  $testFile->content());
+        Blade::putTestFile('example.rendered.yaml',  $testFile->expectedContent());
         $this->expectException(FileAlreadyExistsException::class);
         
         $this->renderCommand(
@@ -96,7 +96,7 @@ class BladeTest extends TestCase
 
         $testFile = new TestTextFile;
         
-        Blade::writeTestFile($testFile->filename(),  $testFile->content());
+        Blade::putTestFile($testFile->filename(),  $testFile->content());
         
         $this->expectException(UndefinedVariableException::class);
 
@@ -117,9 +117,9 @@ class BladeTest extends TestCase
         $basename = $info['filename'];
         $ext = $info['extension'];
 
-        Blade::writeTestFile($filename,  $testFile->content());
+        Blade::putTestFile($filename,  $testFile->content());
 
-        Blade::writeTestFile($jsonFile = $testFile->filename().".json",  json_encode($testFile->jsonFileData()));
+        Blade::putTestFile($jsonFile = $testFile->filename().".json",  json_encode($testFile->jsonFileData()));
 
         $this->renderCommand(
             ['file' => Blade::testPath($testFile->filename())],
@@ -139,8 +139,8 @@ class BladeTest extends TestCase
 
         $testFile = new TestIncludeFile;
 
-        Blade::writeTestFile($testFile->filename(),  $testFile->content());
-        Blade::writeTestFile($testFile->getIncludeFile()->filename(),  $testFile->getIncludeFile()->content());
+        Blade::putTestFile($testFile->filename(),  $testFile->content());
+        Blade::putTestFile($testFile->getIncludeFile()->filename(),  $testFile->getIncludeFile()->content());
 
         $this->renderCommand(
             ['file' => Blade::testPath($testFile->filename())],
