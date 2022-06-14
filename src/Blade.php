@@ -392,7 +392,7 @@ class Blade
         if ($saveDir = $this->getOption('save-directory')) {
             $saveDir = rtrim($saveDir, "\\/");
         }
-  
+
         if (self::isFaked() && $saveDir) {
             return self::testPath($saveDir);
         }

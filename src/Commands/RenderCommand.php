@@ -135,6 +135,7 @@ class RenderCommand extends Command
 
         return 1;
     }
+
     /**
      * Initialize command.
      *
@@ -144,7 +145,7 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        if (!is_null(static::$staticOptions)) {
+        if (! is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
         } else {
             global $argv;
@@ -228,7 +229,7 @@ class RenderCommand extends Command
 
         $file = $this->normalizePath($this->argument("file"));
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             return $this->handleException(new FileNotFoundException("The file or directory $file does not exist."));
         }
 
@@ -245,7 +246,6 @@ class RenderCommand extends Command
 
 
         if (is_dir($file) && ($options['force'] ?? false || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
-
             $this->renderDirectoryFiles($file, $data, $options);
 
             return 0;
@@ -260,7 +260,7 @@ class RenderCommand extends Command
      * @param string $directory
      * @param array $data
      * @param array $options
-     * @return 
+     * @return
      */
     protected function renderDirectoryFiles(string $directory, array $data, array $options)
     {
@@ -278,7 +278,7 @@ class RenderCommand extends Command
         foreach ($files as $file) {
             $pathName = $file->getPathName();
 
-            if (!$saveDirectory) {
+            if (! $saveDirectory) {
                 $this->renderFile($pathName, $data, $options);
 
                 continue;

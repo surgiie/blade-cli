@@ -146,6 +146,7 @@ class BladeTest extends TestCase
 
         Blade::assertRendered("custom/".$testFile->filename(), $testFile->expectedContent());
     }
+
     /**
      * @test
      */
