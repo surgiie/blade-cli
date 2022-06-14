@@ -146,4 +146,25 @@ class BladeTest extends TestCase
 
         Blade::assertRendered("custom/".$testFile->filename(), $testFile->expectedContent());
     }
+    /**
+     * @test
+     */
+    public function it_can_render_all_files_in_directory()
+    {
+        $this->fake();
+
+        $jsonFile = new TestJsonFile();
+        $yamlFile = new TestYamlFile();
+
+        Blade::putTestFile("templates/".$jsonFile->filename(),  $jsonFile->content());
+        Blade::putTestFile("templates/".$yamlFile->filename(),  $yamlFile->content());
+
+        $this->renderCommand(
+            ['file' => Blade::testPath('templates')],
+            array_merge($jsonFile->options(), $yamlFile->options(), ['--save-directory=rendered/', '--force'])
+        );
+
+        Blade::assertRendered("rendered/".$jsonFile->filename(), $jsonFile->expectedContent());
+        Blade::assertRendered("rendered/".$yamlFile->filename(), $yamlFile->expectedContent());
+    }
 }
