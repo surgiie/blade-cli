@@ -120,6 +120,23 @@ class RenderCommand extends Command
     }
 
     /**
+     * Handle a raised exception during the command call.
+     *
+     * @param Throwable $e
+     * @return int
+     */
+    public function handleException(Throwable $e)
+    {
+        if (Blade::isFaked()) {
+            throw $e;
+        }
+
+        $this->error($e->getMessage());
+
+        return 1;
+    }
+
+    /**
      * Initialize command.
      *
      * @param InputInterface $input
@@ -213,7 +230,7 @@ class RenderCommand extends Command
         $file = $this->normalizePath($this->argument("file"));
 
         if (! file_exists($file)) {
-            throw new FileNotFoundException("The file or directory '$file' does not exist.");
+            return $this->handleException(new FileNotFoundException("The file or directory $file does not exist."));
         }
 
         $data = $this->gatherRenderData();
@@ -226,8 +243,9 @@ class RenderCommand extends Command
         }
 
         $file = rtrim($file, "\\/");
-        // // process an entire directory
-        if (is_dir($file) && ($this->option('force') || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
+
+
+        if (is_dir($file) && ($options['force'] ?? false || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
             $this->renderDirectoryFiles($file, $data, $options);
 
             return 0;
@@ -242,9 +260,9 @@ class RenderCommand extends Command
      * @param string $directory
      * @param array $data
      * @param array $options
-     * @return static
+     * @return
      */
-    protected function renderDirectoryFiles(string $directory, array $data, array $options): static
+    protected function renderDirectoryFiles(string $directory, array $data, array $options)
     {
         $finder = $this->finder();
 
@@ -254,12 +272,7 @@ class RenderCommand extends Command
 
         // validate save directory isnt the current directory being processed.
         if ($saveDirectory == $directory) {
-            $error = "The save directory is the directory you are rendering, select different directory.";
-            if (Blade::isFaked()) {
-                throw new InvalidArgumentException($error);
-            }
-            $this->error($error);
-            exit(1);
+            return $this->handleException(new InvalidArgumentException('The save directory is the directory you are rendering, select different directory.'));
         }
 
         foreach ($files as $file) {
@@ -270,6 +283,7 @@ class RenderCommand extends Command
 
                 continue;
             }
+
             // compute a save directory that mirrors the current location directory structure
             $computedDirectory = rtrim($saveDirectory, "\\/");
 
@@ -300,22 +314,16 @@ class RenderCommand extends Command
      *
      * @param string $file
      * @param array $data
-     * @return static
+     * @return int
      */
-    protected function renderFile(string $file, array $data, array $options): static
+    protected function renderFile(string $file, array $data, array $options)
     {
         $blade = $this->blade($file, $options);
 
         try {
             $result = $blade->render(data: $data);
         } catch (Throwable $e) {
-            if (Blade::isFaked()) {
-                throw $e;
-            }
-
-            $message = $e->getMessage();
-            $this->error($message);
-            exit(1);
+            return $this->handleException($e);
         }
 
         if ($result !== false) {
@@ -324,7 +332,7 @@ class RenderCommand extends Command
             $this->info("Rendered $file.");
         }
 
-        return $this;
+        return $result == false ? 1 : 0;
     }
 
     /**

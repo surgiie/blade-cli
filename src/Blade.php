@@ -171,8 +171,10 @@ class Blade
     public static function putTestFile(string $file, string $contents)
     {
         if (self::isFaked()) {
-            file_put_contents($file = self::testPath($file), $contents);
-            self::$testing['test-files'][] = $file;
+            $path = self::testPath($file);
+            @mkdir(dirname($path), recursive: true);
+            file_put_contents($path, $contents);
+            self::$testing['test-files'][] = $path;
         }
     }
 
