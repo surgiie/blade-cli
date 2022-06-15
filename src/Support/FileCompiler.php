@@ -15,7 +15,7 @@ class FileCompiler extends BladeCompiler
 
     /**
      * Compile Blade statements that start with "@" to be shifted
-     * to the start of the line should they be have leading whitespace
+     * to the start of the line should they have leading whitespace
      * which is problematic for files that have semantical/spacing
      * requirements, such as yaml files.
      *
