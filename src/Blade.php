@@ -152,12 +152,11 @@ class Blade
      * @param string $path
      * @return string|void
      */
-    public static function testPath(string $path)
+    public static function testPath(string $path = "")
     {
         if (self::isFaked()) {
             $path = trim($path, "\\/");
-
-            return self::$testing['directory'].DIRECTORY_SEPARATOR.$path;
+            return rtrim(self::$testing['directory'] . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR);
         }
     }
 
@@ -183,7 +182,7 @@ class Blade
      *
      * @param string $file
      * @param null|string $expected
-    * @return void
+     * @return void
      */
     public static function assertRendered(string $file, string $expected = null)
     {
@@ -193,11 +192,11 @@ class Blade
             $path = self::testPath($file);
 
             PHPUnit::assertTrue(
-                ! in_array($path, self::$testing['test-files']) && file_exists($path),
+                !in_array($path, self::$testing['test-files']) && file_exists($path),
                 "Unable to find rendered file at [{$path}]."
             );
 
-            if (! is_null($expected)) {
+            if (!is_null($expected)) {
                 PHPUnit::assertEquals(
                     $expected,
                     file_get_contents($path),
@@ -214,7 +213,7 @@ class Blade
      */
     public static function isFaked()
     {
-        return ! is_null(self::$testing['directory']);
+        return !is_null(self::$testing['directory']);
     }
 
     /**
@@ -224,7 +223,7 @@ class Blade
      */
     public function getFileFinder()
     {
-        if (! is_null($this->fileFinder)) {
+        if (!is_null($this->fileFinder)) {
             return $this->fileFinder;
         }
 
@@ -238,7 +237,7 @@ class Blade
      */
     protected function getEngineResolver()
     {
-        if (! is_null($this->resolver)) {
+        if (!is_null($this->resolver)) {
             return $this->resolver;
         }
 
@@ -252,7 +251,7 @@ class Blade
      */
     protected function getFileFactory()
     {
-        if (! is_null($this->fileFactory)) {
+        if (!is_null($this->fileFactory)) {
             return $this->fileFactory;
         }
 
@@ -270,7 +269,7 @@ class Blade
      */
     protected function getCompilerEngine()
     {
-        if (! is_null($this->compilerEngine)) {
+        if (!is_null($this->compilerEngine)) {
             return $this->compilerEngine;
         }
 
@@ -284,7 +283,7 @@ class Blade
      */
     protected function getFileCompiler()
     {
-        if (! is_null($this->fileCompiler)) {
+        if (!is_null($this->fileCompiler)) {
             return $this->fileCompiler;
         }
 
@@ -320,7 +319,7 @@ class Blade
      */
     public function setFilePath(string $filePath)
     {
-        if (! file_exists($filePath)) {
+        if (!file_exists($filePath)) {
             throw new FileNotFoundException(
                 "File $filePath does not exists."
             );
@@ -393,8 +392,8 @@ class Blade
             $saveDir = rtrim($saveDir, "\\/");
         }
 
-        if (self::isFaked() && $saveDir) {
-            return self::testPath($saveDir);
+        if (self::isFaked()) {
+            return self::testPath($saveDir ?  $saveDir : '');
         }
 
         return $saveDir ?: $this->getFileDirectory();
@@ -476,7 +475,7 @@ class Blade
 
         $success = $this->filesystem->put($saveTo, $contents);
 
-        if (! $success) {
+        if (!$success) {
             $saveTo = realpath($saveTo);
 
             throw new CouldntWriteFileException("Could not write/save file to: $saveTo");
@@ -508,7 +507,7 @@ class Blade
      */
     public function render(array $data = [])
     {
-        if (! $this->shouldRender()) {
+        if (!$this->shouldRender()) {
             return false;
         }
 
