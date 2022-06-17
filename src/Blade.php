@@ -152,12 +152,12 @@ class Blade
      * @param string $path
      * @return string|void
      */
-    public static function testPath(string $path)
+    public static function testPath(string $path = "")
     {
         if (self::isFaked()) {
             $path = trim($path, "\\/");
 
-            return self::$testing['directory'].DIRECTORY_SEPARATOR.$path;
+            return rtrim(self::$testing['directory'] . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR);
         }
     }
 
@@ -183,7 +183,7 @@ class Blade
      *
      * @param string $file
      * @param null|string $expected
-    * @return void
+     * @return void
      */
     public static function assertRendered(string $file, string $expected = null)
     {
@@ -393,8 +393,8 @@ class Blade
             $saveDir = rtrim($saveDir, "\\/");
         }
 
-        if (self::isFaked() && $saveDir) {
-            return self::testPath($saveDir);
+        if (self::isFaked()) {
+            return self::testPath($saveDir ? $saveDir : '');
         }
 
         return $saveDir ?: $this->getFileDirectory();

@@ -57,7 +57,6 @@ class BladeTest extends TestCase
         $testFile = new TestYamlFile();
 
         Blade::putTestFile('example.yaml',  $testFile->content());
-
         $this->renderCommand(
             ['file' => Blade::testPath('example.yaml')],
             $testFile->options()
