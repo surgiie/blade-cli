@@ -13,7 +13,7 @@ features of the engine are out of scope of what this package was meant for and m
 
 ### Installation
 
-Download specific tag version release from releases and make available in $PATH:
+Download specific tag version release from releases and make available in `$PATH`:
 
 ```
 # in ~/.bashrc or equivalent
@@ -85,9 +85,9 @@ You may render that file as follows:
 ```bash
 
 blade render ./person.yml \
-                --name="Bob"
-                --relationship="Uncle"
-                --favorite-food="Pizza"
+                --name="Bob" \
+                --relationship="Uncle" \
+                --favorite-food="Pizza" \
                 --include-address
 ```
 
@@ -101,11 +101,11 @@ a custom directory to save the rendred file to. This is to avoid overwriting the
 
 ```
 php blade render ./person.yml \
-                --name="Bob"
-                --relationship="Uncle"
-                --favorite-food="Pizza"
-                --include-address
-                --save-directory="rendered-files/"
+                --name="Bob" \
+                --relationship="Uncle" \
+                --favorite-food="Pizza" \
+                --include-address \
+                --save-directory="rendered-files"
 
 ```
 
@@ -161,10 +161,10 @@ If you try to render a file that already exists an exception will be raised, you
 
 ```
 php blade render ./person.yml \
-                --name="Bob"
-                --relationship="Uncle"
-                --favorite-food="Pizza"
-                --include-address
+                --name="Bob" \
+                --relationship="Uncle" \
+                --favorite-food="Pizza" \
+                --include-address \
                 --force # force overwrite person.rendered.yml if it already exists.
 
 ```
