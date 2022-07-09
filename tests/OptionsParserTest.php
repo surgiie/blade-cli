@@ -1,9 +1,9 @@
 <?php
 
-namespace BladeCLI;
+namespace Surgiie\BladeCLI\Tests;
 
-use BladeCLI\Support\OptionsParser;
-use BladeCLI\Tests\TestCase;
+use Surgiie\BladeCLI\Support\OptionsParser;
+use Surgiie\BladeCLI\Tests\TestCase;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;
 

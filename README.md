@@ -39,7 +39,7 @@ and use the class directly
 
 ```php
 
-use BladeCLI\Blade;
+use Surgiie\BladeCLI\Blade;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 
@@ -59,6 +59,8 @@ $blade->render([
 ]);
 
 ```
+
+**Note**: Refer to the readme in the release version you choose as syntax/api may change between versions.
 
 ### CLI Completion
 
@@ -200,7 +202,7 @@ a custom directory to save rendered files in with the same `--save-directory` op
 
 ### Unit Testing
 
-If utilizing the `\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
+If utilizing the `\Surgiie\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
 
 
 ```php
@@ -210,7 +212,7 @@ If utilizing the `\BladeCLI\Blade` class directly in an app, the following metho
 Blade::fake('./testing-directory');
 
 // write ./testing-directory/example.yaml to test render call on
-Blade::putTestFile('example.yaml', 
+Blade::putTestFile('example.yaml',
 <<<EOL
 name: {{ \$name }}
 favorite_food: {{ \$favoriteFood }}
@@ -233,7 +235,7 @@ Blade::testPath('example.yaml');
 Blade::assertRendered('example.rendered.yaml');
 
 // assert the rendered file exists and matches the expected content
-Blade::assertRendered('example.rendered.yaml', 
+Blade::assertRendered('example.rendered.yaml',
 <<<EOL
 name: Bob
 favorite_food: Pizza

@@ -1,8 +1,8 @@
 <?php
 
-namespace BladeCLI\Tests\Files;
+namespace Surgiie\BladeCLI\Tests\Files;
 
-use BladeCLI\Tests\Support\TestingFile;
+use Surgiie\BladeCLI\Tests\Support\TestingFile;
 
 class TestJsonFile extends TestingFile
 {

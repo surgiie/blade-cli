@@ -1,8 +1,8 @@
 <?php
 
-namespace BladeCLI\Tests\Support;
+namespace Surgiie\BladeCLI\Tests\Support;
 
-use BladeCLI\Tests\Support\Contracts\TestableFile;
+use Surgiie\BladeCLI\Tests\Support\Contracts\TestableFile;
 
 abstract class TestingFile implements TestableFile
 {

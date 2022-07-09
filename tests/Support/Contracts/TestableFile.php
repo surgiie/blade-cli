@@ -1,6 +1,6 @@
 <?php
 
-namespace BladeCLI\Tests\Support\Contracts;
+namespace Surgiie\BladeCLI\Tests\Support\Contracts;
 
 interface TestableFile
 {

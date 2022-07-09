@@ -1,8 +1,8 @@
 <?php
 
-namespace BladeCLI\Tests\Files;
+namespace Surgiie\BladeCLI\Tests\Files;
 
-use BladeCLI\Tests\Support\TestingFile;
+use Surgiie\BladeCLI\Tests\Support\TestingFile;
 
 class TestIncludeFile extends TestingFile
 {
@@ -17,7 +17,7 @@ class TestIncludeFile extends TestingFile
     /**
      * Get the main file being included.
      *
-     * @return \BladeCLI\Tests\Support\Contracts\TestableFile
+     * @return \Surgiie\BladeCLI\Tests\Support\Contracts\TestableFile
      */
     public function getIncludeFile()
     {

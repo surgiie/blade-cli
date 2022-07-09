@@ -1,6 +1,6 @@
 <?php
 
-namespace BladeCLI\Support\Exceptions;
+namespace Surgiie\BladeCLI\Support\Exceptions;
 
 use ErrorException;
 

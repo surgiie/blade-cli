@@ -1,15 +1,15 @@
 <?php
 
-namespace BladeCLI;
+namespace Surgiie\BladeCLI;
 
-use BladeCLI\Support\Exceptions\CouldntWriteFileException;
-use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
-use BladeCLI\Support\Exceptions\UndefinedVariableException;
-use BladeCLI\Support\FileCompiler;
-use BladeCLI\Support\FileCompilerEngine;
-use BladeCLI\Support\FileFactory;
-use BladeCLI\Support\FileFinder;
+use Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException;
+use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
+use Surgiie\BladeCLI\Support\FileCompiler;
+use Surgiie\BladeCLI\Support\FileCompilerEngine;
+use Surgiie\BladeCLI\Support\FileFactory;
+use Surgiie\BladeCLI\Support\FileFinder;
 use Illuminate\Container\Container;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Filesystem\Filesystem;
@@ -49,7 +49,7 @@ class Blade
     /**
      * The file factory instance.
      *
-     * @var \BladeCLI\Support\FileFactory
+     * @var \Surgiie\BladeCLI\Support\FileFactory
      */
     protected ?FileFactory $fileFactory = null;
 
@@ -63,21 +63,21 @@ class Blade
     /**
      * The file compiler instance.
      *
-     * @var \BladeCLI\Support\FileCompiler|null
+     * @var \Surgiie\BladeCLI\Support\FileCompiler|null
      */
     protected ?FileCompiler $fileCompiler = null;
 
     /**
      * The file compiler engine instance.
      *
-     * @var \BladeCLI\Support\FileCompilerEngine|null
+     * @var \Surgiie\BladeCLI\Support\FileCompilerEngine|null
      */
     protected ?FileCompilerEngine $compilerEngine = null;
 
     /**
      * The file finder instance.
      *
-     * @var \BladeCLI\Support\FileFinder|null
+     * @var \Surgiie\BladeCLI\Support\FileFinder|null
      */
     protected ?FileFinder $fileFinder = null;
 
@@ -220,7 +220,7 @@ class Blade
     /**
      * Return the set file finder.
      *
-     * @return \BladeCLI\Support\FileFinder
+     * @return \Surgiie\BladeCLI\Support\FileFinder
      */
     public function getFileFinder()
     {
@@ -248,7 +248,7 @@ class Blade
     /**
      * Return set file factory instance.
      *
-     * @return \BladeCLI\Support\FileFactory
+     * @return \Surgiie\BladeCLI\Support\FileFactory
      */
     protected function getFileFactory()
     {
@@ -266,7 +266,7 @@ class Blade
     /**
      * Return set compiler engine instance.
      *
-     * @return \BladeCLI\Support\FileCompilerEngine
+     * @return \Surgiie\BladeCLI\Support\FileCompilerEngine
      */
     protected function getCompilerEngine()
     {
@@ -280,7 +280,7 @@ class Blade
     /**
      * Return the set file compiler instance.
      *
-     * @return \BladeCLI\Support\FileCompiler
+     * @return \Surgiie\BladeCLI\Support\FileCompiler
      */
     protected function getFileCompiler()
     {
@@ -315,7 +315,7 @@ class Blade
      * Set the path to the file being rendered.
      *
      * @param string $filePath
-     * @throws \BladeCLI\Support\Exceptions\FileNotFoundException
+     * @throws \Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException
      * @return static
      */
     public function setFilePath(string $filePath)
@@ -458,8 +458,8 @@ class Blade
      * Save the contents of the rendered file.
      *
      * @param string $contents
-     * @throws \BladeCLI\Support\Exceptions\FileAlreadyExistsException
-     * @throws \BladeCLI\Support\Exceptions\CouldntWriteFileException
+     * @throws \Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException
+     * @throws \Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException
      * @return bool
      */
     protected function saveRenderedContents(string $contents)
@@ -504,7 +504,7 @@ class Blade
      * Render the file with the given data.
      *
      * @param array $data
-     * @return \BladeCLI\Support\File|bool
+     * @return \Surgiie\BladeCLI\Support\File|bool
      */
     public function render(array $data = [])
     {
