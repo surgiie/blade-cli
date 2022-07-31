@@ -1,12 +1,12 @@
 <?php
 
-namespace BladeCLI\Commands;
+namespace Surgiie\BladeCLI\Commands;
 
-use BladeCLI\Blade;
-use BladeCLI\Support\Command;
-use BladeCLI\Support\Concerns\LoadsJsonFiles;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
-use BladeCLI\Support\OptionsParser;
+use Surgiie\BladeCLI\Blade;
+use Surgiie\BladeCLI\Support\Command;
+use Surgiie\BladeCLI\Support\Concerns\LoadsJsonFiles;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\OptionsParser;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use InvalidArgumentException;

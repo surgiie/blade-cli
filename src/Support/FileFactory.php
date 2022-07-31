@@ -1,6 +1,6 @@
 <?php
 
-namespace BladeCLI\Support;
+namespace Surgiie\BladeCLI\Support;
 
 use Illuminate\View\Factory;
 

@@ -11,12 +11,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "BladeCLI\\": "src/"
+            "Surgiie\\BladeCLI\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "BladeCLI\\Tests\\": "tests/"
+            "Surgiie\\BladeCLI\\Tests\\": "tests/"
         }
     },
     "scripts": {

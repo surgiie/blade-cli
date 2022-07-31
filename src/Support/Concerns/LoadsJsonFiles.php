@@ -1,8 +1,8 @@
 <?php
 
-namespace BladeCLI\Support\Concerns;
+namespace Surgiie\BladeCLI\Support\Concerns;
 
-use BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use JsonException;
 
 trait LoadsJsonFiles

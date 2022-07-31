@@ -1,8 +1,8 @@
 <?php
 
-namespace BladeCLI\Support;
+namespace Surgiie\BladeCLI\Support;
 
-use BladeCLI\Support\Exceptions\DuplicateDataException;
+use Surgiie\BladeCLI\Support\Exceptions\DuplicateDataException;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputOption;

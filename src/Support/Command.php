@@ -1,8 +1,8 @@
 <?php
 
-namespace BladeCLI\Support;
+namespace Surgiie\BladeCLI\Support;
 
-use BladeCLI\Blade;
+use Surgiie\BladeCLI\Blade;
 use Illuminate\Console\Command as BaseCommand;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
@@ -48,7 +48,7 @@ class Command extends BaseCommand
      *
      * @param string $filePath
      * @param array $options
-     * @return \BladeCLI\Blade
+     * @return \Surgiie\BladeCLI\Blade
      */
     protected function blade(string $filePath, array $options = []): Blade
     {

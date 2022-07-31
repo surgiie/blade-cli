@@ -1,16 +1,17 @@
 <?php
 
-namespace BladeCLI;
+namespace Surgiie\BladeCLI\Tests;
 
-use BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use BladeCLI\Support\Exceptions\FileNotFoundException;
-use BladeCLI\Support\Exceptions\UndefinedVariableException;
-use BladeCLI\Tests\Files\TestIncludeFile;
-use BladeCLI\Tests\Files\TestJsonFile;
-use BladeCLI\Tests\Files\TestNginxFile;
-use BladeCLI\Tests\Files\TestTextFile;
-use BladeCLI\Tests\Files\TestYamlFile;
-use BladeCLI\Tests\TestCase;
+use Surgiie\BladeCLI\Blade;
+use Surgiie\BladeCLI\Tests\TestCase;
+use Surgiie\BladeCLI\Tests\Files\TestJsonFile;
+use Surgiie\BladeCLI\Tests\Files\TestTextFile;
+use Surgiie\BladeCLI\Tests\Files\TestYamlFile;
+use Surgiie\BladeCLI\Tests\Files\TestNginxFile;
+use Surgiie\BladeCLI\Tests\Files\TestIncludeFile;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class BladeTest extends TestCase
 {

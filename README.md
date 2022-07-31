@@ -13,7 +13,7 @@ features of the engine are out of scope of what this package was meant for and m
 
 ### Installation
 
-Download specific tag version release from releases and make available in $PATH:
+Download specific tag version release from releases and make available in `$PATH`:
 
 ```
 # in ~/.bashrc or equivalent
@@ -39,7 +39,7 @@ and use the class directly
 
 ```php
 
-use BladeCLI\Blade;
+use Surgiie\BladeCLI\Blade;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 
@@ -63,6 +63,8 @@ $blade->render([
 list($contents, $renderFile) = $blade->getRenderedContents(['var'=>'example']);
 
 ```
+
+**Note**: Refer to the readme in the release version you choose as syntax/api may change between versions.
 
 ### CLI Completion
 
@@ -89,9 +91,9 @@ You may render that file as follows:
 ```bash
 
 blade render ./person.yml \
-                --name="Bob"
-                --relationship="Uncle"
-                --favorite-food="Pizza"
+                --name="Bob" \
+                --relationship="Uncle" \
+                --favorite-food="Pizza" \
                 --include-address
 ```
 
@@ -105,11 +107,11 @@ a custom directory to save the rendred file to. This is to avoid overwriting the
 
 ```
 php blade render ./person.yml \
-                --name="Bob"
-                --relationship="Uncle"
-                --favorite-food="Pizza"
-                --include-address
-                --save-directory="rendered-files/"
+                --name="Bob" \
+                --relationship="Uncle" \
+                --favorite-food="Pizza" \
+                --include-address \
+                --save-directory="rendered-files"
 
 ```
 
@@ -165,10 +167,10 @@ If you try to render a file that already exists an exception will be raised, you
 
 ```
 php blade render ./person.yml \
-                --name="Bob"
-                --relationship="Uncle"
-                --favorite-food="Pizza"
-                --include-address
+                --name="Bob" \
+                --relationship="Uncle" \
+                --favorite-food="Pizza" \
+                --include-address \
                 --force # force overwrite person.rendered.yml if it already exists.
 
 ```
@@ -204,7 +206,7 @@ a custom directory to save rendered files in with the same `--save-directory` op
 
 ### Unit Testing
 
-If utilizing the `\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
+If utilizing the `\Surgiie\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
 
 
 ```php
@@ -214,7 +216,7 @@ If utilizing the `\BladeCLI\Blade` class directly in an app, the following metho
 Blade::fake('./testing-directory');
 
 // write ./testing-directory/example.yaml to test render call on
-Blade::putTestFile('example.yaml', 
+Blade::putTestFile('example.yaml',
 <<<EOL
 name: {{ \$name }}
 favorite_food: {{ \$favoriteFood }}
@@ -237,7 +239,7 @@ Blade::testPath('example.yaml');
 Blade::assertRendered('example.rendered.yaml');
 
 // assert the rendered file exists and matches the expected content
-Blade::assertRendered('example.rendered.yaml', 
+Blade::assertRendered('example.rendered.yaml',
 <<<EOL
 name: Bob
 favorite_food: Pizza
