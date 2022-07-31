@@ -26,6 +26,7 @@ class RenderCommand extends Command
      */
     protected $signature = "render {file}
                                    {--save-directory= : The custom directory to save the .rendered files to. }
+                                   {--filename= : The custom filename to save file as. }
                                    {--from-json=* : A file to load variable data from. }
                                    {--force : Force render or overwrite files.}";
 
@@ -55,6 +56,7 @@ class RenderCommand extends Command
         "quiet",
         "verbose",
         "version",
+        "filename",
         "ansi",
         "save-directory",
         "from-json",
@@ -243,9 +245,9 @@ class RenderCommand extends Command
         }
 
         $file = rtrim($file, "\\/");
-
-
-        if (is_dir($file) && ($options['force'] ?? false || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
+        $force = $options['force'] ?? false;
+        
+        if (is_dir($file) && ($force || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
             $this->renderDirectoryFiles($file, $data, $options);
 
             return 0;
@@ -264,6 +266,10 @@ class RenderCommand extends Command
      */
     protected function renderDirectoryFiles(string $directory, array $data, array $options)
     {
+        if($options['filename'] ?? false){
+            throw new InvalidArgumentException("The filename option is only used when rendering a single file at a time.");
+        }
+
         $finder = $this->finder();
 
         $files = $finder->in($directory)->files();

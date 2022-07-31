@@ -407,11 +407,17 @@ class Blade
     protected function getSavedFileName()
     {
         $saveDirectory = $this->getOption('save-directory');
+        
+        $fileName = $this->getOption('filename');
 
         if ($saveDirectory) {
-            return $this->file->getFilename();
+            return $fileName ?: $this->file->getFilename();
         }
 
+        if($fileName){
+            return $fileName;
+        }
+        
         $basename = rtrim($this->file->getBasename($ext = $this->file->getExtension()), '.');
 
         return $basename . ".rendered" . ($ext ? ".$ext" : '');
@@ -500,6 +506,25 @@ class Blade
     }
 
     /**
+     * Get the rendered contents using the given data.
+     *
+     * @param array $data
+     * @return array
+     */
+    public function getRenderedContents(array $data = [])
+    {
+        $renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
+
+        set_error_handler($this->getRenderErrorHandler());
+
+        $contents = $renderFile->render();
+
+        restore_error_handler();
+
+        return [$contents, $renderFile];
+    }
+
+    /**
      * Render the file with the given data.
      *
      * @param array $data
@@ -511,13 +536,7 @@ class Blade
             return false;
         }
 
-        $renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
-
-        set_error_handler($this->getRenderErrorHandler());
-
-        $contents = $renderFile->render();
-
-        restore_error_handler();
+        list($contents, $renderFile) = $this->getRenderedContents($data);
 
         $this->saveRenderedContents($contents);
 

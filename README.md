@@ -50,13 +50,17 @@ $blade = new Blade(
     options: [
         'force'=> true, // force overwrite existing rendered file
         'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is the directory the file is in.
+        'filename'=>'custom-filename' // custom file name instead of the name the file has. 
     ]
 );
 
-// render the file with this data/vars
+// render and save the file with this data/vars
 $blade->render([
     'var'=>'example'
 ]);
+
+// or if you want the rendered contents only you can get it via this method, this does give you the contents and the render file instance:
+list($contents, $renderFile) = $blade->getRenderedContents(['var'=>'example']);
 
 ```
 

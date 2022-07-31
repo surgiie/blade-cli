@@ -14,6 +14,7 @@ use BladeCLI\Tests\TestCase;
 
 class BladeTest extends TestCase
 {
+ 
     /**
      * Tests cleanup.
      */
@@ -144,6 +145,27 @@ class BladeTest extends TestCase
         );
 
         Blade::assertRendered("custom/".$testFile->filename(), $testFile->expectedContent());
+    }
+
+
+    /**
+     * @test
+     */
+    public function it_can_use_custom_save_filename()
+    {
+        $this->fake();
+
+        $testFile = new TestJsonFile();
+
+        Blade::putTestFile($testFile->filename(),  $testFile->content());
+        Blade::putTestFile($testFile->filename(),  $testFile->content());
+
+        $this->renderCommand(
+            ['file' => Blade::testPath($testFile->filename())],
+            array_merge($testFile->options(), ['--save-directory=custom/', '--filename=custom-name.txt'])
+        );
+
+        Blade::assertRendered("custom/custom-name.txt", $testFile->expectedContent());
     }
 
     /**
