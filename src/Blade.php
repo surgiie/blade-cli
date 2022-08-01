@@ -2,20 +2,22 @@
 
 namespace Surgiie\BladeCLI;
 
+use SplFileInfo;
+use RuntimeException;
+use BadMethodCallException;
+use Illuminate\Events\Dispatcher;
+use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
+use PHPUnit\Framework\Assert as PHPUnit;
+use Surgiie\BladeCLI\Support\FileFinder;
+use Surgiie\BladeCLI\Support\FileFactory;
+use Surgiie\BladeCLI\Support\FileCompiler;
+use Illuminate\View\Engines\EngineResolver;
+use Surgiie\BladeCLI\Support\FileCompilerEngine;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException;
 use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
-use Surgiie\BladeCLI\Support\FileCompiler;
-use Surgiie\BladeCLI\Support\FileCompilerEngine;
-use Surgiie\BladeCLI\Support\FileFactory;
-use Surgiie\BladeCLI\Support\FileFinder;
-use Illuminate\Container\Container;
-use Illuminate\Events\Dispatcher;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\Engines\EngineResolver;
-use PHPUnit\Framework\Assert as PHPUnit;
-use SplFileInfo;
 
 class Blade
 {
@@ -42,9 +44,9 @@ class Blade
     /**
      * The file being rendered.
      *
-     * @var \SplFileInfo
+     * @var null|\SplFileInfo
      */
-    protected \SplFileInfo $file;
+    protected ?SplFileInfo $file = null;
 
     /**
      * The file factory instance.
@@ -96,10 +98,10 @@ class Blade
      *
      * @param \Illuminate\Container\Container $container
      * @param \Illuminate\Filesystem\Filesystem $filesystem
-     * @param string $filePath
+     * @param string|null $filePath
      * @param array $options
      */
-    public function __construct(Container $container, Filesystem $filesystem, string $filePath, array $options)
+    public function __construct(Container $container, Filesystem $filesystem, ?string $filePath = null, array $options = [])
     {
         $this->container = $container;
 
@@ -107,7 +109,9 @@ class Blade
 
         $this->setOptions($options);
 
-        $this->setFilePath($filePath);
+        if(!is_null($filePath)){
+            $this->setFilePath($filePath);
+        }
 
         $this->makeCompiledDirectory();
 
@@ -506,6 +510,18 @@ class Blade
     }
 
     /**
+     * Validate that a path is set or error out.
+     * 
+     * @throws \BadMethodCallException
+     * @return void
+     */
+    protected function failIfFilePathIsNotSet()
+    {
+        if(is_null($this->file)){
+            throw new BadMethodCallException("A file path has not been set, nothing to render.");
+        }
+    }
+    /**
      * Get the rendered contents using the given data.
      *
      * @param array $data
@@ -513,6 +529,8 @@ class Blade
      */
     public function getRenderedContents(array $data = [])
     {
+        $this->failIfFilePathIsNotSet();
+        
         $renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
 
         set_error_handler($this->getRenderErrorHandler());
@@ -532,6 +550,8 @@ class Blade
      */
     public function render(array $data = [])
     {
+        $this->failIfFilePathIsNotSet();
+
         if (!$this->shouldRender()) {
             return false;
         }

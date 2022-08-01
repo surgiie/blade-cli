@@ -2,6 +2,9 @@
 
 namespace Surgiie\BladeCLI\Tests;
 
+use BadMethodCallException;
+use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
 use Surgiie\BladeCLI\Blade;
 use Surgiie\BladeCLI\Tests\TestCase;
 use Surgiie\BladeCLI\Tests\Files\TestJsonFile;
@@ -84,6 +87,23 @@ class BladeTest extends TestCase
             ['file' => Blade::testPath('example.yaml')],
             $testFile->options()
         );
+    }
+    
+    /**
+     * @test
+     */
+    public function it_throws_exception_if_path_is_not_set()
+    {
+        $this->fake();
+
+        $blade = new Blade(
+            container: new Container,
+            filesystem: new Filesystem
+        );
+
+        $this->expectException(BadMethodCallException::class);
+
+        $blade->render([]);
     }
 
     /**
