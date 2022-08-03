@@ -49,7 +49,7 @@ $blade = new Blade(
     filePath: '/path/to/file/to/render',
     options: [
         'force'=> true, // force overwrite existing rendered file
-        'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is the directory the file is in.
+        'save-directory'=>'save-to-dir', // optional directory to save rendered file to. Default is the directory the file is in.
         'filename'=>'custom-filename' // custom file name instead of the name the file has. 
     ]
 );
