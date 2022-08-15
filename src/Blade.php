@@ -38,6 +38,13 @@ class Blade
     protected Container $container;
 
     /**
+     * Simple cache property to avoid recalculations. 
+     *
+     * @var array
+     */
+    protected array $cache = ['save-directory'=>null];
+
+    /**
      * The filesystem instance.
      *
      * @var \Illuminate\Filesystem\Filesystem
@@ -338,6 +345,9 @@ class Blade
 
         $this->getFileFactory()->addExtension($this->file->getExtension(), self::ENGINE_NAME);
 
+        foreach(array_keys($this->cache) as $key){
+            $this->cache[$key] = null;
+        }
         return $this;
     }
 
@@ -395,6 +405,10 @@ class Blade
      */
     protected function getSaveDirectory()
     {
+        if(!is_null($this->cache['save-directory'])){
+            return $this->cache['save-directory'];
+        }
+
         $saveDir = $this->getOption('save-as');
 
         if (!$saveDir) {
@@ -409,7 +423,7 @@ class Blade
 
         $saveDir = str_replace($filename, "", $saveDir);
 
-        return in_array($saveDir, ['./', '', '.\\']) ? $this->getFileDirectory() : $saveDir;
+        return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? $this->getFileDirectory() : $saveDir;
     }
 
     /**
@@ -425,7 +439,7 @@ class Blade
     }
 
     /**
-     * Get the absolute realpath to where the file was rendered.
+     * Get the absolute path to where the file was rendered.
      *
      * @return string
      */
@@ -435,12 +449,11 @@ class Blade
         $givenSaveAs = $this->getOption('save-as');
         $basename = basename($givenSaveAs);
         $derivedDirectory = rtrim($this->normalizePath($this->getSaveDirectory()), $ds);
-        $filename = realpath(__DIR__ . "/../") == $derivedDirectory && !basename($givenSaveAs) ?  $this->getDefaultSaveFileName() : basename($givenSaveAs);
+        $filename = realpath(__DIR__ . "/../") == $derivedDirectory && !$basename ?  $this->getDefaultSaveFileName() : $basename;
 
 
         $path = rtrim($derivedDirectory . $ds . ltrim($filename, $ds), $ds);
 
-        dd(realpath($path) ?: $path, $filename, $basename);
         return realpath($path) ?: $path;
     }
 
@@ -484,6 +497,10 @@ class Blade
             $saveTo = realpath($saveTo);
 
             throw new FileAlreadyExistsException("The file $saveTo already exists.");
+        }
+
+        if(!is_writable($saveDirectory = $this->getSaveDirectory())){
+            throw new CouldntWriteFileException("The save directory $saveDirectory is not writable");
         }
 
         $success = $this->filesystem->put($saveTo, $contents);

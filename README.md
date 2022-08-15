@@ -49,8 +49,7 @@ $blade = new Blade(
     filePath: '/path/to/file/to/render',
     options: [
         'force'=> true, // force overwrite existing rendered file
-        'save-directory'=>'save-to-dir' // optional directory to save rendered file to. Default is the directory the file is in.
-        'filename'=>'custom-filename' // custom file name instead of the name the file has. 
+        'save-as'=>'save-as' // optional file path to save file as.
     ]
 );
 
@@ -100,24 +99,18 @@ blade render ./person.yml \
 This will render and save the file to the same directory as `person.rendered.yml`
 
 
-### Custom Save Directory
+### Custom Filename
 
-All files will get saved to the same directory as the file being rendered as `<filename>.rendered.<extension>` or simply `<filename>.rendered` if the file does not have an extension when you do not provide
-a custom directory to save the rendred file to. This is to avoid overwriting the file you are rendering. If you wish to save to a custom directory use the `--save-directory` option to specify a directory to write the file to:
+All files will get saved to the same directory as the file being rendered as `<filename>.rendered.<extension>` or simply `<filename>.rendered`. This is to avoid overwriting the file you are rendering. If you wish to save the file as a custom file name or change the directory, use the `--save-as` option to specify a file path to write the file to:
 
 ```
-php blade render ./person.yml \
-                --name="Bob" \
-                --relationship="Uncle" \
-                --favorite-food="Pizza" \
-                --include-address \
-                --save-directory="rendered-files"
+blade render ./person.yml \
+            ...
+            --save-as="/home/bob/custom-name.yml" 
 
 ```
 
-
-The blade class will attempt to automatically ensure the directory exists if it can write to it. In the above example the the result of `./person.yml` would get written
-to `./rendered-files/person.yml`.
+**Note** - The blade class will attempt to automatically ensure the parent directories exist if it can write them otherwise an error is thrown due to lack of permissions.
 
 ### Variable Data
 
@@ -181,28 +174,13 @@ You may also pass the path to a directory instead of a single file. This might b
 
 want to render them all with a single command:
 
-`php blade render templates/ --some-data=foo`
+`php blade render templates/ --save-in="/path/to/save/files/in" --some-data=foo`
 
-**Note** This will prompt you for confirmation.
+**Note** This will prompt you for confirmation, you may skip confirmation by adding the `--force` flag.
 
-#### Force process directory
-
-You may skip confirmation of rendering a directory's files with the `--force` flag:
-
-`php blade render templates/ --some-data=foo --force`
-
-
-#### Custom Directory for directory files:
-
-By default, files will get saved to the same directory the file being rendered is in, as seen earlier, you may specify
-a custom directory to save rendered files in with the same `--save-directory` option:
-
-
-`php blade render templates/ --some-data=foo --save-directory="/home/bob/templates/"`
-
-**Note** When using a custom directory to save to, the directory specified will have files saved to mirror the directory being processed. In this example `/home/bob/templates/` will have a directory structure that matches `templates/`.
-
-
+**Note** When rendering an entire directory the `--save-in` option is required so that the cli exports all rendered files to a separate directory then the one being processed. The
+directory the files get saved in will mirror the directory structure of the directory being processed.  In this example `/home/bob/templates/` will have a 
+directory structure that matches `templates/`.
 
 ### Unit Testing
 
