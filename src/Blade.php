@@ -13,6 +13,8 @@ use Surgiie\BladeCLI\Support\FileFinder;
 use Surgiie\BladeCLI\Support\FileFactory;
 use Surgiie\BladeCLI\Support\FileCompiler;
 use Illuminate\View\Engines\EngineResolver;
+use InvalidArgumentException;
+use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
 use Surgiie\BladeCLI\Support\FileCompilerEngine;
 use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException;
@@ -21,6 +23,7 @@ use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class Blade
 {
+    use NormalizesPaths;
     /**
      * Get the engine name for resolver registration.
      *
@@ -109,7 +112,7 @@ class Blade
 
         $this->setOptions($options);
 
-        if(!is_null($filePath)){
+        if (!is_null($filePath)) {
             $this->setFilePath($filePath);
         }
 
@@ -325,7 +328,7 @@ class Blade
     {
         if (!file_exists($filePath)) {
             throw new FileNotFoundException(
-                "File $filePath does not exists."
+                "File $filePath does not exist."
             );
         }
 
@@ -377,7 +380,7 @@ class Blade
      *
      * @return bool
      */
-    protected function shouldRender()
+    protected function checkDestinationIsSetFile()
     {
         // if the file we are rendering is the rendered file location, then we are processing
         // an already rendered file. This happens on subsequent render calls on a directory
@@ -392,15 +395,21 @@ class Blade
      */
     protected function getSaveDirectory()
     {
-        if ($saveDir = $this->getOption('save-directory')) {
-            $saveDir = rtrim($saveDir, "\\/");
+        $saveDir = $this->getOption('save-as');
+
+        if (!$saveDir) {
+            return  $this->getFileDirectory();
         }
 
-        if (self::isFaked()) {
-            return self::testPath($saveDir ? $saveDir : '');
-        }
+        $saveDir = rtrim($saveDir, "\\/");
 
-        return $saveDir ?: $this->getFileDirectory();
+        $saveDir = $this->normalizePath($saveDir);
+        $filename = basename($saveDir);
+
+
+        $saveDir = str_replace($filename, "", $saveDir);
+
+        return in_array($saveDir, ['./', '', '.\\']) ? $this->getFileDirectory() : $saveDir;
     }
 
     /**
@@ -408,20 +417,8 @@ class Blade
      *
      * @return string
      */
-    protected function getSavedFileName()
+    protected function getDefaultSaveFileName()
     {
-        $saveDirectory = $this->getOption('save-directory');
-        
-        $fileName = $this->getOption('filename');
-
-        if ($saveDirectory) {
-            return $fileName ?: $this->file->getFilename();
-        }
-
-        if($fileName){
-            return $fileName;
-        }
-        
         $basename = rtrim($this->file->getBasename($ext = $this->file->getExtension()), '.');
 
         return $basename . ".rendered" . ($ext ? ".$ext" : '');
@@ -434,10 +431,16 @@ class Blade
      */
     public function getSaveLocation()
     {
-        $directory = $this->getSaveDirectory();
+        $ds = DIRECTORY_SEPARATOR;
+        $givenSaveAs = $this->getOption('save-as');
+        $basename = basename($givenSaveAs);
+        $derivedDirectory = rtrim($this->normalizePath($this->getSaveDirectory()), $ds);
+        $filename = realpath(__DIR__ . "/../") == $derivedDirectory && !basename($givenSaveAs) ?  $this->getDefaultSaveFileName() : basename($givenSaveAs);
 
-        $path = $directory . DIRECTORY_SEPARATOR . $this->getSavedFileName();
 
+        $path = rtrim($derivedDirectory . $ds . ltrim($filename, $ds), $ds);
+
+        dd(realpath($path) ?: $path, $filename, $basename);
         return realpath($path) ?: $path;
     }
 
@@ -517,7 +520,7 @@ class Blade
      */
     protected function failIfFilePathIsNotSet()
     {
-        if(is_null($this->file)){
+        if (is_null($this->file)) {
             throw new BadMethodCallException("A file path has not been set, nothing to render.");
         }
     }
@@ -530,7 +533,7 @@ class Blade
     public function getRenderedContents(array $data = [])
     {
         $this->failIfFilePathIsNotSet();
-        
+
         $renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
 
         set_error_handler($this->getRenderErrorHandler());
@@ -552,7 +555,14 @@ class Blade
     {
         $this->failIfFilePathIsNotSet();
 
-        if (!$this->shouldRender()) {
+        $saveAs = $this->getOption('save-as');
+
+        if (file_exists($saveAs)) {
+            throw new InvalidArgumentException("Your save file location already exists or is a directory.");
+        }
+
+        if (!$this->checkDestinationIsSetFile()) {
+            throw new InvalidArgumentException("Your save file location is for the file being rendered. Use different save filename.");
             return false;
         }
 

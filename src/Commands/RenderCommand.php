@@ -2,22 +2,23 @@
 
 namespace Surgiie\BladeCLI\Commands;
 
-use Surgiie\BladeCLI\Blade;
-use Surgiie\BladeCLI\Support\Command;
-use Surgiie\BladeCLI\Support\Concerns\LoadsJsonFiles;
-use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
-use Surgiie\BladeCLI\Support\OptionsParser;
+use Throwable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Surgiie\BladeCLI\Blade;
 use InvalidArgumentException;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use Throwable;
+use Surgiie\BladeCLI\Support\Command;
+use Surgiie\BladeCLI\Support\OptionsParser;
+use Symfony\Component\Console\Input\InputInterface;
+use Surgiie\BladeCLI\Support\Concerns\LoadsJsonFiles;
+use Symfony\Component\Console\Output\OutputInterface;
+use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 
 class RenderCommand extends Command
 {
-    use LoadsJsonFiles;
+    use LoadsJsonFiles, NormalizesPaths;
 
     /**
      * The command's signature.
@@ -25,8 +26,7 @@ class RenderCommand extends Command
      * @var string
      */
     protected $signature = "render {file}
-                                   {--save-directory= : The custom directory to save the .rendered files to. }
-                                   {--filename= : The custom filename to save file as. }
+                                   {--save-as= : The custom directory or file name to save the .rendered files to. }
                                    {--from-json=* : A file to load variable data from. }
                                    {--force : Force render or overwrite files.}";
 
@@ -56,9 +56,8 @@ class RenderCommand extends Command
         "quiet",
         "verbose",
         "version",
-        "filename",
         "ansi",
-        "save-directory",
+        "save-as",
         "from-json",
         "force",
         "no-interaction",
@@ -182,7 +181,7 @@ class RenderCommand extends Command
     {
         $data = $this->normalizeRenderData($this->gatherFileVariableData());
 
-        return array_merge($data, $this->normalizeRenderData($this->gatherOptionVariableData()));
+        return array_merge($data, $this->normalizeRenderData($this->gatherCommandLineVariableData()));
     }
 
     /**
@@ -190,7 +189,7 @@ class RenderCommand extends Command
      *
      * @return array
      */
-    protected function gatherOptionVariableData()
+    protected function gatherCommandLineVariableData()
     {
         $vars = [];
 
@@ -205,20 +204,6 @@ class RenderCommand extends Command
         return $vars;
     }
 
-    /**
-     * Normalize a path from linux to windows or vice versa.
-     *
-     * @param string $path
-     * @return string
-     */
-    protected function normalizePath(string $path)
-    {
-        if (DIRECTORY_SEPARATOR == "\\") {
-            return str_replace("/", "\\", $path);
-        } else {
-            return str_replace("\\", "/", $path);
-        }
-    }
 
     /**
      * Execute the command.
@@ -239,6 +224,8 @@ class RenderCommand extends Command
 
         // process single file.
         if (is_file($file)) {
+         
+
             $this->renderFile($file, $data, $options);
 
             return 0;
@@ -266,41 +253,41 @@ class RenderCommand extends Command
      */
     protected function renderDirectoryFiles(string $directory, array $data, array $options)
     {
-        if($options['filename'] ?? false){
-            throw new InvalidArgumentException("The filename option is only used when rendering a single file at a time.");
-        }
+        // if($options['filename'] ?? false){
+        //     throw new InvalidArgumentException("The filename option is only used when rendering a single file at a time.");
+        // }
 
-        $finder = $this->finder();
+        // $finder = $this->finder();
 
-        $files = $finder->in($directory)->files();
+        // $files = $finder->in($directory)->files();
 
-        $saveDirectory = rtrim($options['save-directory'] ?? "", "\\/");
+        // $saveDirectory = rtrim($options['save-directory'] ?? "", "\\/");
 
-        // validate save directory isnt the current directory being processed.
-        if ($saveDirectory == $directory) {
-            return $this->handleException(new InvalidArgumentException('The save directory is the directory you are rendering, select different directory.'));
-        }
+        // // validate save directory isnt the current directory being processed.
+        // if ($saveDirectory == $directory) {
+        //     return $this->handleException(new InvalidArgumentException('The save directory is the directory you are rendering, select different directory.'));
+        // }
 
-        foreach ($files as $file) {
-            $pathName = $file->getPathName();
+        // foreach ($files as $file) {
+        //     $pathName = $file->getPathName();
 
-            if (! $saveDirectory) {
-                $this->renderFile($pathName, $data, $options);
+        //     if (! $saveDirectory) {
+        //         $this->renderFile($pathName, $data, $options);
 
-                continue;
-            }
+        //         continue;
+        //     }
 
-            // compute a save directory that mirrors the current location directory structure
-            $computedDirectory = rtrim($saveDirectory, "\\/");
+        //     // compute a save directory that mirrors the current location directory structure
+        //     $computedDirectory = rtrim($saveDirectory, "\\/");
 
-            $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
+        //     $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
 
-            $options['save-directory'] = dirname(
-                $computedDirectory . DIRECTORY_SEPARATOR . $relativePath
-            );
+        //     $options['save-directory'] = dirname(
+        //         $computedDirectory . DIRECTORY_SEPARATOR . $relativePath
+        //     );
 
-            $this->renderFile($pathName, $data, $options);
-        }
+        //     $this->renderFile($pathName, $data, $options);
+        // }
 
         return $this;
     }
