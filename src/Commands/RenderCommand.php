@@ -3,10 +3,10 @@
 namespace Surgiie\BladeCLI\Commands;
 
 use Throwable;
+use Dotenv\Dotenv;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Surgiie\BladeCLI\Blade;
-use InvalidArgumentException;
 use Symfony\Component\Finder\Finder;
 use Surgiie\BladeCLI\Support\Command;
 use Surgiie\BladeCLI\Support\OptionsParser;
@@ -27,29 +27,24 @@ class RenderCommand extends Command
      */
     protected $signature = "render {file}
                                    {--save-as= : The custom directory or file name to save the .rendered files to. }
-                                   {--from-json=* : A file to load variable data from. }
+                                   {--from-json=* : A json file to load variable data from. }
+                                   {--from-env=* : A .env file to load variable data from. }
                                    {--force : Force render or overwrite files.}";
 
 
     /**
      * An array of options use statically if not using command from command line.
-     *
-     * @var array
      */
     protected static ?array $staticOptions = null;
 
     /**
      * Set the options for the command.
-     *
-     * @var array
      */
     protected array $commandOptions = [];
 
     /**
      * The options that are reserved for the command
      * and cannot be used as variable data options.
-     *
-     * @var array
      */
     protected array $reservedOptions = [
         "help",
@@ -59,6 +54,7 @@ class RenderCommand extends Command
         "ansi",
         "save-as",
         "from-json",
+        "from-env",
         "force",
         "no-interaction",
     ];
@@ -72,8 +68,6 @@ class RenderCommand extends Command
 
     /**
      * Create a new console command instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -90,7 +84,7 @@ class RenderCommand extends Command
      * @param array $options
      * @return void
      */
-    public static function useOptions(array $options = [])
+    public static function useOptions(array $options = []): void
     {
         $parser = new OptionsParser($options);
 
@@ -106,7 +100,7 @@ class RenderCommand extends Command
      * @param array $arguments
      * @return void
      */
-    protected function parseArgsForCommandOptions(InputInterface $input, array $arguments = [])
+    protected function parseArgsForCommandOptions(InputInterface $input, array $arguments = []): void
     {
         $parser = new OptionsParser(array_slice($arguments, 3));
 
@@ -123,10 +117,9 @@ class RenderCommand extends Command
     /**
      * Handle a raised exception during the command call.
      *
-     * @param Throwable $e
-     * @return int
+     * @throws \Throwable
      */
-    public function handleException(Throwable $e)
+    public function handleException(Throwable $e): int
     {
         if (Blade::isFaked()) {
             throw $e;
@@ -139,14 +132,10 @@ class RenderCommand extends Command
 
     /**
      * Initialize command.
-     *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return void
      */
-    protected function initialize(InputInterface $input, OutputInterface $output)
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        if (! is_null(static::$staticOptions)) {
+        if (!is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
         } else {
             global $argv;
@@ -156,40 +145,59 @@ class RenderCommand extends Command
     }
 
     /**
+     * Get the variables from json files.
+     */
+    protected function gatherJsonFileVariables(): array
+    {
+        $json = [];
+        $jsonFiles = Arr::wrap($this->commandOptions["from-json"] ?? []);
+
+        foreach ($jsonFiles as $file) {
+            $json = array_merge($json, $this->loadJsonFile($file));
+            $this->comment("Gathered variable data from json file: $file");
+        }
+
+        return $json;
+    }
+    /**
+     * Get the variables from env files.
+     */
+    protected function gatherEnvFileVariables(): array
+    {
+        $env = [];
+        $envFiles = Arr::wrap($this->commandOptions["from-env"] ?? []);
+
+        foreach ($envFiles as $file) {
+            $env = array_merge($env, Dotenv::parse(file_get_contents($file)));
+            $this->comment("Gathered variable data from env file: $file");
+        }
+
+        foreach ($env as $k => $v) {
+            $env[$k] = $v;
+        }
+
+        return $env;
+    }
+    /**
      * Normalize key naming convention for the given data.
      *
      * @param array $data
      * @return array
      */
-    protected function normalizeRenderData(array $data)
+    protected function normalizeVariableNames(array $vars)
     {
         $result = [];
 
-        foreach ($data as $k => $v) {
-            $result[Str::camel($k)] = $v;
+        foreach ($vars as $k => $v) {
+            $result[Str::camel(strtolower($k))] = $v;
         }
 
         return $result;
     }
-
-    /**
-     * Gather the data to be used to render.
-     *
-     * @return array
-     */
-    protected function gatherRenderData()
-    {
-        $data = $this->normalizeRenderData($this->gatherFileVariableData());
-
-        return array_merge($data, $this->normalizeRenderData($this->gatherCommandLineVariableData()));
-    }
-
     /**
      * Gather the data for rendering from command line options.
-     *
-     * @return array
      */
-    protected function gatherCommandLineVariableData()
+    protected function gatherCommandLineVariables(): array
     {
         $vars = [];
 
@@ -201,43 +209,54 @@ class RenderCommand extends Command
             $vars[$k] = $v;
         }
 
+        $this->comment("Gathered variable data from command line options.");
+
         return $vars;
     }
 
+    /**
+     * Gather the data to be used to render.
+     */
+    protected function gatherVariables(): array
+    {
+        $variables = array_merge(
+            $this->normalizeVariableNames($this->gatherJsonFileVariables()),
+            $this->normalizeVariableNames($this->gatherEnvFileVariables()),
+            $this->normalizeVariableNames($this->gatherCommandLineVariables())
+        );
+        $result = [];
+
+        foreach ($variables as $k => $v) {
+            $result[Str::camel($k)] = $v;
+        }
+
+        return $result;
+    }
 
     /**
      * Execute the command.
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $options = $this->commandOptions;
+        $force = $options['force'] ?? false;
+        $file = rtrim($this->normalizePath($this->argument("file")), "\\/");
 
-        $file = $this->normalizePath($this->argument("file"));
-
-        if (! file_exists($file)) {
+        if (!file_exists($file)) {
             return $this->handleException(new FileNotFoundException("The file or directory $file does not exist."));
         }
 
-        $data = $this->gatherRenderData();
+        $this->comment("Validated file path: $file");
+
+        $variables = $this->gatherVariables();
 
         // process single file.
         if (is_file($file)) {
-         
-
-            $this->renderFile($file, $data, $options);
-
-            return 0;
-        }
-
-        $file = rtrim($file, "\\/");
-        $force = $options['force'] ?? false;
-        
-        if (is_dir($file) && ($force || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
-            $this->renderDirectoryFiles($file, $data, $options);
-
-            return 0;
+            $this->renderFile($file, $variables, $options);
+        } else if (is_dir($file) && ($force || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
+            $this->renderDirectoryFiles($file, $variables, $options);
         }
 
         return 0;
@@ -304,12 +323,8 @@ class RenderCommand extends Command
 
     /**
      * Renders a template file from path using given data.
-     *
-     * @param string $file
-     * @param array $data
-     * @return int
      */
-    protected function renderFile(string $file, array $data, array $options)
+    protected function renderFile(string $file, array $data, array $options): string
     {
         $blade = $this->blade($file, $options);
 
@@ -319,13 +334,11 @@ class RenderCommand extends Command
             return $this->handleException($e);
         }
 
-        if ($result !== false) {
-            $file = $blade->getSaveLocation();
+        $file = $blade->getSaveLocation();
 
-            $this->info("Rendered $file.");
-        }
+        $this->info("Rendered $file.");
 
-        return $result == false ? 1 : 0;
+        return $result;
     }
 
     /**
@@ -355,42 +368,5 @@ class RenderCommand extends Command
     protected function isReservedOption($name)
     {
         return in_array($name, $this->reservedOptions);
-    }
-
-    /**
-     * Get the data from json files.
-     *
-     * @param array $options
-     * @return array
-     */
-    public function gatherJsonFileData(): array
-    {
-        $json = [];
-        $jsonFiles = Arr::wrap($this->commandOptions["from-json"] ?? []);
-
-        foreach ($jsonFiles as $file) {
-            $json = array_merge($json, $this->loadJsonFile($file));
-        }
-
-        return $json;
-    }
-
-    /**
-     * Get variable data from files.
-     *
-     * @return array
-     */
-    protected function gatherFileVariableData(): array
-    {
-        $vars = [];
-
-        foreach ($this->gatherJsonFileData() as $k => $v) {
-            if ($this->isReservedOption($k)) {
-                continue;
-            }
-            $vars[$k] = $v;
-        }
-
-        return $vars;
     }
 }

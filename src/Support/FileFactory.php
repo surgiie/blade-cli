@@ -2,6 +2,7 @@
 
 namespace Surgiie\BladeCLI\Support;
 
+use Surgiie\BladeCLI\Blade;
 use Illuminate\View\Factory;
 
 class FileFactory extends Factory
@@ -10,7 +11,7 @@ class FileFactory extends Factory
      * Disable dot notation normalization.
      *
      * @param string $name
-     * @return void
+     * @return string
      */
     protected function normalizeName($name)
     {
@@ -38,7 +39,7 @@ class FileFactory extends Factory
      */
     public function getEngineFromPath($path)
     {
-        return $this->engines->resolve('blade');
+        return $this->engines->resolve(Blade::ENGINE_NAME);
     }
 
     /**

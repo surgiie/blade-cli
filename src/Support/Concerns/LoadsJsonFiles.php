@@ -9,11 +9,8 @@ trait LoadsJsonFiles
 {
     /**
      * Get a more helpful json error.
-     *
-     * @param string $error
-     * @return string
      */
-    protected function getJsonParseError($error)
+    protected function getJsonParseError(string $error): string
     {
         switch ($error) {
             case JSON_ERROR_DEPTH:
@@ -33,14 +30,11 @@ trait LoadsJsonFiles
 
     /**
      * Loads a json file and returns parsed data as an array.
-     *
-     * @param string $path
-     * @return array
      */
-    public function loadJsonFile(string $path)
+    public function loadJsonFile(string $path): array
     {
         if (! file_exists($path)) {
-            throw new FileNotFoundException("The $path json file does not exist.");
+            throw new FileNotFoundException("The json file '$path' file does not exist.");
         }
 
         $data = json_decode(file_get_contents($path), JSON_OBJECT_AS_ARRAY);

@@ -14,10 +14,9 @@ class FileCompiler extends BladeCompiler
     protected $rawTags = ['{{', '}}'];
 
     /**
-     * Compile Blade statements that start with "@" to be shifted
-     * to the start of the line should they have leading whitespace
-     * which is problematic for files that have semantical/spacing
-     * requirements, such as yaml files.
+     * Compile Blade directives to be shifted to the start of the line should they 
+     * have leading whitespace which is problematic for files that have semantical
+     * spacing requirements, such as yaml files.
      *
      * PHP tags may leave behind unwanted whitespace:
      *
@@ -43,8 +42,7 @@ class FileCompiler extends BladeCompiler
             'endwhile',
         ]);
 
-        // move @ directives that are nested to start of line
-        // this will preserve nesting once file is rendered.
+   
         $value = preg_replace("/\\s+\@($keywords)/", "\n@$1", $value);
 
         return parent::compileStatements($value);
@@ -52,11 +50,14 @@ class FileCompiler extends BladeCompiler
 
     /**
      * Determine if the given view is expired.
+     * 
+     * We'll always return true here to ensure
+     * the compiler always compiles the file.
      *
-     * @param  string  $path
+     * @param  string $path
      * @return bool
      */
-    public function isExpired($path)
+    public function isExpired($path): bool
     {
         // ensures that compiler compiles the file always
         return true;

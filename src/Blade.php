@@ -2,10 +2,13 @@
 
 namespace Surgiie\BladeCLI;
 
+use Closure;
 use SplFileInfo;
 use RuntimeException;
 use BadMethodCallException;
+use InvalidArgumentException;
 use Illuminate\Events\Dispatcher;
+use Surgiie\BladeCLI\Support\File;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use PHPUnit\Framework\Assert as PHPUnit;
@@ -13,9 +16,9 @@ use Surgiie\BladeCLI\Support\FileFinder;
 use Surgiie\BladeCLI\Support\FileFactory;
 use Surgiie\BladeCLI\Support\FileCompiler;
 use Illuminate\View\Engines\EngineResolver;
-use InvalidArgumentException;
-use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
 use Surgiie\BladeCLI\Support\FileCompilerEngine;
+use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
+use Surgiie\BladeCLI\Support\Exceptions\PermissionException;
 use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException;
 use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
@@ -24,79 +27,64 @@ use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
 class Blade
 {
     use NormalizesPaths;
+
     /**
      * Get the engine name for resolver registration.
-     *
-     * @var string
      */
     public const ENGINE_NAME = "blade";
     /**
      * The container instance.
-     *
-     * @var \Illuminate\Container\Container
      */
     protected Container $container;
 
     /**
      * Simple cache property to avoid recalculations. 
-     *
-     * @var array
      */
     protected array $cache = ['save-directory'=>null];
 
     /**
      * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
      */
     protected Filesystem $filesystem;
 
     /**
-     * The file being rendered.
-     *
-     * @var null|\SplFileInfo
+     * File info about the file being rendered.
      */
     protected ?SplFileInfo $file = null;
 
     /**
      * The file factory instance.
-     *
-     * @var \Surgiie\BladeCLI\Support\FileFactory
      */
     protected ?FileFactory $fileFactory = null;
 
     /**
      * The engine resolver instance.
-     *
-     * @var \Illuminate\View\Engines\EngineResolver|nul
      */
     protected ?EngineResolver $resolver = null;
 
     /**
      * The file compiler instance.
-     *
-     * @var \Surgiie\BladeCLI\Support\FileCompiler|null
      */
     protected ?FileCompiler $fileCompiler = null;
 
     /**
      * The file compiler engine instance.
-     *
-     * @var \Surgiie\BladeCLI\Support\FileCompilerEngine|null
      */
     protected ?FileCompilerEngine $compilerEngine = null;
 
     /**
      * The file finder instance.
-     *
-     * @var \Surgiie\BladeCLI\Support\FileFinder|null
      */
     protected ?FileFinder $fileFinder = null;
 
+
+    /**
+     * The render file instance.
+     */
+    protected ?File $renderFile = null;
+
     /**
      * Data about testing/faking render calls.
-     *
-     * @var array
      */
     protected static array $testing = [
         'directory' => null,
@@ -105,11 +93,6 @@ class Blade
 
     /**
      * Construct a new Blade instance and configure engine.
-     *
-     * @param \Illuminate\Container\Container $container
-     * @param \Illuminate\Filesystem\Filesystem $filesystem
-     * @param string|null $filePath
-     * @param array $options
      */
     public function __construct(Container $container, Filesystem $filesystem, ?string $filePath = null, array $options = [])
     {
@@ -133,13 +116,9 @@ class Blade
     }
 
     /**
-     * Specifies testing is being done and
-     * files should be written to the given directory.
-     *
-     * @param string $directory
-     * @return void
+     * Set the testing directory for rendered files.
      */
-    public static function fake(string $directory)
+    public static function fake(string $directory): void
     {
         self::$testing['directory'] = $directory;
 
@@ -147,11 +126,9 @@ class Blade
     }
 
     /**
-     * Perform testing cleanup in tear down.
-     *
-     * @return void
+     * Perform testing cleanup.
      */
-    public static function tearDown()
+    public static function tearDown(): void
     {
         if (self::isFaked()) {
             (new Filesystem())->deleteDirectory(self::$testing['directory']);
@@ -162,9 +139,8 @@ class Blade
 
     /**
      * Generate a path to the testing directory.
-     *
-     * @param string $path
-     * @return string|void
+     * 
+     * @return void|string
      */
     public static function testPath(string $path = "")
     {
@@ -175,13 +151,9 @@ class Blade
     }
 
     /**
-     * Write test file to testing directory.
-     *
-     * @param string $file
-     * @param string $contents
-     * @return void
+     * Write a test file to testing directory.
      */
-    public static function putTestFile(string $file, string $contents)
+    public static function putTestFile(string $file, string $contents): void
     {
         if (self::isFaked()) {
             $path = self::testPath($file);
@@ -192,13 +164,9 @@ class Blade
     }
 
     /**
-     * Assert file was rendered.
-     *
-     * @param string $file
-     * @param null|string $expected
-     * @return void
+     * Assert a file was rendered.
      */
-    public static function assertRendered(string $file, string $expected = null)
+    public static function assertRendered(string $file, string $expected = null): void
     {
         if (self::isFaked()) {
             clearstatcache();
@@ -222,20 +190,16 @@ class Blade
 
     /**
      * Check if the rendering is being faked.
-     *
-     * @return bool
      */
-    public static function isFaked()
+    public static function isFaked(): bool
     {
         return !is_null(self::$testing['directory']);
     }
 
     /**
      * Return the set file finder.
-     *
-     * @return \Surgiie\BladeCLI\Support\FileFinder
      */
-    public function getFileFinder()
+    public function getFileFinder(): FileFinder
     {
         if (!is_null($this->fileFinder)) {
             return $this->fileFinder;
@@ -246,10 +210,8 @@ class Blade
 
     /**
      * Return the set engine resolver.
-     *
-     * @return \Illuminate\View\Engines\EngineResolver
      */
-    protected function getEngineResolver()
+    protected function getEngineResolver(): EngineResolver
     {
         if (!is_null($this->resolver)) {
             return $this->resolver;
@@ -260,10 +222,8 @@ class Blade
 
     /**
      * Return set file factory instance.
-     *
-     * @return \Surgiie\BladeCLI\Support\FileFactory
      */
-    protected function getFileFactory()
+    protected function getFileFactory(): FileFactory
     {
         if (!is_null($this->fileFactory)) {
             return $this->fileFactory;
@@ -278,10 +238,8 @@ class Blade
 
     /**
      * Return set compiler engine instance.
-     *
-     * @return \Surgiie\BladeCLI\Support\FileCompilerEngine
      */
-    protected function getCompilerEngine()
+    protected function getCompilerEngine(): FileCompilerEngine
     {
         if (!is_null($this->compilerEngine)) {
             return $this->compilerEngine;
@@ -292,10 +250,8 @@ class Blade
 
     /**
      * Return the set file compiler instance.
-     *
-     * @return \Surgiie\BladeCLI\Support\FileCompiler
      */
-    protected function getFileCompiler()
+    protected function getFileCompiler(): FileCompiler
     {
         if (!is_null($this->fileCompiler)) {
             return $this->fileCompiler;
@@ -305,21 +261,25 @@ class Blade
     }
 
     /**
-     * Get the compiled path to where compiled files go.
-     *
-     * @return string
+     * Get the current render file instance.
      */
-    protected function getCompiledPath()
+    public function getRenderFileInstance(): null|File
+    {
+        return $this->renderFile;
+    }
+
+    /**
+     * Get the compiled path to where compiled files go.
+     */
+    protected function getCompiledPath(): string
     {
         return __DIR__ . "/../.compiled";
     }
 
     /**
      * Make the directory where compiled files go.
-     *
-     * @return bool
      */
-    public function makeCompiledDirectory()
+    public function makeCompiledDirectory(): bool
     {
         return @mkdir($this->getCompiledPath());
     }
@@ -327,11 +287,9 @@ class Blade
     /**
      * Set the path to the file being rendered.
      *
-     * @param string $filePath
      * @throws \Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException
-     * @return static
      */
-    public function setFilePath(string $filePath)
+    public function setFilePath(string $filePath): static
     {
         if (!file_exists($filePath)) {
             throw new FileNotFoundException(
@@ -353,44 +311,36 @@ class Blade
 
     /**
      * Get the realpath directory of the file.
-     *
-     * @return string
      */
-    public function getFileDirectory()
+    public function getFileDirectory(): string
     {
         return dirname($this->file->getRealPath());
     }
 
     /**
      * Set the options for rendering.
-     *
-     * @return static
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): static
     {
-        $this->options = $options;
+        $this->options = array_filter($options, function($v){
+            return !is_null($v);
+        });
 
         return $this;
     }
 
     /**
      * Get an option value or default.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
-    protected function getOption($key, $default = null)
+    protected function getOption(string $key, mixed $default = null): mixed
     {
         return array_key_exists($key, $this->options) ? $this->options[$key] : $default;
     }
 
     /**
-     * Check if the file should be rendered.
-     *
-     * @return bool
+     * Check if the rendered file destination is for the file itself.
      */
-    protected function checkDestinationIsSetFile()
+    protected function checkDestinationIsSetFile(): bool
     {
         // if the file we are rendering is the rendered file location, then we are processing
         // an already rendered file. This happens on subsequent render calls on a directory
@@ -400,10 +350,8 @@ class Blade
 
     /**
      * Get the directory the rendered file will be saved to.
-     *
-     * @return string
      */
-    protected function getSaveDirectory()
+    protected function getSaveDirectory(): string
     {
         if(!is_null($this->cache['save-directory'])){
             return $this->cache['save-directory'];
@@ -420,18 +368,20 @@ class Blade
         $saveDir = $this->normalizePath($saveDir);
         $filename = basename($saveDir);
 
-
         $saveDir = str_replace($filename, "", $saveDir);
 
-        return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? $this->getFileDirectory() : $saveDir;
+        // allow ~ syntax and expand accordingly
+        if($saveDir == "~/"){
+            $saveDir = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv("USERPROFILE") : getenv("HOME");
+        }
+
+        return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? getcwd() : $saveDir;
     }
 
     /**
-     * Get the file name that will be used for the saved file.
-     *
-     * @return string
+     * Get the default file name that will be used for the saved file.
      */
-    protected function getDefaultSaveFileName()
+    protected function getDefaultSaveFileName(): string
     {
         $basename = rtrim($this->file->getBasename($ext = $this->file->getExtension()), '.');
 
@@ -440,31 +390,32 @@ class Blade
 
     /**
      * Get the absolute path to where the file was rendered.
-     *
-     * @return string
      */
-    public function getSaveLocation()
+    public function getSaveLocation(): string
     {
         $ds = DIRECTORY_SEPARATOR;
-        $givenSaveAs = $this->getOption('save-as');
-        $basename = basename($givenSaveAs);
-        $derivedDirectory = rtrim($this->normalizePath($this->getSaveDirectory()), $ds);
-        $filename = realpath(__DIR__ . "/../") == $derivedDirectory && !$basename ?  $this->getDefaultSaveFileName() : $basename;
+        $saveAs = $this->getOption('save-as', $this->getDefaultSaveFileName());
 
+        if(empty($saveAs)){
+            throw new BadMethodCallException("The save-as option value is empty, no save file locaton given.");
+        }
 
-        $path = rtrim($derivedDirectory . $ds . ltrim($filename, $ds), $ds);
+        $basename = basename($saveAs);
+        $derivedDirectory = $this->normalizePath($this->getSaveDirectory());
 
+        if($derivedDirectory != $ds){
+           $derivedDirectory = rtrim($derivedDirectory, $ds). $ds;
+        }
+        
+        $path = rtrim($derivedDirectory . ltrim($basename, $ds), $ds);
         return realpath($path) ?: $path;
     }
 
     /**
-     * Get the error handler to use when we render.
-     *
-     * @return callable
+     * Return a custom error handler for when we render a file.
      */
-    protected function getRenderErrorHandler()
+    protected function getRenderErrorHandler(): Closure
     {
-        // we will set a custom handler to throw an exception on missing data instead of a warning.
         return function ($severity, $message, $file, $line) {
             if ($severity != E_WARNING) {
                 return;
@@ -482,30 +433,22 @@ class Blade
     /**
      * Save the contents of the rendered file.
      *
-     * @param string $contents
      * @throws \Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException
      * @throws \Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException
-     * @return bool
      */
-    protected function saveRenderedContents(string $contents)
+    protected function saveRenderedContents(string $contents): bool
     {
         $this->ensureSaveDirectoryExists();
 
         $saveTo = $this->getSaveLocation();
 
-        if (file_exists($saveTo) && $this->getOption('force', false) !== true) {
-            $saveTo = realpath($saveTo);
-
-            throw new FileAlreadyExistsException("The file $saveTo already exists.");
-        }
-
         if(!is_writable($saveDirectory = $this->getSaveDirectory())){
-            throw new CouldntWriteFileException("The save directory $saveDirectory is not writable");
+            throw new PermissionException("The save directory $saveDirectory is not writable.");
         }
 
         $success = $this->filesystem->put($saveTo, $contents);
 
-        if (!$success) {
+        if ($success === false) {
             $saveTo = realpath($saveTo);
 
             throw new CouldntWriteFileException("Could not write/save file to: $saveTo");
@@ -516,10 +459,8 @@ class Blade
 
     /**
      * Ensure the save directory exists.
-     *
-     * @return bool
      */
-    protected function ensureSaveDirectoryExists()
+    protected function ensureSaveDirectoryExists(): bool
     {
         $dir = $this->getSaveDirectory();
 
@@ -530,65 +471,44 @@ class Blade
     }
 
     /**
-     * Validate that a path is set or error out.
-     * 
-     * @throws \BadMethodCallException
-     * @return void
+     * Render the file with the given data.
      */
-    protected function failIfFilePathIsNotSet()
+    public function render(array $data = [], bool $save = true): string
     {
         if (is_null($this->file)) {
             throw new BadMethodCallException("A file path has not been set, nothing to render.");
         }
-    }
-    /**
-     * Get the rendered contents using the given data.
-     *
-     * @param array $data
-     * @return array
-     */
-    public function getRenderedContents(array $data = [])
-    {
-        $this->failIfFilePathIsNotSet();
 
-        $renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
+        $saveAs = $this->getSaveLocation();
 
-        set_error_handler($this->getRenderErrorHandler());
+        if (file_exists($saveAs) && $this->getOption('force', false) !== true) {
+            $saveAs = realpath($saveAs);
 
-        $contents = $renderFile->render();
+            throw new FileAlreadyExistsException("The file $saveAs already exists.");
+        }
 
-        restore_error_handler();
-
-        return [$contents, $renderFile];
-    }
-
-    /**
-     * Render the file with the given data.
-     *
-     * @param array $data
-     * @return \BladeCLI\Support\File|bool
-     */
-    public function render(array $data = [])
-    {
-        $this->failIfFilePathIsNotSet();
-
-        $saveAs = $this->getOption('save-as');
-
-        if (file_exists($saveAs)) {
-            throw new InvalidArgumentException("Your save file location already exists or is a directory.");
+        if (is_dir($saveAs) && $this->getOption('save-as')) {
+            throw new InvalidArgumentException("Your save file is a an existing directory, use path to non-existing file.");
         }
 
         if (!$this->checkDestinationIsSetFile()) {
             throw new InvalidArgumentException("Your save file location is for the file being rendered. Use different save filename.");
-            return false;
         }
 
-        list($contents, $renderFile) = $this->getRenderedContents($data);
+        $this->renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
 
-        $this->saveRenderedContents($contents);
+        set_error_handler($this->getRenderErrorHandler());
+
+        $contents =  $this->renderFile->render();
+
+        restore_error_handler();
+
+        if($save){
+            $this->saveRenderedContents($contents);
+        }
 
         $this->filesystem->deleteDirectory($this->getCompiledPath(), preserve: true);
 
-        return $renderFile;
+        return $contents;
     }
 }

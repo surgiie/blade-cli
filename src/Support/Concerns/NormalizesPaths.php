@@ -7,11 +7,8 @@ trait NormalizesPaths
 {
     /**
      * Normalize a path from linux to windows or vice versa.
-     *
-     * @param string $path
-     * @return string
      */
-    protected function normalizePath(string $path)
+    protected function normalizePath(string $path): string
     {
         if (DIRECTORY_SEPARATOR == "\\") {
             return str_replace("/", "\\", $path);

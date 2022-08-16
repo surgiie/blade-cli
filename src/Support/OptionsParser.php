@@ -15,21 +15,17 @@ class OptionsParser
     public const REGISTRATION_MODE = 1;
 
     /**
-     * Parsing mode for parsing option's values.
+     * Parsing mode for parsing options with their values. Mostly useful for testing.
      */
     public const VALUE_MODE = 2;
 
     /**
      * The options to parse.
-     *
-     * @var array
      */
     protected array $options = [];
 
     /**
      * Construct new instance.
-     *
-     * @param array $options
      */
     public function __construct(array $options)
     {
@@ -37,12 +33,9 @@ class OptionsParser
     }
 
     /**
-     * Set options to parse.
-     *
-     * @param array $options
-     * @var static
+     * Set the options to parse.
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): static
     {
         $this->options = array_filter($options);
 
@@ -51,11 +44,8 @@ class OptionsParser
 
     /**
      * Parse a token for an --option or --option=value format.
-     *
-     * @param string $token
-     * @return array
      */
-    protected function parseOption(string $token)
+    protected function parseOption(string $token): array
     {
         // match for a --option or --option=value string.
         preg_match("/--([^=]+)=?(.*)/", $token, $match);
@@ -66,12 +56,9 @@ class OptionsParser
     /**
      * Parse the set options.
      *
-     *
-     * @param int $mode - Return options with value or just options with Input modes for registration with symfony input binding.
      * @throws \InvalidArgumentException
-     * @return array
      */
-    public function parse(int $mode = 1)
+    public function parse(int $mode = 1): array
     {
         if (! in_array($mode, [static::REGISTRATION_MODE, static::VALUE_MODE])) {
             throw new InvalidArgumentException("Invalid parsing mode given");
@@ -98,6 +85,9 @@ class OptionsParser
                 $options[$name][] = $value;
             } elseif ($value) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED : $value;
+                $options[$name] = $value;
+            }elseif (!$value) {
+                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_OPTIONAL : $value;
                 $options[$name] = $value;
             } elseif (! $optionExists) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE : true;

@@ -54,16 +54,20 @@ $blade = new Blade(
 );
 
 // render and save the file with this data/vars
-$blade->render([
+$contents = $blade->render([
     'var'=>'example'
 ]);
 
-// or if you want the rendered contents only you can get it via this method, this does give you the contents and the render file instance:
-list($contents, $renderFile) = $blade->getRenderedContents(['var'=>'example']);
+// you may prevent the file from being saved, by passing false to the 2nd argument of the render method
+// this is useful if you wish to process the contents of the rendered file yourself and do specific custom tasks.
+$contents = $blade->render(
+    ['var'=>'example'],
+    false
+);
 
 ```
 
-**Note**: Refer to the readme in the release version you choose as syntax/api may change between versions.
+**Note**: Refer to the readme in the release version you download as syntax/api may change between versions.
 
 ### CLI Completion
 
@@ -96,7 +100,7 @@ blade render ./person.yml \
                 --include-address
 ```
 
-This will render and save the file to the same directory as `person.rendered.yml`
+This will render and save the file to the same directory as a file named `person.rendered.yml`
 
 
 ### Custom Filename
@@ -114,20 +118,24 @@ blade render ./person.yml \
 
 ### Variable Data
 
-There are 2 options for passing variable data to your files being rendered:
+There are 3 options for passing variable data to your files being rendered, in precedence order from **lowest to highest** :
 
-1. As you saw in the earlier example above, the first method is through options to the `render` command. `--example-var=value`
 
-2. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files. Note that options take precedence over the data loaded from json files.
+2. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files. 
+
+3. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files. 
+
+3. Lastly as you saw in the earlier example above, through arbitrary command line options to the `render` command. `--example-var=value`
 
 
 #### Variable Naming Convention
 
-Options or keys in your json file can be defined in any naming convention you prefer, but your actual variable reference should be camel case.
-This is because php doesnt support kebab cased variables which is often the format for command line options. That said, since camel case is usually standard, that is the format we decided to stick with. Your options will automatically get converted to data using camel case. To clarify a bit:
+Command line options, env and json file keys can be defined in any naming convention you prefer, but your actual variable reference **MUST** be camel case.
 
-Either one of these option formats can be used `--favorite-food`, `--favoriteFood`, `--favorite_food` to reference a `{{ $favoriteFood }}` variable in your file.
+This is because php doesnt support kebab cased variables and since this is often the format for command line options, all variables will automatically get converted to data using camel case.  
 
+For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option will be referenced
+as `$favoriteFood` in your files. 
 
 #### Variable Types
 
