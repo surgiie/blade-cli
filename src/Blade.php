@@ -4,9 +4,8 @@ namespace Surgiie\BladeCLI;
 
 use Closure;
 use SplFileInfo;
-use RuntimeException;
 use BadMethodCallException;
-use InvalidArgumentException;
+use Illuminate\Support\Str;
 use Illuminate\Events\Dispatcher;
 use Surgiie\BladeCLI\Support\File;
 use Illuminate\Container\Container;
@@ -40,7 +39,7 @@ class Blade
     /**
      * Simple cache property to avoid recalculations. 
      */
-    protected array $cache = ['save-directory'=>null];
+    protected array $cache = ['save-directory' => null];
 
     /**
      * The filesystem instance.
@@ -50,7 +49,7 @@ class Blade
     /**
      * File info about the file being rendered.
      */
-    protected ?SplFileInfo $file = null;
+    protected ?SplFileInfo $fileInfo = null;
 
     /**
      * The file factory instance.
@@ -77,11 +76,10 @@ class Blade
      */
     protected ?FileFinder $fileFinder = null;
 
-
     /**
      * The render file instance.
      */
-    protected ?File $renderFile = null;
+    protected ?File $file = null;
 
     /**
      * Data about testing/faking render calls.
@@ -263,9 +261,9 @@ class Blade
     /**
      * Get the current render file instance.
      */
-    public function getRenderFileInstance(): null|File
+    public function getfileInstance(): null|File
     {
-        return $this->renderFile;
+        return $this->file;
     }
 
     /**
@@ -297,13 +295,13 @@ class Blade
             );
         }
 
-        $this->file = new SplFileInfo($filePath);
+        $this->fileInfo = new SplFileInfo($filePath);
 
         $this->getFileFinder()->setPaths([$this->getFileDirectory()]);
 
-        $this->getFileFactory()->addExtension($this->file->getExtension(), self::ENGINE_NAME);
+        $this->getFileFactory()->addExtension($this->fileInfo->getExtension(), self::ENGINE_NAME);
 
-        foreach(array_keys($this->cache) as $key){
+        foreach (array_keys($this->cache) as $key) {
             $this->cache[$key] = null;
         }
         return $this;
@@ -314,7 +312,7 @@ class Blade
      */
     public function getFileDirectory(): string
     {
-        return dirname($this->file->getRealPath());
+        return dirname($this->fileInfo->getRealPath());
     }
 
     /**
@@ -322,7 +320,7 @@ class Blade
      */
     public function setOptions(array $options): static
     {
-        $this->options = array_filter($options, function($v){
+        $this->options = array_filter($options, function ($v) {
             return !is_null($v);
         });
 
@@ -340,12 +338,12 @@ class Blade
     /**
      * Check if the rendered file destination is for the file itself.
      */
-    protected function checkDestinationIsSetFile(): bool
+    protected function destinationIsFileBeingRendered(): bool
     {
         // if the file we are rendering is the rendered file location, then we are processing
         // an already rendered file. This happens on subsequent render calls on a directory
         // where we saved a render file previously.
-        return $this->file->getRealPath() != $this->getSaveLocation();
+        return $this->fileInfo->getRealPath() != $this->getSaveLocation();
     }
 
     /**
@@ -353,7 +351,7 @@ class Blade
      */
     protected function getSaveDirectory(): string
     {
-        if(!is_null($this->cache['save-directory'])){
+        if (!is_null($this->cache['save-directory'])) {
             return $this->cache['save-directory'];
         }
 
@@ -371,8 +369,9 @@ class Blade
         $saveDir = str_replace($filename, "", $saveDir);
 
         // allow ~ syntax and expand accordingly
-        if($saveDir == "~/"){
-            $saveDir = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv("USERPROFILE") : getenv("HOME");
+        if (Str::startsWith($saveDir, "~")) {
+            $home = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv("USERPROFILE") : getenv("HOME");
+            $saveDir =  rtrim($home, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($saveDir, "~". DIRECTORY_SEPARATOR);
         }
 
         return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? getcwd() : $saveDir;
@@ -383,7 +382,7 @@ class Blade
      */
     protected function getDefaultSaveFileName(): string
     {
-        $basename = rtrim($this->file->getBasename($ext = $this->file->getExtension()), '.');
+        $basename = rtrim($this->fileInfo->getBasename($ext = $this->fileInfo->getExtension()), '.');
 
         return $basename . ".rendered" . ($ext ? ".$ext" : '');
     }
@@ -396,17 +395,17 @@ class Blade
         $ds = DIRECTORY_SEPARATOR;
         $saveAs = $this->getOption('save-as', $this->getDefaultSaveFileName());
 
-        if(empty($saveAs)){
+        if (empty($saveAs)) {
             throw new BadMethodCallException("The save-as option value is empty, no save file locaton given.");
         }
 
         $basename = basename($saveAs);
         $derivedDirectory = $this->normalizePath($this->getSaveDirectory());
 
-        if($derivedDirectory != $ds){
-           $derivedDirectory = rtrim($derivedDirectory, $ds). $ds;
+        if ($derivedDirectory != $ds) {
+            $derivedDirectory = rtrim($derivedDirectory, $ds) . $ds;
         }
-        
+
         $path = rtrim($derivedDirectory . ltrim($basename, $ds), $ds);
         return realpath($path) ?: $path;
     }
@@ -442,7 +441,7 @@ class Blade
 
         $saveTo = $this->getSaveLocation();
 
-        if(!is_writable($saveDirectory = $this->getSaveDirectory())){
+        if (!is_writable($saveDirectory = $this->getSaveDirectory())) {
             throw new PermissionException("The save directory $saveDirectory is not writable.");
         }
 
@@ -471,11 +470,11 @@ class Blade
     }
 
     /**
-     * Render the file with the given data.
+     * Render the file with the given data and optionally save file.
      */
     public function render(array $data = [], bool $save = true): string
     {
-        if (is_null($this->file)) {
+        if (is_null($this->fileInfo)) {
             throw new BadMethodCallException("A file path has not been set, nothing to render.");
         }
 
@@ -488,22 +487,22 @@ class Blade
         }
 
         if (is_dir($saveAs) && $this->getOption('save-as')) {
-            throw new InvalidArgumentException("Your save file is a an existing directory, use path to non-existing file.");
+            throw new BadMethodCallException("Your save file is an existing directory, use path to a non-existing file.");
         }
 
-        if (!$this->checkDestinationIsSetFile()) {
-            throw new InvalidArgumentException("Your save file location is for the file being rendered. Use different save filename.");
+        if (!$this->destinationIsFileBeingRendered()) {
+            throw new BadMethodCallException("Your save file location is for the file being rendered. Use different save filename.");
         }
 
-        $this->renderFile = $this->getFileFactory()->make($this->file->getFilename(), $data);
+        $this->file = $this->getFileFactory()->make($this->fileInfo->getFilename(), $data);
 
         set_error_handler($this->getRenderErrorHandler());
 
-        $contents =  $this->renderFile->render();
+        $contents =  $this->file->render();
 
         restore_error_handler();
 
-        if($save){
+        if ($save) {
             $this->saveRenderedContents($contents);
         }
 

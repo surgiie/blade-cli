@@ -4,9 +4,11 @@ namespace Surgiie\BladeCLI\Commands;
 
 use Throwable;
 use Dotenv\Dotenv;
+use BadMethodCallException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Surgiie\BladeCLI\Blade;
+use InvalidArgumentException;
 use Symfony\Component\Finder\Finder;
 use Surgiie\BladeCLI\Support\Command;
 use Surgiie\BladeCLI\Support\OptionsParser;
@@ -26,7 +28,8 @@ class RenderCommand extends Command
      * @var string
      */
     protected $signature = "render {file}
-                                   {--save-as= : The custom directory or file name to save the .rendered files to. }
+                                   {--save-as= : The custom file path to save the rendered file to. }
+                                   {--save-dir= : The custom directory to save files to when rendering an entire directory. }
                                    {--from-json=* : A json file to load variable data from. }
                                    {--from-env=* : A .env file to load variable data from. }
                                    {--force : Force render or overwrite files.}";
@@ -47,16 +50,17 @@ class RenderCommand extends Command
      * and cannot be used as variable data options.
      */
     protected array $reservedOptions = [
-        "help",
-        "quiet",
-        "verbose",
-        "version",
-        "ansi",
-        "save-as",
-        "from-json",
-        "from-env",
-        "force",
-        "no-interaction",
+        'help',
+        'quiet',
+        'verbose',
+        'version',
+        'ansi',
+        'save-as',
+        'save-dir',
+        'from-json',
+        'from-env',
+        'force',
+        'no-interaction',
     ];
 
     /**
@@ -252,7 +256,6 @@ class RenderCommand extends Command
 
         $variables = $this->gatherVariables();
 
-        // process single file.
         if (is_file($file)) {
             $this->renderFile($file, $variables, $options);
         } else if (is_dir($file) && ($force || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
@@ -264,72 +267,49 @@ class RenderCommand extends Command
 
     /**
      * Render a directory of files.
-     *
-     * @param string $directory
-     * @param array $data
-     * @param array $options
-     * @return
      */
-    protected function renderDirectoryFiles(string $directory, array $data, array $options)
+    protected function renderDirectoryFiles(string $directory, array $data, array $options): int
     {
-        // if($options['filename'] ?? false){
-        //     throw new InvalidArgumentException("The filename option is only used when rendering a single file at a time.");
-        // }
+    
+        if (empty($options['save-dir'] ?? "")) {
+            return $this->handleException(new BadMethodCallException("The --save-dir option is required when rendering an entire directory."));
+        }
 
-        // $finder = $this->finder();
+        $saveDirectory = rtrim($options['save-dir'], "\\/");
 
-        // $files = $finder->in($directory)->files();
+        // validate save directory isnt the current directory being processed.
+        if ($saveDirectory == $directory) {
+            return $this->handleException(new InvalidArgumentException('The --save-dir is the directory you are rendering, select different directory.'));
+        }
 
-        // $saveDirectory = rtrim($options['save-directory'] ?? "", "\\/");
+        foreach ((new Finder())->in($directory)->files() as $file) {
+            $pathName = $file->getPathName();
 
-        // // validate save directory isnt the current directory being processed.
-        // if ($saveDirectory == $directory) {
-        //     return $this->handleException(new InvalidArgumentException('The save directory is the directory you are rendering, select different directory.'));
-        // }
+            // compute a save as location that mirrors the current location of this file.
+            $computedDirectory = rtrim($saveDirectory, "\\/");
 
-        // foreach ($files as $file) {
-        //     $pathName = $file->getPathName();
+            $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
 
-        //     if (! $saveDirectory) {
-        //         $this->renderFile($pathName, $data, $options);
+            $options['save-as'] = dirname(
+                $computedDirectory . DIRECTORY_SEPARATOR . $relativePath. DIRECTORY_SEPARATOR.$file->getFileName()
+            );
 
-        //         continue;
-        //     }
+            $this->renderFile($pathName, $data, $options);
+        }
 
-        //     // compute a save directory that mirrors the current location directory structure
-        //     $computedDirectory = rtrim($saveDirectory, "\\/");
-
-        //     $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
-
-        //     $options['save-directory'] = dirname(
-        //         $computedDirectory . DIRECTORY_SEPARATOR . $relativePath
-        //     );
-
-        //     $this->renderFile($pathName, $data, $options);
-        // }
-
-        return $this;
+        return 1;
     }
 
-    /**
-     * Get a new finder instance.
-     *
-     * @return \Symfony\Component\Finder\Finder
-     */
-    public function finder()
-    {
-        return new Finder();
-    }
 
     /**
      * Renders a template file from path using given data.
      */
-    protected function renderFile(string $file, array $data, array $options): string
+    protected function renderFile(string $file, array $data, array $options): int
     {
         $blade = $this->blade($file, $options);
 
         try {
-            $result = $blade->render(data: $data);
+            $blade->render(data: $data);
         } catch (Throwable $e) {
             return $this->handleException($e);
         }
@@ -338,7 +318,7 @@ class RenderCommand extends Command
 
         $this->info("Rendered $file.");
 
-        return $result;
+        return 0;
     }
 
     /**
