@@ -141,7 +141,7 @@ to false and then use true options to "negate" the value.
 If you try to render a file that already exists an exception will be raised, you may consider force write via the `--force` flag.
 
 ```
-php blade render ./person.yml \
+blade render ./person.yml \
                 --name="Bob" \
                 --relationship="Uncle" \
                 --favorite-food="Pizza" \
@@ -152,21 +152,17 @@ php blade render ./person.yml \
 
 ### Processing an entire directory of files
 
-You may also pass the path to a directory instead of a single file. This might be useful if you like to group template files in a directory and
+You may also pass the path to a directory instead of a single file. This might be useful if you like to group template files in a directory and want to render them all with a single command:
 
-want to render them all with a single command:
-
-`php blade render templates/ --save-dir="/path/to/dir/to/save/files/in" --some-data=foo`
+`blade render ./templates --save-dir="/home/bob/templates" --some-data=foo`
 
 **Note** This will prompt you for confirmation, you may skip confirmation by adding the `--force` flag.
 
-**Note** When rendering an entire directory the `--save-dir` option is **required** so that the cli exports all rendered files to a separate directory than the one being processed. The
-directory the files get saved in will mirror the directory structure of the directory being processed.  In this example `/home/bob/templates/` will have a 
-directory structure that matches `templates/`.
+**Note** When rendering an entire directory the `--save-dir` option is **required** so that the cli exports all rendered files to a separate directory than the one being processed. The directory the files get saved in will mirror the directory structure of the directory being processed.  In the above example `/home/bob/templates` will have a directory structure that matches `./templates`.
 
 ### Unit Testing
 
-If utilizing the `\Surgiie\BladeCLI\Blade` class directly in an app, the following methods maybe utilized to make unit testing easier:
+If utilizing the `\Surgiie\BladeCLI\Blade` class directly, the following methods maybe utilized to make unit testing easier:
 
 
 ```php
