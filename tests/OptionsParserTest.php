@@ -36,7 +36,7 @@ class OptionsParserTest extends TestCase
     /**
      * @test
      */
-    public function it_can_parse_dynamic_argv_options_values()
+    public function it_can_parse_dynamic_argv_option_values()
     {
         $parser = new OptionsParser([
             "--name=bob",

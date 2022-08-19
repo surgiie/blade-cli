@@ -30,44 +30,18 @@ Confirm is executable:
 blade
 ```
 
-Or if you want to use the api directly as a package, you can install with composer:
-
-`composer require surgiie/blade-cli`
-
-and use the class directly
-
-
-```php
-
-use Surgiie\BladeCLI\Blade;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
-
-$blade = new Blade(
-    container: new Container,
-    filesystem: new Filesystem,
-    filePath: '/path/to/file/to/render',
-    options: [
-        'force'=> true, // force overwrite existing rendered file
-        'save-as'=>'save-as' // optional file path to save file as.
-    ]
-);
-
-// render and save the file with this data/vars
-$contents = $blade->render([
-    'var'=>'example'
-]);
-
-// you may prevent the file from being saved, by passing false to the 2nd argument of the render method
-// this is useful if you wish to process the contents of the rendered file yourself and do specific custom tasks.
-$contents = $blade->render(
-    ['var'=>'example'],
-    false
-);
-
-```
-
 **Note**: Refer to the readme in the release version you download as syntax/api may change between versions.
+
+#### Composer Install
+You may also install via composer globally:
+
+`composer global require surgiie/blade-cli`
+
+Then be sure the global composer packages path is executable:
+
+```bash
+export PATH=~/.composer/vendor/bin:$PATH
+```
 
 ### CLI Completion
 
@@ -239,5 +213,40 @@ EOL);
 
 // removes current testing directory and turns off testing mode
 Blade::tearDown();
+
+```
+
+
+### Direct Use/Manually Rendering
+
+If you wish to use the api directly, you may utilize the Blade class directly in your apps:
+
+```php
+
+use Surgiie\BladeCLI\Blade;
+use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
+
+$blade = new Blade(
+    container: new Container,
+    filesystem: new Filesystem,
+    filePath: '/path/to/file/to/render',
+    options: [
+        'force'=> true, // force overwrite existing rendered file
+        'save-as'=>'save-as' // optional file path to save file as.
+    ]
+);
+
+// render and save the file with this data/vars
+$contents = $blade->render([
+    'var'=>'example'
+]);
+
+// you may prevent the file from being saved, by passing false to the 2nd argument of the render method
+// this is useful if you wish to process the contents of the rendered file yourself and do specific custom tasks.
+$contents = $blade->render(
+    ['var'=>'example'],
+    false
+);
 
 ```

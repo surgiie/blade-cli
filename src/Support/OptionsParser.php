@@ -86,10 +86,7 @@ class OptionsParser
             } elseif ($value) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED : $value;
                 $options[$name] = $value;
-            }elseif (!$value) {
-                $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_OPTIONAL : $value;
-                $options[$name] = $value;
-            } elseif (! $optionExists) {
+            }elseif (! $optionExists) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE : true;
                 $options[$name] = $value;
             } else {

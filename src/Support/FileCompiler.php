@@ -42,7 +42,7 @@ class FileCompiler extends BladeCompiler
             'endwhile',
         ]);
 
-   
+
         $value = preg_replace("/\\s+\@($keywords)/", "\n@$1", $value);
 
         return parent::compileStatements($value);
@@ -57,7 +57,7 @@ class FileCompiler extends BladeCompiler
      * @param  string $path
      * @return bool
      */
-    public function isExpired($path): bool
+    public function isExpired($path)
     {
         // ensures that compiler compiles the file always
         return true;

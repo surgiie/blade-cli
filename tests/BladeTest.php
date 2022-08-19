@@ -18,7 +18,7 @@ use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class BladeTest extends TestCase
 {
- 
+
     /**
      * Tests cleanup.
      */
@@ -29,13 +29,10 @@ class BladeTest extends TestCase
 
     /**
      * Fake blade function call.
-     *
-     * @param string $directory
-     * @return void
      */
-    public function fake(string $directory = "testing")
+    public function fake(string $directory = "mock"): void
     {
-        return Blade::fake(__DIR__."/$directory");
+        Blade::fake(__DIR__ . "/$directory");
     }
 
     /**
@@ -49,7 +46,7 @@ class BladeTest extends TestCase
 
         $this->expectException(FileNotFoundException::class);
 
-        $this->renderCommand(['file' => Blade::testPath($testFile->filename())]);
+        $this->renderCommand(['file' => $testFile->filename()]);
     }
 
     /**
@@ -63,7 +60,7 @@ class BladeTest extends TestCase
 
         Blade::putTestFile('example.yaml',  $testFile->content());
         $this->renderCommand(
-            ['file' => Blade::testPath('example.yaml')],
+            ['file' => 'example.yaml'],
             $testFile->options()
         );
 
@@ -71,8 +68,8 @@ class BladeTest extends TestCase
     }
 
     /**
-    * @test
-    */
+     * @test
+     */
     public function it_throws_exception_if_rendered_file_already_exists()
     {
         $this->fake();
@@ -84,11 +81,11 @@ class BladeTest extends TestCase
         $this->expectException(FileAlreadyExistsException::class);
 
         $this->renderCommand(
-            ['file' => Blade::testPath('example.yaml')],
+            ['file' => 'example.yaml'],
             $testFile->options()
         );
     }
-    
+
     /**
      * @test
      */
@@ -119,7 +116,7 @@ class BladeTest extends TestCase
 
         $this->expectException(UndefinedVariableException::class);
 
-        $this->renderCommand(['file' => Blade::testPath($testFile->filename())]);
+        $this->renderCommand(['file' => $testFile->filename()]);
     }
 
     /**
@@ -138,41 +135,52 @@ class BladeTest extends TestCase
 
         Blade::putTestFile($filename,  $testFile->content());
 
-        Blade::putTestFile($jsonFile = $testFile->filename().".json",  json_encode($testFile->jsonFileData()));
+        Blade::putTestFile($jsonFile = $testFile->filename() . ".json",  json_encode($testFile->fileData()));
 
         $this->renderCommand(
-            ['file' => Blade::testPath($testFile->filename())],
-            ['--from-json=' . Blade::testPath($jsonFile)]
+            ['file' => $testFile->filename()],
+            ['--from-json=' . $jsonFile]
         );
 
-        Blade::assertRendered($basename.".rendered".".$ext", $testFile->expectedContent());
+        Blade::assertRendered($basename . ".rendered" . ".$ext", $testFile->expectedContent());
     }
 
     /**
      * @test
      */
-    public function it_can_render_files_in_custom_directory()
+    public function it_can_load_data_from_env_files()
     {
         $this->fake();
 
-        $testFile = new TestIncludeFile();
+        $testFile = new TestJsonFile();
+        $filename = $testFile->filename();
 
-        Blade::putTestFile($testFile->filename(),  $testFile->content());
-        Blade::putTestFile($testFile->getIncludeFile()->filename(),  $testFile->getIncludeFile()->content());
+        $info = pathinfo($filename);
+        $basename = $info['filename'];
+        $ext = $info['extension'];
+
+        Blade::putTestFile($filename,  $testFile->content());
+
+        $env = [];
+
+        foreach ($testFile->fileData() as $k => $v) {
+            $k = strtoupper($k);
+            $env[] = "$k=$v";
+        }
+        Blade::putTestFile($envFile = $testFile->filename() . ".env",  implode("\n", $env));
 
         $this->renderCommand(
-            ['file' => Blade::testPath($testFile->filename())],
-            array_merge($testFile->getIncludeFile()->options(), ['--save-directory=custom/'])
+            ['file' => $testFile->filename()],
+            ['--from-env=' . $envFile]
         );
 
-        Blade::assertRendered("custom/".$testFile->filename(), $testFile->expectedContent());
+        Blade::assertRendered($basename . ".rendered" . ".$ext", $testFile->expectedContent());
     }
-
 
     /**
      * @test
      */
-    public function it_can_use_custom_save_filename()
+    public function it_can_use_custom_save_file_path()
     {
         $this->fake();
 
@@ -182,8 +190,8 @@ class BladeTest extends TestCase
         Blade::putTestFile($testFile->filename(),  $testFile->content());
 
         $this->renderCommand(
-            ['file' => Blade::testPath($testFile->filename())],
-            array_merge($testFile->options(), ['--save-directory=custom/', '--filename=custom-name.txt'])
+            ['file' => $testFile->filename()],
+            array_merge($testFile->options(), ['--save-as=/custom/custom-name.txt'])
         );
 
         Blade::assertRendered("custom/custom-name.txt", $testFile->expectedContent());
@@ -199,15 +207,42 @@ class BladeTest extends TestCase
         $jsonFile = new TestJsonFile();
         $yamlFile = new TestYamlFile();
 
-        Blade::putTestFile("templates/".$jsonFile->filename(),  $jsonFile->content());
-        Blade::putTestFile("templates/".$yamlFile->filename(),  $yamlFile->content());
+        Blade::putTestFile("templates/" . $jsonFile->filename(),  $jsonFile->content());
+        Blade::putTestFile("templates/" . $yamlFile->filename(),  $yamlFile->content());
 
         $this->renderCommand(
-            ['file' => Blade::testPath('templates')],
-            array_merge($jsonFile->options(), $yamlFile->options(), ['--save-directory=rendered/', '--force'])
+            ['file' => 'templates'],
+            array_merge($jsonFile->options(), $yamlFile->options(), ['--save-dir=rendered/', '--force'])
         );
 
-        Blade::assertRendered("rendered/".$jsonFile->filename(), $jsonFile->expectedContent());
-        Blade::assertRendered("rendered/".$yamlFile->filename(), $yamlFile->expectedContent());
+        Blade::assertRendered("rendered/" . $jsonFile->filename(), $jsonFile->expectedContent());
+        Blade::assertRendered("rendered/" . $yamlFile->filename(), $yamlFile->expectedContent());
+    }
+    /**
+     * @test
+     */
+    public function save_dir_is_required_when_rendering_an_entire_directory()
+    {
+        $this->fake();
+
+        $jsonFile = new TestJsonFile();
+        $yamlFile = new TestYamlFile();
+
+        Blade::putTestFile("templates/" . $jsonFile->filename(),  $jsonFile->content());
+        Blade::putTestFile("templates/" . $yamlFile->filename(),  $yamlFile->content());
+
+        $exception_thrown = false;
+        try {
+            $this->renderCommand(
+                ['file' => 'templates'],
+                array_merge($jsonFile->options(), $yamlFile->options(), ['--force'])
+            );
+        } catch (BadMethodCallException $e) {
+            $exception_thrown = true;
+        }
+
+        $this->assertSame(true, $exception_thrown);
+        Blade::assertNotRendered("rendered/" . $jsonFile->filename());
+        Blade::assertNotRendered("rendered/" . $yamlFile->filename());
     }
 }

@@ -86,7 +86,7 @@ class Blade
      */
     protected static array $testing = [
         'directory' => null,
-        'test-files' => [],
+        'test-render-files' => [],
     ];
 
     /**
@@ -118,7 +118,7 @@ class Blade
      */
     public static function fake(string $directory): void
     {
-        self::$testing['directory'] = $directory;
+        self::$testing['directory'] = rtrim($directory, DIRECTORY_SEPARATOR);
 
         @mkdir(self::$testing['directory'], recursive: true);
     }
@@ -130,7 +130,7 @@ class Blade
     {
         if (self::isFaked()) {
             (new Filesystem())->deleteDirectory(self::$testing['directory']);
-            self::$testing['test-files'] = [];
+            self::$testing['test-render-files'] = [];
             self::$testing['directory'] = null;
         }
     }
@@ -157,7 +157,7 @@ class Blade
             $path = self::testPath($file);
             @mkdir(dirname($path), recursive: true);
             file_put_contents($path, $contents);
-            self::$testing['test-files'][] = $path;
+            self::$testing['test-render-files'][] = $path;
         }
     }
 
@@ -172,7 +172,7 @@ class Blade
             $path = self::testPath($file);
 
             PHPUnit::assertTrue(
-                !in_array($path, self::$testing['test-files']) && file_exists($path),
+                !in_array($path, self::$testing['test-render-files']) && file_exists($path),
                 "Unable to find rendered file at [{$path}]."
             );
 
@@ -185,6 +185,24 @@ class Blade
             }
         }
     }
+
+    /**
+     * Assert a file was not rendered.
+     */
+    public static function assertNotRendered(string $file): void
+    {
+        if (self::isFaked()) {
+            clearstatcache();
+
+            $path = self::testPath($file);
+
+            PHPUnit::assertTrue(
+                !in_array($path, self::$testing['test-render-files']) && !file_exists($path),
+                "Found rendered file when expected not to: [{$path}]."
+            );
+        }
+    }
+
 
     /**
      * Check if the rendering is being faked.
@@ -289,6 +307,10 @@ class Blade
      */
     public function setFilePath(string $filePath): static
     {
+        if (self::isFaked()) {
+            $filePath = self::testPath($filePath);
+        }
+
         if (!file_exists($filePath)) {
             throw new FileNotFoundException(
                 "File $filePath does not exist."
@@ -356,7 +378,6 @@ class Blade
         }
 
         $saveDir = $this->getOption('save-as');
-
         if (!$saveDir) {
             return  $this->getFileDirectory();
         }
@@ -368,10 +389,13 @@ class Blade
 
         $saveDir = str_replace($filename, "", $saveDir);
 
+        if (self::isFaked()) {
+            $saveDir = self::testPath($saveDir);
+        }
         // allow ~ syntax and expand accordingly
-        if (Str::startsWith($saveDir, "~")) {
+        if (Str::startsWith($saveDir, "~" . DIRECTORY_SEPARATOR)) {
             $home = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv("USERPROFILE") : getenv("HOME");
-            $saveDir =  rtrim($home, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($saveDir, "~". DIRECTORY_SEPARATOR);
+            $saveDir =  rtrim($home, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($saveDir, "~" . DIRECTORY_SEPARATOR);
         }
 
         return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? getcwd() : $saveDir;

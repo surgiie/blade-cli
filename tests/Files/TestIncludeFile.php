@@ -26,8 +26,6 @@ class TestIncludeFile extends TestingFile
 
     /**
      * The filename.
-     *
-     * @return string
      */
     public function filename(): string
     {
@@ -37,7 +35,6 @@ class TestIncludeFile extends TestingFile
     /**
      * The content of the file.
      *
-     * @return string
      */
     public function content(): string
     {
@@ -51,7 +48,6 @@ class TestIncludeFile extends TestingFile
     /**
      * The data options for rendering.
      *
-     * @return array
      */
     public function options(): array
     {
@@ -59,19 +55,16 @@ class TestIncludeFile extends TestingFile
     }
 
     /**
-     * The data to write to test loading data from json files.
+     * The data to write to test loading data from json|env files.
      *
-     * @return array
      */
-    public function jsonFileData(): array
+    public function fileData(): array
     {
-        return $this->mainFile->jsonFileData();
+        return $this->mainFile->fileData();
     }
 
     /**
      * The expected rendered content of the file.
-     *
-     * @return string
      */
     public function expectedContent(): string
     {

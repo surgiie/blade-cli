@@ -27,7 +27,7 @@ class RenderCommand extends Command
      *
      * @var string
      */
-    protected $signature = "render {file}
+    protected $signature = "render {file-or-directory}
                                    {--save-as= : The custom file path to save the rendered file to. }
                                    {--save-dir= : The custom directory to save files to when rendering an entire directory. }
                                    {--from-json=* : A json file to load variable data from. }
@@ -81,12 +81,100 @@ class RenderCommand extends Command
     }
 
     /**
+     * Execute the command.
+     */
+    public function handle(): int
+    {
+        $options = $this->commandOptions;
+        $path = $originalPath = rtrim($this->normalizePath($this->argument("file-or-directory")), "\\/");
+
+        if (Blade::isFaked()) {
+            $path = Blade::testPath($path);
+        }
+
+        if (!file_exists($path)) {
+            return $this->handleException(new FileNotFoundException("The file or directory $path does not exist."));
+        }
+
+        $this->comment("Validated file path: $path");
+
+        $variables = $this->gatherVariables();
+
+        if (is_file($path)) {
+            $this->renderFile($originalPath, $variables, $options);
+        } 
+
+        return $this->renderDirectoryFiles($originalPath, $variables, $options);
+    }
+    
+    /**
+     * Render a directory of files.
+     */
+    protected function renderDirectoryFiles(string $directory, array $data, array $options): int
+    {
+
+        if (empty($options['save-dir'] ?? "")) {
+            return $this->handleException(new BadMethodCallException("The --save-dir option is required when rendering an entire directory."));
+        }
+        
+        if ($faked = Blade::isFaked()) {
+            $directory = Blade::testPath($directory);
+        }
+
+        $force = $options['force'] ?? false;
+
+        if (!$force && !$this->confirm("Are you sure you want to render ALL files in the $directory directory?")){
+            return 1;
+        }
+
+        $saveDirectory = rtrim($options['save-dir'], "\\/");
+
+        // validate save directory isnt the current directory being processed.
+        if ($saveDirectory == $directory) {
+            return $this->handleException(new InvalidArgumentException('The --save-dir is the directory you are rendering, select different directory.'));
+        }
+
+        foreach ((new Finder())->in($directory)->files() as $file) {
+            $pathName = $file->getPathName();
+            // compute a save as location that mirrors the current location of this file.
+            $computedDirectory = rtrim($saveDirectory, "\\/");
+
+            $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
+
+            $options['save-as'] = dirname(
+                $computedDirectory . DIRECTORY_SEPARATOR . $relativePath . DIRECTORY_SEPARATOR . $file->getFileName()
+            );
+
+            $this->renderFile($faked ? ltrim(str_replace(Blade::testPath(), "", $pathName), "\\/") : $pathName, $data, $options);
+        }
+
+        return 1;
+    }
+
+    /**
+     * Renders a template file from path using given data.
+     */
+    protected function renderFile(string $file, array $data, array $options): int
+    {
+        $blade = $this->blade($file, $options);
+
+        try {
+            $blade->render(data: $data);
+        } catch (Throwable $e) {
+            return $this->handleException($e);
+        }
+
+        $file = $blade->getSaveLocation();
+
+        $this->info("Rendered $file.");
+
+        return 0;
+    }
+
+    /**
      * Set the options to use over parsed argv.
      *
      * This is mostly useful for tests.
-     *
-     * @param array $options
-     * @return void
      */
     public static function useOptions(array $options = []): void
     {
@@ -99,10 +187,6 @@ class RenderCommand extends Command
 
     /**
      * Parse arguments for options to register with the command.
-     *
-     * @param \Symfony\Component\Console\Input\InputInterface $input
-     * @param array $arguments
-     * @return void
      */
     protected function parseArgsForCommandOptions(InputInterface $input, array $arguments = []): void
     {
@@ -157,6 +241,9 @@ class RenderCommand extends Command
         $jsonFiles = Arr::wrap($this->commandOptions["from-json"] ?? []);
 
         foreach ($jsonFiles as $file) {
+            if (Blade::isFaked()) {
+                $file = Blade::testPath($file);
+            }
             $json = array_merge($json, $this->loadJsonFile($file));
             $this->comment("Gathered variable data from json file: $file");
         }
@@ -172,6 +259,9 @@ class RenderCommand extends Command
         $envFiles = Arr::wrap($this->commandOptions["from-env"] ?? []);
 
         foreach ($envFiles as $file) {
+            if (Blade::isFaked()) {
+                $file = Blade::testPath($file);
+            }
             $env = array_merge($env, Dotenv::parse(file_get_contents($file)));
             $this->comment("Gathered variable data from env file: $file");
         }
@@ -184,11 +274,8 @@ class RenderCommand extends Command
     }
     /**
      * Normalize key naming convention for the given data.
-     *
-     * @param array $data
-     * @return array
      */
-    protected function normalizeVariableNames(array $vars)
+    protected function normalizeVariableNames(array $vars): array
     {
         $result = [];
 
@@ -238,97 +325,9 @@ class RenderCommand extends Command
     }
 
     /**
-     * Execute the command.
-     *
-     * @return int
-     */
-    public function handle(): int
-    {
-        $options = $this->commandOptions;
-        $force = $options['force'] ?? false;
-        $file = rtrim($this->normalizePath($this->argument("file")), "\\/");
-
-        if (!file_exists($file)) {
-            return $this->handleException(new FileNotFoundException("The file or directory $file does not exist."));
-        }
-
-        $this->comment("Validated file path: $file");
-
-        $variables = $this->gatherVariables();
-
-        if (is_file($file)) {
-            $this->renderFile($file, $variables, $options);
-        } else if (is_dir($file) && ($force || $this->confirm("Are you sure you want to render ALL files in the $file directory?"))) {
-            $this->renderDirectoryFiles($file, $variables, $options);
-        }
-
-        return 0;
-    }
-
-    /**
-     * Render a directory of files.
-     */
-    protected function renderDirectoryFiles(string $directory, array $data, array $options): int
-    {
-    
-        if (empty($options['save-dir'] ?? "")) {
-            return $this->handleException(new BadMethodCallException("The --save-dir option is required when rendering an entire directory."));
-        }
-
-        $saveDirectory = rtrim($options['save-dir'], "\\/");
-
-        // validate save directory isnt the current directory being processed.
-        if ($saveDirectory == $directory) {
-            return $this->handleException(new InvalidArgumentException('The --save-dir is the directory you are rendering, select different directory.'));
-        }
-
-        foreach ((new Finder())->in($directory)->files() as $file) {
-            $pathName = $file->getPathName();
-
-            // compute a save as location that mirrors the current location of this file.
-            $computedDirectory = rtrim($saveDirectory, "\\/");
-
-            $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
-
-            $options['save-as'] = dirname(
-                $computedDirectory . DIRECTORY_SEPARATOR . $relativePath. DIRECTORY_SEPARATOR.$file->getFileName()
-            );
-
-            $this->renderFile($pathName, $data, $options);
-        }
-
-        return 1;
-    }
-
-
-    /**
-     * Renders a template file from path using given data.
-     */
-    protected function renderFile(string $file, array $data, array $options): int
-    {
-        $blade = $this->blade($file, $options);
-
-        try {
-            $blade->render(data: $data);
-        } catch (Throwable $e) {
-            return $this->handleException($e);
-        }
-
-        $file = $blade->getSaveLocation();
-
-        $this->info("Rendered $file.");
-
-        return 0;
-    }
-
-    /**
      * Register a dynamic option parsed from args.
-     *
-     * @param string $name
-     * @param int $mode
-     * @return bool
      */
-    public function registerOption($name, $mode): bool
+    public function registerOption(string $name, int $mode): bool
     {
         if ($this->isReservedOption($name)) {
             return false;
@@ -341,11 +340,8 @@ class RenderCommand extends Command
 
     /**
      * Check if the given option name is a reserved one.
-     *
-     * @param string $name
-     * @return bool
      */
-    protected function isReservedOption($name)
+    protected function isReservedOption(string $name): bool
     {
         return in_array($name, $this->reservedOptions);
     }

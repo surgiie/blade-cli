@@ -8,8 +8,6 @@ class TestYamlFile extends TestingFile
 {
     /**
      * The filename.
-     *
-     * @return string
      */
     public function filename(): string
     {
@@ -18,8 +16,6 @@ class TestYamlFile extends TestingFile
 
     /**
      * The content of the file.
-     *
-     * @return string
      */
     public function content(): string
     {
@@ -40,8 +36,6 @@ class TestYamlFile extends TestingFile
 
     /**
      * The data options for rendering.
-     *
-     * @return array
      */
     public function options(): array
     {
@@ -55,11 +49,9 @@ class TestYamlFile extends TestingFile
     }
 
     /**
-     * The data to write to test loading data from json files.
-     *
-     * @return array
+     * The data to write to test loading data from env|json files.
      */
-    public function jsonFileData(): array
+    public function fileData(): array
     {
         return [
             'name' => 'Bob',
