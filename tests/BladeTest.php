@@ -46,7 +46,7 @@ class BladeTest extends TestCase
 
         $this->expectException(FileNotFoundException::class);
 
-        $this->renderCommand(['file' => $testFile->filename()]);
+        $this->renderCommand(['file-or-directory' => $testFile->filename()]);
     }
 
     /**
@@ -60,7 +60,7 @@ class BladeTest extends TestCase
 
         Blade::putTestFile('example.yaml',  $testFile->content());
         $this->renderCommand(
-            ['file' => 'example.yaml'],
+            ['file-or-directory' => 'example.yaml'],
             $testFile->options()
         );
 
@@ -81,7 +81,7 @@ class BladeTest extends TestCase
         $this->expectException(FileAlreadyExistsException::class);
 
         $this->renderCommand(
-            ['file' => 'example.yaml'],
+            ['file-or-directory' => 'example.yaml'],
             $testFile->options()
         );
     }
@@ -116,7 +116,7 @@ class BladeTest extends TestCase
 
         $this->expectException(UndefinedVariableException::class);
 
-        $this->renderCommand(['file' => $testFile->filename()]);
+        $this->renderCommand(['file-or-directory' => $testFile->filename()]);
     }
 
     /**
@@ -138,7 +138,7 @@ class BladeTest extends TestCase
         Blade::putTestFile($jsonFile = $testFile->filename() . ".json",  json_encode($testFile->fileData()));
 
         $this->renderCommand(
-            ['file' => $testFile->filename()],
+            ['file-or-directory' => $testFile->filename()],
             ['--from-json=' . $jsonFile]
         );
 
@@ -170,7 +170,7 @@ class BladeTest extends TestCase
         Blade::putTestFile($envFile = $testFile->filename() . ".env",  implode("\n", $env));
 
         $this->renderCommand(
-            ['file' => $testFile->filename()],
+            ['file-or-directory' => $testFile->filename()],
             ['--from-env=' . $envFile]
         );
 
@@ -190,7 +190,7 @@ class BladeTest extends TestCase
         Blade::putTestFile($testFile->filename(),  $testFile->content());
 
         $this->renderCommand(
-            ['file' => $testFile->filename()],
+            ['file-or-directory' => $testFile->filename()],
             array_merge($testFile->options(), ['--save-as=/custom/custom-name.txt'])
         );
 
@@ -211,7 +211,7 @@ class BladeTest extends TestCase
         Blade::putTestFile("templates/" . $yamlFile->filename(),  $yamlFile->content());
 
         $this->renderCommand(
-            ['file' => 'templates'],
+            ['file-or-directory' => 'templates'],
             array_merge($jsonFile->options(), $yamlFile->options(), ['--save-dir=rendered/', '--force'])
         );
 
@@ -234,7 +234,7 @@ class BladeTest extends TestCase
         $exception_thrown = false;
         try {
             $this->renderCommand(
-                ['file' => 'templates'],
+                ['file-or-directory' => 'templates'],
                 array_merge($jsonFile->options(), $yamlFile->options(), ['--force'])
             );
         } catch (BadMethodCallException $e) {

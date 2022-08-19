@@ -101,7 +101,7 @@ class RenderCommand extends Command
         $variables = $this->gatherVariables();
 
         if (is_file($path)) {
-            $this->renderFile($originalPath, $variables, $options);
+            return $this->renderFile($originalPath, $variables, $options);
         } 
 
         return $this->renderDirectoryFiles($originalPath, $variables, $options);
