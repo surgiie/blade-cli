@@ -250,3 +250,13 @@ $contents = $blade->render(
 );
 
 ```
+
+### Contribute
+Contributions are always welcome in the following manner:
+
+- Issue Tracker
+- Pull Requests
+- Discussions
+
+### License
+The project is licensed under the MIT license.
