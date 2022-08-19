@@ -102,11 +102,11 @@ class RenderCommand extends Command
 
         if (is_file($path)) {
             return $this->renderFile($originalPath, $variables, $options);
-        } 
+        }
 
         return $this->renderDirectoryFiles($originalPath, $variables, $options);
     }
-    
+
     /**
      * Render a directory of files.
      */
@@ -116,7 +116,7 @@ class RenderCommand extends Command
         if (empty($options['save-dir'] ?? "")) {
             return $this->handleException(new BadMethodCallException("The --save-dir option is required when rendering an entire directory."));
         }
-        
+
         if ($faked = Blade::isFaked()) {
             $directory = Blade::testPath($directory);
         }
