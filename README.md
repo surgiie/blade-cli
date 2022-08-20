@@ -95,9 +95,9 @@ blade render ./person.yml \
 There are 3 options for passing variable data to your files being rendered, in precedence order from **lowest to highest** :
 
 
-2. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files. 
+1. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files. 
 
-3. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files. 
+2. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files. 
 
 3. Lastly as you saw in the earlier example above, through arbitrary command line options to the `render` command. `--example-var=value`
 
