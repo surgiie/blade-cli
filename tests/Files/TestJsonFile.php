@@ -48,7 +48,6 @@ class TestJsonFile extends TestingFile
         ];
     }
 
-
     /**
      * The expected rendered content of the file.
      *

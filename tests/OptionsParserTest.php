@@ -2,9 +2,8 @@
 
 namespace Surgiie\BladeCLI\Tests;
 
-use Surgiie\BladeCLI\Support\OptionsParser;
-use Surgiie\BladeCLI\Tests\TestCase;
 use InvalidArgumentException;
+use Surgiie\BladeCLI\Support\OptionsParser;
 use Symfony\Component\Console\Input\InputOption;
 
 class OptionsParserTest extends TestCase

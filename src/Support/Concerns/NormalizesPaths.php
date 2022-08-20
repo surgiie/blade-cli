@@ -2,7 +2,6 @@
 
 namespace Surgiie\BladeCLI\Support\Concerns;
 
-
 trait NormalizesPaths
 {
     /**

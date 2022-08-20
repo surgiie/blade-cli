@@ -2,26 +2,26 @@
 
 namespace Surgiie\BladeCLI;
 
-use Closure;
-use SplFileInfo;
 use BadMethodCallException;
-use Illuminate\Support\Str;
-use Illuminate\Events\Dispatcher;
-use Surgiie\BladeCLI\Support\File;
+use Closure;
 use Illuminate\Container\Container;
+use Illuminate\Events\Dispatcher;
 use Illuminate\Filesystem\Filesystem;
-use PHPUnit\Framework\Assert as PHPUnit;
-use Surgiie\BladeCLI\Support\FileFinder;
-use Surgiie\BladeCLI\Support\FileFactory;
-use Surgiie\BladeCLI\Support\FileCompiler;
+use Illuminate\Support\Str;
 use Illuminate\View\Engines\EngineResolver;
-use Surgiie\BladeCLI\Support\FileCompilerEngine;
+use PHPUnit\Framework\Assert as PHPUnit;
+use SplFileInfo;
 use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
-use Surgiie\BladeCLI\Support\Exceptions\PermissionException;
-use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException;
 use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\Exceptions\PermissionException;
 use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
+use Surgiie\BladeCLI\Support\File;
+use Surgiie\BladeCLI\Support\FileCompiler;
+use Surgiie\BladeCLI\Support\FileCompilerEngine;
+use Surgiie\BladeCLI\Support\FileFactory;
+use Surgiie\BladeCLI\Support\FileFinder;
 
 class Blade
 {
@@ -37,7 +37,7 @@ class Blade
     protected Container $container;
 
     /**
-     * Simple cache property to avoid recalculations. 
+     * Simple cache property to avoid recalculations.
      */
     protected array $cache = ['save-directory' => null];
 
@@ -100,7 +100,7 @@ class Blade
 
         $this->setOptions($options);
 
-        if (!is_null($filePath)) {
+        if (! is_null($filePath)) {
             $this->setFilePath($filePath);
         }
 
@@ -137,13 +137,14 @@ class Blade
 
     /**
      * Generate a path to the testing directory.
-     * 
+     *
      * @return void|string
      */
     public static function testPath(string $path = "")
     {
         if (self::isFaked()) {
             $path = trim($path, "\\/");
+
             return rtrim(self::$testing['directory'] . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR);
         }
     }
@@ -172,11 +173,11 @@ class Blade
             $path = self::testPath($file);
 
             PHPUnit::assertTrue(
-                !in_array($path, self::$testing['test-render-files']) && file_exists($path),
+                ! in_array($path, self::$testing['test-render-files']) && file_exists($path),
                 "Unable to find rendered file at [{$path}]."
             );
 
-            if (!is_null($expected)) {
+            if (! is_null($expected)) {
                 PHPUnit::assertEquals(
                     $expected,
                     file_get_contents($path),
@@ -197,19 +198,18 @@ class Blade
             $path = self::testPath($file);
 
             PHPUnit::assertTrue(
-                !in_array($path, self::$testing['test-render-files']) && !file_exists($path),
+                ! in_array($path, self::$testing['test-render-files']) && ! file_exists($path),
                 "Found rendered file when expected not to: [{$path}]."
             );
         }
     }
-
 
     /**
      * Check if the rendering is being faked.
      */
     public static function isFaked(): bool
     {
-        return !is_null(self::$testing['directory']);
+        return ! is_null(self::$testing['directory']);
     }
 
     /**
@@ -217,7 +217,7 @@ class Blade
      */
     public function getFileFinder(): FileFinder
     {
-        if (!is_null($this->fileFinder)) {
+        if (! is_null($this->fileFinder)) {
             return $this->fileFinder;
         }
 
@@ -229,7 +229,7 @@ class Blade
      */
     protected function getEngineResolver(): EngineResolver
     {
-        if (!is_null($this->resolver)) {
+        if (! is_null($this->resolver)) {
             return $this->resolver;
         }
 
@@ -241,7 +241,7 @@ class Blade
      */
     protected function getFileFactory(): FileFactory
     {
-        if (!is_null($this->fileFactory)) {
+        if (! is_null($this->fileFactory)) {
             return $this->fileFactory;
         }
 
@@ -257,7 +257,7 @@ class Blade
      */
     protected function getCompilerEngine(): FileCompilerEngine
     {
-        if (!is_null($this->compilerEngine)) {
+        if (! is_null($this->compilerEngine)) {
             return $this->compilerEngine;
         }
 
@@ -269,7 +269,7 @@ class Blade
      */
     protected function getFileCompiler(): FileCompiler
     {
-        if (!is_null($this->fileCompiler)) {
+        if (! is_null($this->fileCompiler)) {
             return $this->fileCompiler;
         }
 
@@ -311,7 +311,7 @@ class Blade
             $filePath = self::testPath($filePath);
         }
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             throw new FileNotFoundException(
                 "File $filePath does not exist."
             );
@@ -326,6 +326,7 @@ class Blade
         foreach (array_keys($this->cache) as $key) {
             $this->cache[$key] = null;
         }
+
         return $this;
     }
 
@@ -343,7 +344,7 @@ class Blade
     public function setOptions(array $options): static
     {
         $this->options = array_filter($options, function ($v) {
-            return !is_null($v);
+            return ! is_null($v);
         });
 
         return $this;
@@ -373,12 +374,12 @@ class Blade
      */
     protected function getSaveDirectory(): string
     {
-        if (!is_null($this->cache['save-directory'])) {
+        if (! is_null($this->cache['save-directory'])) {
             return $this->cache['save-directory'];
         }
 
         $saveDir = $this->getOption('save-as');
-        if (!$saveDir) {
+        if (! $saveDir) {
             return  $this->getFileDirectory();
         }
 
@@ -395,7 +396,7 @@ class Blade
         // allow ~ syntax and expand accordingly
         if (Str::startsWith($saveDir, "~" . DIRECTORY_SEPARATOR)) {
             $home = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv("USERPROFILE") : getenv("HOME");
-            $saveDir =  rtrim($home, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($saveDir, "~" . DIRECTORY_SEPARATOR);
+            $saveDir = rtrim($home, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($saveDir, "~" . DIRECTORY_SEPARATOR);
         }
 
         return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? getcwd() : $saveDir;
@@ -431,6 +432,7 @@ class Blade
         }
 
         $path = rtrim($derivedDirectory . ltrim($basename, $ds), $ds);
+
         return realpath($path) ?: $path;
     }
 
@@ -465,7 +467,7 @@ class Blade
 
         $saveTo = $this->getSaveLocation();
 
-        if (!is_writable($saveDirectory = $this->getSaveDirectory())) {
+        if (! is_writable($saveDirectory = $this->getSaveDirectory())) {
             throw new PermissionException("The save directory $saveDirectory is not writable.");
         }
 
@@ -514,7 +516,7 @@ class Blade
             throw new BadMethodCallException("Your save file is an existing directory, use path to a non-existing file.");
         }
 
-        if (!$this->destinationIsFileBeingRendered()) {
+        if (! $this->destinationIsFileBeingRendered()) {
             throw new BadMethodCallException("Your save file location is for the file being rendered. Use different save filename.");
         }
 
@@ -522,7 +524,7 @@ class Blade
 
         set_error_handler($this->getRenderErrorHandler());
 
-        $contents =  $this->file->render();
+        $contents = $this->file->render();
 
         restore_error_handler();
 

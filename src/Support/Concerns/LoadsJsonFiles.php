@@ -2,8 +2,8 @@
 
 namespace Surgiie\BladeCLI\Support\Concerns;
 
-use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use JsonException;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 
 trait LoadsJsonFiles
 {
