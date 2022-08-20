@@ -25,7 +25,7 @@ interface TestableFile
     public function expectedContent(): string;
 
     /**
-     * The env file data to test loading data from json files. 
+     * The env file data to test loading data from json files.
      *
      * @return array
      */

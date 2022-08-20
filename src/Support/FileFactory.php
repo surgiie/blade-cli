@@ -2,8 +2,8 @@
 
 namespace Surgiie\BladeCLI\Support;
 
-use Surgiie\BladeCLI\Blade;
 use Illuminate\View\Factory;
+use Surgiie\BladeCLI\Blade;
 
 class FileFactory extends Factory
 {

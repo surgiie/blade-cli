@@ -2,8 +2,8 @@
 
 namespace Surgiie\BladeCLI\Tests;
 
-use Surgiie\BladeCLI\Commands\RenderCommand;
 use PHPUnit\Framework\TestCase as BaseTestCase;
+use Surgiie\BladeCLI\Commands\RenderCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 

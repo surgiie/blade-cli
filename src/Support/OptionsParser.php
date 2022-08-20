@@ -2,9 +2,9 @@
 
 namespace Surgiie\BladeCLI\Support;
 
-use Surgiie\BladeCLI\Support\Exceptions\DuplicateDataException;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use Surgiie\BladeCLI\Support\Exceptions\DuplicateDataException;
 use Symfony\Component\Console\Input\InputOption;
 
 class OptionsParser
@@ -86,7 +86,7 @@ class OptionsParser
             } elseif ($value) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_REQUIRED : $value;
                 $options[$name] = $value;
-            }elseif (! $optionExists) {
+            } elseif (! $optionExists) {
                 $value = $mode == static::REGISTRATION_MODE ? InputOption::VALUE_NONE : true;
                 $options[$name] = $value;
             } else {

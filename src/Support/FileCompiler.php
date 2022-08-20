@@ -14,7 +14,7 @@ class FileCompiler extends BladeCompiler
     protected $rawTags = ['{{', '}}'];
 
     /**
-     * Compile Blade directives to be shifted to the start of the line should they 
+     * Compile Blade directives to be shifted to the start of the line should they
      * have leading whitespace which is problematic for files that have semantical
      * spacing requirements, such as yaml files.
      *
@@ -50,7 +50,7 @@ class FileCompiler extends BladeCompiler
 
     /**
      * Determine if the given view is expired.
-     * 
+     *
      * We'll always return true here to ensure
      * the compiler always compiles the file.
      *

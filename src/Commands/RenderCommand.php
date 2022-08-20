@@ -2,25 +2,26 @@
 
 namespace Surgiie\BladeCLI\Commands;
 
-use Throwable;
-use Dotenv\Dotenv;
 use BadMethodCallException;
+use Dotenv\Dotenv;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Surgiie\BladeCLI\Blade;
 use InvalidArgumentException;
-use Symfony\Component\Finder\Finder;
+use Surgiie\BladeCLI\Blade;
 use Surgiie\BladeCLI\Support\Command;
-use Surgiie\BladeCLI\Support\OptionsParser;
-use Symfony\Component\Console\Input\InputInterface;
 use Surgiie\BladeCLI\Support\Concerns\LoadsJsonFiles;
-use Symfony\Component\Console\Output\OutputInterface;
 use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
 use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\OptionsParser;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Finder\Finder;
+use Throwable;
 
 class RenderCommand extends Command
 {
-    use LoadsJsonFiles, NormalizesPaths;
+    use LoadsJsonFiles;
+    use NormalizesPaths;
 
     /**
      * The command's signature.
@@ -92,7 +93,7 @@ class RenderCommand extends Command
             $path = Blade::testPath($path);
         }
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             return $this->handleException(new FileNotFoundException("The file or directory $path does not exist."));
         }
 
@@ -112,7 +113,6 @@ class RenderCommand extends Command
      */
     protected function renderDirectoryFiles(string $directory, array $data, array $options): int
     {
-
         if (empty($options['save-dir'] ?? "")) {
             return $this->handleException(new BadMethodCallException("The --save-dir option is required when rendering an entire directory."));
         }
@@ -123,7 +123,7 @@ class RenderCommand extends Command
 
         $force = $options['force'] ?? false;
 
-        if (!$force && !$this->confirm("Are you sure you want to render ALL files in the $directory directory?")){
+        if (! $force && ! $this->confirm("Are you sure you want to render ALL files in the $directory directory?")) {
             return 1;
         }
 
@@ -223,7 +223,7 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        if (!is_null(static::$staticOptions)) {
+        if (! is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
         } else {
             global $argv;
@@ -250,6 +250,7 @@ class RenderCommand extends Command
 
         return $json;
     }
+
     /**
      * Get the variables from env files.
      */
@@ -272,6 +273,7 @@ class RenderCommand extends Command
 
         return $env;
     }
+
     /**
      * Normalize key naming convention for the given data.
      */
@@ -285,6 +287,7 @@ class RenderCommand extends Command
 
         return $result;
     }
+
     /**
      * Gather the data for rendering from command line options.
      */

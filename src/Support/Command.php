@@ -2,10 +2,10 @@
 
 namespace Surgiie\BladeCLI\Support;
 
-use Surgiie\BladeCLI\Blade;
 use Illuminate\Console\Command as BaseCommand;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
+use Surgiie\BladeCLI\Blade;
 
 class Command extends BaseCommand
 {
@@ -52,7 +52,7 @@ class Command extends BaseCommand
      */
     protected function blade(string $filePath, array $options = []): Blade
     {
-        if (!is_null($this->bladeInstance)) {
+        if (! is_null($this->bladeInstance)) {
             return $this->bladeInstance->setOptions($options)->setFilePath($filePath);
         }
 

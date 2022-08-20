@@ -6,19 +6,16 @@ use BadMethodCallException;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Surgiie\BladeCLI\Blade;
-use Surgiie\BladeCLI\Tests\TestCase;
+use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
+use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
+use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
 use Surgiie\BladeCLI\Tests\Files\TestJsonFile;
+use Surgiie\BladeCLI\Tests\Files\TestNginxFile;
 use Surgiie\BladeCLI\Tests\Files\TestTextFile;
 use Surgiie\BladeCLI\Tests\Files\TestYamlFile;
-use Surgiie\BladeCLI\Tests\Files\TestNginxFile;
-use Surgiie\BladeCLI\Tests\Files\TestIncludeFile;
-use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
-use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
-use Surgiie\BladeCLI\Support\Exceptions\UndefinedVariableException;
 
 class BladeTest extends TestCase
 {
-
     /**
      * Tests cleanup.
      */
@@ -94,8 +91,8 @@ class BladeTest extends TestCase
         $this->fake();
 
         $blade = new Blade(
-            container: new Container,
-            filesystem: new Filesystem
+            container: new Container(),
+            filesystem: new Filesystem()
         );
 
         $this->expectException(BadMethodCallException::class);
@@ -218,6 +215,7 @@ class BladeTest extends TestCase
         Blade::assertRendered("rendered/" . $jsonFile->filename(), $jsonFile->expectedContent());
         Blade::assertRendered("rendered/" . $yamlFile->filename(), $yamlFile->expectedContent());
     }
+
     /**
      * @test
      */
@@ -232,6 +230,7 @@ class BladeTest extends TestCase
         Blade::putTestFile("templates/" . $yamlFile->filename(),  $yamlFile->content());
 
         $exception_thrown = false;
+
         try {
             $this->renderCommand(
                 ['file-or-directory' => 'templates'],
