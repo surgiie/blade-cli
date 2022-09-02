@@ -14,6 +14,31 @@ class FileCompiler extends BladeCompiler
     protected $rawTags = ['{{', '}}'];
 
     /**
+     * The directives that we should format to start of lines.
+     *
+     * @var array
+     */
+    protected $formatDirectives = [
+        'foreach',
+        'endforeach',
+        'empty',
+        'if',
+        'elseif',
+        'else',
+        'endif',
+        'forelse',
+        'endforelse',
+        'for',
+        'endfor',
+        'while',
+        'endwhile',
+        'switch',
+        'default',
+        'case',
+        'endswitch'
+    ];
+
+    /**
      * Compile Blade directives to be shifted to the start of the line should they
      * have leading whitespace which is problematic for files that have semantical
      * spacing requirements, such as yaml files.
@@ -27,21 +52,7 @@ class FileCompiler extends BladeCompiler
      */
     protected function compileStatements($value)
     {
-        $keywords = implode('|', [
-            'foreach',
-            'endforeach',
-            'if',
-            'elseif',
-            'else',
-            'endif',
-            'forelse',
-            'endforelse',
-            'for',
-            'endfor',
-            'while',
-            'endwhile',
-        ]);
-
+        $keywords = implode('|', $this->formatDirectives);
 
         $value = preg_replace("/\\s+\@($keywords)/", "\n@$1", $value);
 
