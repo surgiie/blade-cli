@@ -102,7 +102,8 @@ class RenderCommand extends Command
         $variables = $this->gatherVariables();
 
         if (is_file($path)) {
-            return $this->option('dry-run') ? $this->showRenderedContents($originalPath, $variables, $options) : $this->renderFile($originalPath, $variables, $options);
+            $dryRun = $options['dry-run'] ?? false;
+            return $dryRun ? $this->showRenderedContents($originalPath, $variables, $options) : $this->renderFile($originalPath, $variables, $options);
         }
 
         return $this->renderDirectoryFiles($originalPath, $variables, $options);
@@ -199,7 +200,6 @@ class RenderCommand extends Command
         $parser = new OptionsParser($options);
 
         $options = $parser->parse(OptionsParser::VALUE_MODE);
-
         static::$staticOptions = $options;
     }
 
