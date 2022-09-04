@@ -33,6 +33,7 @@ class RenderCommand extends Command
                                    {--save-dir= : The custom directory to save files to when rendering an entire directory. }
                                    {--from-json=* : A json file to load variable data from. }
                                    {--from-env=* : A .env file to load variable data from. }
+                                   {--dry-run : Show rendered file changes only. }
                                    {--force : Force render or overwrite files.}";
 
 
@@ -58,6 +59,7 @@ class RenderCommand extends Command
         'ansi',
         'save-as',
         'save-dir',
+        'dry-run',
         'from-json',
         'from-env',
         'force',
@@ -93,16 +95,14 @@ class RenderCommand extends Command
             $path = Blade::testPath($path);
         }
 
-        if (! file_exists($path)) {
+        if (!file_exists($path)) {
             return $this->handleException(new FileNotFoundException("The file or directory $path does not exist."));
         }
-
-        $this->comment("Validated file path: $path");
 
         $variables = $this->gatherVariables();
 
         if (is_file($path)) {
-            return $this->renderFile($originalPath, $variables, $options);
+            return $this->option('dry-run') ? $this->showRenderedContents($originalPath, $variables, $options) : $this->renderFile($originalPath, $variables, $options);
         }
 
         return $this->renderDirectoryFiles($originalPath, $variables, $options);
@@ -123,7 +123,7 @@ class RenderCommand extends Command
 
         $force = $options['force'] ?? false;
 
-        if (! $force && ! $this->confirm("Are you sure you want to render ALL files in the $directory directory?")) {
+        if (!$force && !$this->confirm("Are you sure you want to render ALL files in the $directory directory?")) {
             return 1;
         }
 
@@ -151,6 +151,24 @@ class RenderCommand extends Command
         return 1;
     }
 
+
+    /**
+     * Show the rendered contents of a file only.
+     */
+    protected function showRenderedContents(string $file, array $data, array $options): int
+    {
+        $blade = $this->blade($file, $options);
+        try {
+            $contents = $blade->render(data: $data, save: false);
+            $this->line("This command would generate the following content for $file:");
+            $this->line("");
+            $this->line($contents);
+            $this->line("");
+        } catch (Throwable $e) {
+            return $this->handleException($e);
+        }
+        return 0;
+    }
     /**
      * Renders a template file from path using given data.
      */
@@ -223,7 +241,7 @@ class RenderCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        if (! is_null(static::$staticOptions)) {
+        if (!is_null(static::$staticOptions)) {
             $this->commandOptions = static::$staticOptions;
         } else {
             global $argv;
@@ -245,7 +263,6 @@ class RenderCommand extends Command
                 $file = Blade::testPath($file);
             }
             $json = array_merge($json, $this->loadJsonFile($file));
-            $this->comment("Gathered variable data from json file: $file");
         }
 
         return $json;
@@ -264,7 +281,6 @@ class RenderCommand extends Command
                 $file = Blade::testPath($file);
             }
             $env = array_merge($env, Dotenv::parse(file_get_contents($file)));
-            $this->comment("Gathered variable data from env file: $file");
         }
 
         foreach ($env as $k => $v) {
@@ -302,8 +318,6 @@ class RenderCommand extends Command
 
             $vars[$k] = $v;
         }
-
-        $this->comment("Gathered variable data from command line options.");
 
         return $vars;
     }

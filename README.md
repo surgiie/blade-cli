@@ -84,7 +84,7 @@ All files will get saved to the same directory as the file being rendered as `<f
 ```
 blade render ./person.yml \
             ...
-            --save-as="/home/bob/custom-name.yml" 
+            --save-as="/home/bob/custom-name.yml"
 
 ```
 
@@ -95,9 +95,9 @@ blade render ./person.yml \
 There are 3 options for passing variable data to your files being rendered, in precedence order from **lowest to highest** :
 
 
-1. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files. 
+1. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files.
 
-2. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files. 
+2. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files.
 
 3. Lastly as you saw in the earlier example above, through arbitrary command line options to the `render` command. `--example-var=value`
 
@@ -106,10 +106,10 @@ There are 3 options for passing variable data to your files being rendered, in p
 
 Command line options, env and json file keys can be defined in any naming convention you prefer, but your actual variable reference **MUST** be camel case.
 
-This is because php doesnt support kebab cased variables and since this is often the format for command line options, all variables will automatically get converted to data using camel case.  
+This is because php doesnt support kebab cased variables and since this is often the format for command line options, all variables will automatically get converted to data using camel case.
 
 For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option will be referenced
-as `$favoriteFood` in your files. 
+as `$favoriteFood` in your files.
 
 #### Variable Types
 
@@ -150,6 +150,16 @@ blade render ./person.yml \
 
 ```
 
+
+### Dry Run/Show Rendered Contents
+
+If you would like to output the contents of a rendered file to your terminal and not actually save the file, you may add the `--dry-run` flag when rendering a single file:
+
+`blade render example.yaml --some-var=example --dry-run`
+
+This will echo/output the rendered contents of `example.yaml` only.
+
+
 ### Processing an entire directory of files
 
 You may also pass the path to a directory instead of a single file. This might be useful if you like to group template files in a directory and want to render them all with a single command:
@@ -159,7 +169,39 @@ You may also pass the path to a directory instead of a single file. This might b
 **Note** This will prompt you for confirmation, you may skip confirmation by adding the `--force` flag.
 
 **Note** When rendering an entire directory the `--save-dir` option is **required** so that the cli exports all rendered files to a separate directory than the one being processed. The directory the files get saved in will mirror the directory structure of the directory being processed.  In the above example `/home/bob/templates` will have a directory structure that matches `./templates`.
+### Direct Use/Manually Rendering
 
+If you wish to use the api directly, you may utilize the Blade class directly in your apps:
+
+```php
+
+use Surgiie\BladeCLI\Blade;
+use Illuminate\Container\Container;
+use Illuminate\Filesystem\Filesystem;
+
+$blade = new Blade(
+    container: new Container,
+    filesystem: new Filesystem,
+    filePath: '/path/to/file/to/render',
+    options: [
+        'force'=> true, // force overwrite existing rendered file
+        'save-as'=>'save-as' // optional file path to save file as.
+    ]
+);
+
+// render and save the file with this data/vars
+$contents = $blade->render([
+    'var'=>'example'
+]);
+
+// you may prevent the file from being saved, by passing false to the 2nd argument of the render method
+// this is useful if you wish to process the contents of the rendered file yourself and do specific custom tasks.
+$contents = $blade->render(
+    ['var'=>'example'],
+    false
+);
+
+```
 ### Unit Testing
 
 If utilizing the `\Surgiie\BladeCLI\Blade` class directly, the following methods maybe utilized to make unit testing easier:
@@ -212,40 +254,6 @@ Blade::tearDown();
 
 ```
 
-
-### Direct Use/Manually Rendering
-
-If you wish to use the api directly, you may utilize the Blade class directly in your apps:
-
-```php
-
-use Surgiie\BladeCLI\Blade;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
-
-$blade = new Blade(
-    container: new Container,
-    filesystem: new Filesystem,
-    filePath: '/path/to/file/to/render',
-    options: [
-        'force'=> true, // force overwrite existing rendered file
-        'save-as'=>'save-as' // optional file path to save file as.
-    ]
-);
-
-// render and save the file with this data/vars
-$contents = $blade->render([
-    'var'=>'example'
-]);
-
-// you may prevent the file from being saved, by passing false to the 2nd argument of the render method
-// this is useful if you wish to process the contents of the rendered file yourself and do specific custom tasks.
-$contents = $blade->render(
-    ['var'=>'example'],
-    false
-);
-
-```
 
 ### Contribute
 Contributions are always welcome in the following manner:
