@@ -5,11 +5,11 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Surgiie\BladeCLI\Commands\RenderCommand;
-use Symfony\Component\Console\Application;
+use Surgiie\BladeCLI\Support\ConsoleApplication;
 
-define('BLADE_CLI_VERSION', '2.0.3');
+define('BLADE_CLI_VERSION', 'V2.0.3');
 
-$app = new Application('Blade CLI', BLADE_CLI_VERSION);
+$app = new ConsoleApplication('', BLADE_CLI_VERSION);
 
 $app->add(new RenderCommand);
 
