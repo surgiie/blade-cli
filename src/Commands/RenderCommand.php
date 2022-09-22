@@ -89,6 +89,7 @@ class RenderCommand extends Command
     public function handle(): int
     {
         $options = $this->commandOptions;
+
         $path = $originalPath = rtrim($this->normalizePath($this->argument("file-or-directory")), "\\/");
 
         if (Blade::isFaked()) {
@@ -96,7 +97,7 @@ class RenderCommand extends Command
         }
 
         if (!file_exists($path)) {
-            return $this->handleException(new FileNotFoundException("The file or directory $path does not exist."));
+            return $this->handleException(new FileNotFoundException("The target file or directory '$path' does not exist."));
         }
 
         $variables = $this->gatherVariables();
@@ -161,7 +162,7 @@ class RenderCommand extends Command
         $blade = $this->blade($file, $options);
         try {
             $contents = $blade->render(data: $data, save: false);
-            $this->line("This command would generate the following content for $file:");
+            $this->components->info("This command would generate the following content for $file:");
             $this->line("");
             $this->line($contents);
             $this->line("");
@@ -185,7 +186,7 @@ class RenderCommand extends Command
 
         $file = $blade->getSaveLocation();
 
-        $this->info("Rendered $file.");
+        $this->components->info("Rendered $file.");
 
         return 0;
     }
@@ -231,7 +232,7 @@ class RenderCommand extends Command
             throw $e;
         }
 
-        $this->error($e->getMessage());
+        $this->components->error($e->getMessage());
 
         return 1;
     }
