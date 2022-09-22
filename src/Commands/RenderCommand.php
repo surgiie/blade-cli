@@ -10,7 +10,6 @@ use InvalidArgumentException;
 use Surgiie\BladeCLI\Blade;
 use Surgiie\BladeCLI\Support\Command;
 use Surgiie\BladeCLI\Support\Concerns\LoadsJsonFiles;
-use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
 use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
 use Surgiie\BladeCLI\Support\OptionsParser;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,7 +20,6 @@ use Throwable;
 class RenderCommand extends Command
 {
     use LoadsJsonFiles;
-    use NormalizesPaths;
 
     /**
      * The command's signature.
@@ -90,7 +88,7 @@ class RenderCommand extends Command
     {
         $options = $this->commandOptions;
 
-        $path = $originalPath = rtrim($this->normalizePath($this->argument("file-or-directory")), "\\/");
+        $path = $originalPath = rtrim($this->argument("file-or-directory"), DIRECTORY_SEPARATOR);
 
         if (Blade::isFaked()) {
             $path = Blade::testPath($path);
@@ -129,7 +127,7 @@ class RenderCommand extends Command
             return 1;
         }
 
-        $saveDirectory = rtrim($options['save-dir'], "\\/");
+        $saveDirectory = rtrim($options['save-dir'], DIRECTORY_SEPARATOR);
 
         // validate save directory isnt the current directory being processed.
         if ($saveDirectory == $directory) {
@@ -139,15 +137,15 @@ class RenderCommand extends Command
         foreach ((new Finder())->in($directory)->files() as $file) {
             $pathName = $file->getPathName();
             // compute a save as location that mirrors the current location of this file.
-            $computedDirectory = rtrim($saveDirectory, "\\/");
+            $computedDirectory = rtrim($saveDirectory, DIRECTORY_SEPARATOR);
 
-            $relativePath = ltrim(Str::after($pathName, $directory), "\\/");
+            $relativePath = ltrim(Str::after($pathName, $directory), DIRECTORY_SEPARATOR);
 
             $options['save-as'] = dirname(
                 $computedDirectory . DIRECTORY_SEPARATOR . $relativePath . DIRECTORY_SEPARATOR . $file->getFileName()
             );
 
-            $this->renderFile($faked ? ltrim(str_replace(Blade::testPath(), "", $pathName), "\\/") : $pathName, $data, $options);
+            $this->renderFile($faked ? ltrim(str_replace(Blade::testPath(), "", $pathName), DIRECTORY_SEPARATOR) : $pathName, $data, $options);
         }
 
         return 1;

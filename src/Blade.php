@@ -11,7 +11,6 @@ use Illuminate\Support\Str;
 use Illuminate\View\Engines\EngineResolver;
 use PHPUnit\Framework\Assert as PHPUnit;
 use SplFileInfo;
-use Surgiie\BladeCLI\Support\Concerns\NormalizesPaths;
 use Surgiie\BladeCLI\Support\Exceptions\CouldntWriteFileException;
 use Surgiie\BladeCLI\Support\Exceptions\FileAlreadyExistsException;
 use Surgiie\BladeCLI\Support\Exceptions\FileNotFoundException;
@@ -25,8 +24,6 @@ use Surgiie\BladeCLI\Support\FileFinder;
 
 class Blade
 {
-    use NormalizesPaths;
-
     /**
      * Get the engine name for resolver registration.
      */
@@ -144,7 +141,7 @@ class Blade
     {
         self::ensureIsFakedOrFail();
 
-        $path = trim($path, "\\/");
+        $path = trim($path, DIRECTORY_SEPARATOR);
         return rtrim(self::$testing['directory'] . DIRECTORY_SEPARATOR . $path, DIRECTORY_SEPARATOR);
     }
 
@@ -199,16 +196,16 @@ class Blade
      */
     public static function assertNotRendered(string $file): void
     {
-        if (self::isFaked()) {
-            clearstatcache();
+        self::ensureIsFakedOrFail();
 
-            $path = self::testPath($file);
+        clearstatcache();
 
-            PHPUnit::assertTrue(
-                !in_array($path, self::$testing['test-render-files']) && !file_exists($path),
-                "Found rendered file when expected not to: [{$path}]."
-            );
-        }
+        $path = self::testPath($file);
+
+        PHPUnit::assertTrue(
+            !in_array($path, self::$testing['test-render-files']) && !file_exists($path),
+            "Found rendered file when expected not to: [{$path}]."
+        );
     }
 
     /**
@@ -390,15 +387,20 @@ class Blade
             return  $this->getFileDirectory();
         }
 
-        $saveDir = rtrim($saveDir, "\\/");
+        $saveDir = rtrim($saveDir, DIRECTORY_SEPARATOR);
 
-        $saveDir = $this->normalizePath($saveDir);
         $filename = basename($saveDir);
 
         $saveDir = str_replace($filename, "", $saveDir);
 
         if (self::isFaked()) {
             $saveDir = self::testPath($saveDir);
+        }
+
+        // allow ~ syntax and expand accordingly
+        if (Str::startsWith($saveDir, "~" . DIRECTORY_SEPARATOR)) {
+            $home = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv("USERPROFILE") : getenv("HOME");
+            $saveDir = rtrim($home, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . ltrim($saveDir, "~" . DIRECTORY_SEPARATOR);
         }
 
         return $this->cache['save-directory'] = in_array($saveDir, ['./', '', '.\\']) ? getcwd() : $saveDir;
@@ -427,7 +429,7 @@ class Blade
         }
 
         $basename = basename($saveAs);
-        $derivedDirectory = $this->normalizePath($this->getSaveDirectory());
+        $derivedDirectory = $this->getSaveDirectory();
 
         if ($derivedDirectory != $ds) {
             $derivedDirectory = rtrim($derivedDirectory, $ds) . $ds;
