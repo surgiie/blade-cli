@@ -1,6 +1,6 @@
 <?php
 
-use Surgiie\BladeCLI\Support\Command;
+use Surgiie\BladeCLI\Support\ConsoleApplication;
 
 if (! function_exists('app')) {
     /**
@@ -9,9 +9,9 @@ if (! function_exists('app')) {
     function app($abstract = null, array $parameters = [])
     {
         if (is_null($abstract)) {
-            return Command::getInstance();
+            return ConsoleApplication::getInstance();
         }
 
-        return Command::getInstance()->make($abstract, $parameters);
+        return ConsoleApplication::getInstance()->make($abstract, $parameters);
     }
 }

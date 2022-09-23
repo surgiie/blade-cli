@@ -6,6 +6,7 @@ use Surgiie\BladeCLI\Blade;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Console\Command as BaseCommand;
+use Surgiie\BladeCLI\Support\ConsoleApplication;
 use Illuminate\Console\View\Components\Factory as ConsoleViewFactory;
 
 class Command extends BaseCommand
@@ -30,12 +31,6 @@ class Command extends BaseCommand
      */
     protected ?Blade $bladeInstance = null;
 
-    /**
-     * The static app/container instance for app() calls.
-     *
-     * @var Container|null
-     */
-    protected static ?Container $appInstance = null;
 
     /**
      * Create a new console command instance.
@@ -44,7 +39,9 @@ class Command extends BaseCommand
      */
     public function __construct()
     {
-        $this->laravel = static::$appInstance = new Container();
+        $this->laravel = new Container();
+
+        ConsoleApplication::setInstance($this->laravel);
 
         $this->filesystem = new Filesystem();
 
@@ -53,11 +50,6 @@ class Command extends BaseCommand
         $this->components = $this->laravel->make(ConsoleViewFactory::class, ['output' => $this->output]);
     }
 
-    /**Get the app instance.*/
-    public static function getInstance()
-    {
-        return static::$appInstance;
-    }
 
     /**
      * Return a render ready blade instance for a given file.
