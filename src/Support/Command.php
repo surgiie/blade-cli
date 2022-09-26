@@ -41,7 +41,7 @@ class Command extends BaseCommand
     {
         $this->laravel = new Container();
 
-        ConsoleApplication::setInstance($this->laravel);
+        ConsoleApplication::setContainerInstance($this->laravel);
 
         $this->filesystem = new Filesystem();
 

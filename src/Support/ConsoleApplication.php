@@ -13,14 +13,14 @@ class ConsoleApplication extends BaseApplication
      */
     private static $logo = <<<LOGO
 
-    █▄▄ █   ▄▀█ █▀▄ █▀▀   █▀▀ █   █
-    █▄█ █▄▄ █▀█ █▄▀ ██▄   █▄▄ █▄▄ █
+    █▄▄ █   ▄▀█ █▀▄ █▀▀   █▀▀ █   █
+    █▄█ █▄▄ █▀█ █▄▀ ██▄   █▄▄ █▄▄ █
 
 
 LOGO;
 
     /**Get the container instance.*/
-    public static function getInstance()
+    public static function getContainerInstance()
     {
         if(is_null(static::$containerInstance)){
             return new Container;
@@ -29,7 +29,7 @@ LOGO;
     }
 
     /**Set container instance.*/
-    public static function setInstance(Container $container)
+    public static function setContainerInstance(Container $container)
     {
         static::$containerInstance = $container;
     }

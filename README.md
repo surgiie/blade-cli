@@ -7,9 +7,7 @@ Use Laravel's blade engine as a CLI for rendering files.
 
 ### Introduction
 
-This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use
-simple blade features/directives (i.e `@if`, `@include`, `@foreach`, etc.) on files. That said, the more advanced
-features of the engine are out of scope of what this package was meant for and may not be supported.
+This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use blade features/directives on files. That said, the more advanced features of the engine are out of scope of what this package was meant for and may not be supported.
 
 ### Installation
 
@@ -104,11 +102,7 @@ There are 3 options for passing variable data to your files being rendered, in p
 
 #### Variable Naming Convention
 
-Command line options, env and json file keys can be defined in any naming convention you prefer, but your actual variable reference **MUST** be camel case.
-
-This is because php doesnt support kebab cased variables and since this is often the format for command line options, all variables will automatically get converted to data using camel case.
-
-For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option will be referenced
+Command line options, env and json file keys can be defined in any naming convention you prefer, but your actual variable reference **MUST** be camel case. This is because php doesnt support kebab cased variables and since this is often the format for command line options, all variables will automatically get converted to data using camel case. For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option will be referenced
 as `$favoriteFood` in your files.
 
 #### Variable Types

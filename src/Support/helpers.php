@@ -9,9 +9,9 @@ if (! function_exists('app')) {
     function app($abstract = null, array $parameters = [])
     {
         if (is_null($abstract)) {
-            return ConsoleApplication::getInstance();
+            return ConsoleApplication::getContainerInstance();
         }
 
-        return ConsoleApplication::getInstance()->make($abstract, $parameters);
+        return ConsoleApplication::getContainerInstance()->make($abstract, $parameters);
     }
 }
