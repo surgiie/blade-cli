@@ -117,7 +117,7 @@ These are the current supported way to pass variables for different types/purpos
 
 ##### String/Single Value Variables
 
-Use simple option key/value format for passing variables for single/string values:
+Use single option key/value format for passing variables for single string values:
 
 `--foo=bar --bar=baz`
 
