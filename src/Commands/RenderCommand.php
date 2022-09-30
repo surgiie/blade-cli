@@ -69,7 +69,7 @@ class RenderCommand extends Command
      *
      * @var string
      */
-    protected $description = "Render a template file.";
+    protected $description = "Render a file.";
 
     /**
      * Create a new console command instance.
