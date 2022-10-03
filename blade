@@ -4,12 +4,12 @@
 
 require __DIR__.'/vendor/autoload.php';
 
+use Surgiie\BladeCLI\Application;
 use Surgiie\BladeCLI\Commands\RenderCommand;
-use Surgiie\BladeCLI\Support\ConsoleApplication;
 
-define('BLADE_CLI_VERSION', 'V2.0.5');
+define('BLADE_CLI_VERSION', 'V2.0.6');
 
-$app = new ConsoleApplication('', BLADE_CLI_VERSION);
+$app = new Application('', BLADE_CLI_VERSION);
 
 $app->add(new RenderCommand);
 

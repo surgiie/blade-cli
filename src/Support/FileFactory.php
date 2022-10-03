@@ -9,9 +9,6 @@ class FileFactory extends Factory
 {
     /**
      * Disable dot notation normalization.
-     *
-     * @param string $name
-     * @return string
      */
     protected function normalizeName($name)
     {
@@ -20,9 +17,6 @@ class FileFactory extends Factory
 
     /**
      * Get the extension used by the view file.
-     *
-     * @param  string  $path
-     * @return string|null
      */
     protected function getExtension($path)
     {
@@ -31,11 +25,6 @@ class FileFactory extends Factory
 
     /**
      * Get the appropriate view engine for the given path.
-     *
-     * @param  string  $path
-     * @return \Illuminate\Contracts\View\Engine
-     *
-     * @throws \InvalidArgumentException
      */
     public function getEngineFromPath($path)
     {
@@ -44,11 +33,6 @@ class FileFactory extends Factory
 
     /**
      * Create a new view instance from the given arguments.
-     *
-     * @param  string  $view
-     * @param  string  $path
-     * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
-     * @return \Illuminate\Contracts\View\View
      */
     protected function viewInstance($view, $path, $data)
     {

@@ -16,9 +16,6 @@ class FileFinder extends FileViewFinder
 
     /**
      * Set the active file paths.
-     *
-     * @param  array  $paths
-     * @return $this
      */
     public function setPaths($paths)
     {
@@ -29,9 +26,6 @@ class FileFinder extends FileViewFinder
 
     /**
      * Overwritten to disable dot notation.
-     *
-     * @param  string  $name
-     * @return array
      */
     protected function getPossibleViewFiles($name)
     {
@@ -53,12 +47,6 @@ class FileFinder extends FileViewFinder
 
     /**
      * Find the given view in the list of paths.
-     *
-     * @param  string  $name
-     * @param  array  $paths
-     * @return string
-     *
-     * @throws \InvalidArgumentException
      */
     protected function findInPaths($name, $paths)
     {

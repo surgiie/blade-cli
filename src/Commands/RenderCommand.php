@@ -109,7 +109,7 @@ class RenderCommand extends Command
     }
 
     /**
-     * Render a directory of files.
+     * Render all files within a given directory.
      */
     protected function renderDirectoryFiles(string $directory, array $data, array $options): int
     {
@@ -136,6 +136,7 @@ class RenderCommand extends Command
 
         foreach ((new Finder())->in($directory)->files() as $file) {
             $pathName = $file->getPathName();
+
             // compute a save as location that mirrors the current location of this file.
             $computedDirectory = rtrim($saveDirectory, DIRECTORY_SEPARATOR);
 
@@ -160,7 +161,7 @@ class RenderCommand extends Command
         $blade = $this->blade($file, $options);
         try {
             $contents = $blade->render(data: $data, save: false);
-            $this->components->info("This command would generate the following content for $file:");
+            $this->components->info("This command would render and generate the following content for $file:");
             $this->line("");
             $this->line($contents);
             $this->line("");
@@ -169,6 +170,7 @@ class RenderCommand extends Command
         }
         return 0;
     }
+
     /**
      * Renders a template file from path using given data.
      */

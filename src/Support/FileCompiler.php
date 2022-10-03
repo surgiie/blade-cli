@@ -46,9 +46,6 @@ class FileCompiler extends BladeCompiler
      * PHP tags may leave behind unwanted whitespace:
      *
      * @see https://www.php.net/manual/en/language.basic-syntax.phptags.php
-     *
-     * @param  string  $value
-     * @return string
      */
     protected function compileStatements($value)
     {

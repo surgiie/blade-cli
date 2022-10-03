@@ -12,10 +12,6 @@ class FileCompilerEngine extends CompilerEngine
      * Overwritten to not ltrim but to rtrim outbutput buffer.
      *
      * This assists with preserving spacing/indentation from compiled file.
-     *
-     * @param  string  $path
-     * @param  array  $data
-     * @return string
      */
     protected function evaluatePath($path, $data)
     {

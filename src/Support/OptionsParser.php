@@ -55,8 +55,6 @@ class OptionsParser
 
     /**
      * Parse the set options.
-     *
-     * @throws \InvalidArgumentException
      */
     public function parse(int $mode = 1): array
     {

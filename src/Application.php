@@ -1,15 +1,16 @@
 <?php
-namespace Surgiie\BladeCLI\Support;
+namespace Surgiie\BladeCLI;
 
 use Illuminate\Container\Container;
 use Symfony\Component\Console\Application as BaseApplication;
 
-class ConsoleApplication extends BaseApplication
+class Application extends BaseApplication
 {
     /**The container instance.*/
     protected static $containerInstance = null;
+
     /**
-     * @var string
+     * The cli loogo art, shown on help menu.
      */
     private static $logo = <<<LOGO
 

@@ -6,42 +6,34 @@ use Surgiie\BladeCLI\Blade;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Console\Command as BaseCommand;
-use Surgiie\BladeCLI\Support\ConsoleApplication;
+use Surgiie\BladeCLI\Application;
 use Illuminate\Console\View\Components\Factory as ConsoleViewFactory;
 
 class Command extends BaseCommand
 {
     /**
      * The container instance.
-     *
-     * @var \Illuminate\Container\Container
      */
     protected $laravel;
     /**
      * The filesystem instance.
-     *
-     * @var \Illuminate\Filesystem\Filesystem
      */
     protected Filesystem $filesystem;
 
     /**
      * A cached blade instance to utilize.
-     *
-     * @var Blade|null
      */
     protected ?Blade $bladeInstance = null;
 
 
     /**
      * Create a new console command instance.
-     *
-     * @return void
      */
     public function __construct()
     {
         $this->laravel = new Container();
 
-        ConsoleApplication::setContainerInstance($this->laravel);
+        Application::setContainerInstance($this->laravel);
 
         $this->filesystem = new Filesystem();
 
@@ -53,10 +45,6 @@ class Command extends BaseCommand
 
     /**
      * Return a render ready blade instance for a given file.
-     *
-     * @param string $filePath
-     * @param array $options
-     * @return \Surgiie\BladeCLI\Blade
      */
     protected function blade(string $filePath, array $options = []): Blade
     {
