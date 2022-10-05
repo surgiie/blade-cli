@@ -161,9 +161,11 @@ class RenderCommand extends Command
         $blade = $this->blade($file, $options);
         try {
             $contents = $blade->render(data: $data, save: false);
-            $this->components->info("This command would render and generate the following content for $file:");
+            $saveLocation = $blade->getSaveLocation();
+            $this->components->info("This command would genererate $saveLocation with the the following content:");
             $this->line("");
-            $this->line($contents);
+            $this->table(["Generated Content"], [[$contents]]);
+            // $this->line($contents);
             $this->line("");
         } catch (Throwable $e) {
             return $this->handleException($e);
