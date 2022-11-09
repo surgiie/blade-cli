@@ -6,12 +6,13 @@
 
 ### Changed
 
-- CLI application has been migrated to  [laravel-zero/laravel-zero](https://github.com/laravel-zero/laravel-zero) by @surgiie in https://github.com/surgiie/blade-cli/pull/1
-- Blade components have been extracted to standalone [surgiie/blade](https://github.com/surgiie/blade) package and direct use of the class is no longer part of this package by @surgiie in https://github.com/surgiie/blade-cli/pull/1
-- `--save-dir` and `--save-as` have been removed in favor of a single `--save-to` option by @surgiie in https://github.com/surgiie/blade-cli/pull/1
+- CLI application has been migrated to  [laravel-zero/laravel-zero](https://github.com/laravel-zero/laravel-zero) by @surgiie in https://github.com/surgiie/blade-cli/pull/10
+- Blade classes/componens have been extracted to standalone [surgiie/blade](https://github.com/surgiie/blade) package and direct use of the class is no longer part of this package by @surgiie in https://github.com/surgiie/blade-cli/pull/10
+- Validation of path is now handled by `rules` validation via the [surgiie/console](https://github.com/surgiie/console) package by @surgiie in https://github.com/surgiie/blade-cli/pull/10
+- `--save-dir` and `--save-as` have been removed in favor of a single `--save-to` option by @surgiie in https://github.com/surgiie/blade-cli/pull/10
 
 ### Added
-- Application now utilizes [surgiie/console](https://github.com/surgiie/console) package which includes [surgiie/transformer](https://github.com/surgiie/transformer) and laravel validation functionality by @surgiie in https://github.com/surgiie/blade-cli/pull/1
+- Application now utilizes [surgiie/console](https://github.com/surgiie/console) package which includes [surgiie/transformer](https://github.com/surgiie/transformer) and laravel validation functionality by @surgiie in https://github.com/surgiie/blade-cli/pull/10
 
-- `--dry-run` now supported on directory rendering by @surgiie in https://github.com/surgiie/blade-cli/pull/1
-- Performance stats for memory usage and total execution time are displayed now at the end of the command via `surgiie/console` "showPerformanceStats` by @surgiie in https://github.com/surgiie/blade-cli/pull/1
+- `--dry-run` now supported on directory rendering by @surgiie in https://github.com/surgiie/blade-cli/pull/10
+- `clear` command to clear compiled files by @surgiie in https://github.com/surgiie/blade-cli/pull/10
