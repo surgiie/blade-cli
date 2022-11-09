@@ -5,7 +5,7 @@
 Compile and save files from the command line using Laravel's blade engine.
 ### Installation
 
-Download specific tag version release from releases and make available in `$PATH`:
+The recommended way is to download specific tag version release from releases and make available in `$PATH`:
 
 ```
 # in ~/.bashrc or equivalent
@@ -17,7 +17,7 @@ Install dependencies:
 ```
 composer install
 
-# support is mostly unix based but windows should be supported:
+# support is mostly unix based but windows is supported and best used on a terminal such as git bash/cmder:
 composer install --ignore-platform-reqs
 
 ```
