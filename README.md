@@ -36,7 +36,8 @@ You may also install via composer globally:
 Then be sure the global composer packages path is executable:
 
 ```bash
-export PATH=~/.composer/vendor/bin:$PATH
+# may vary on systems:
+export PATH=~/.config/composer/vendor/bin:$PATH
 ```
 
 ### CLI Completion
