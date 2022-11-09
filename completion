@@ -1,4 +1,3 @@
-
 # This file is part of the Symfony package.
 #
 # (c) Fabien Potencier <fabien@symfony.com>
@@ -25,7 +24,7 @@ _sf_blade() {
     local cur prev words cword
     _get_comp_words_by_ref -n := cur prev words cword
 
-    local completecmd=("$sf_cmd" "_complete" "-sbash" "-c$cword" "-SV2.0.5")
+    local completecmd=("$sf_cmd" "_complete" "--no-interaction" "-sbash" "-c$cword" "-Sv3.0.0")
     for w in ${words[@]}; do
         w=$(printf -- '%b' "$w")
         # remove quotes from typed values

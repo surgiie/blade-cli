@@ -2,13 +2,7 @@
 
 ![tests](https://github.com/surgiie/blade-cli/actions/workflows/tests.yml/badge.svg)
 
-Use Laravel's blade engine as a CLI for rendering files.
-
-
-### Introduction
-
-This package customizes and extends several of the `Illuminate\View` classes used by the blade engine to be able to use blade features/directives on files. That said, the more advanced features of the engine are out of scope of what this package was meant for and may not be supported.
-
+Compile and save files from the command line using Laravel's blade engine.
 ### Installation
 
 Download specific tag version release from releases and make available in `$PATH`:
@@ -19,18 +13,22 @@ PATH=/usr/local/bin/blade-cli:$PATH
 ```
 
 Install dependencies:
+
 ```
 composer install
+
+# support is mostly unix based but windows should be supported:
+composer install --ignore-platform-reqs
+
 ```
 
 Confirm is executable:
+
 ```
 blade
 ```
 
-**Note**: Refer to the readme in the release version you download as syntax/api may change between versions.
-
-#### Composer Install
+#### Or Install Globally With Composer
 You may also install via composer globally:
 
 `composer global require surgiie/blade-cli`
@@ -43,12 +41,11 @@ export PATH=~/.composer/vendor/bin:$PATH
 
 ### CLI Completion
 
-You may optionally source the provided completion script for bash completion:
+You may optionally source the provided completion script for terminal completion:
 
 ```bash
-source /usr/local/bin/blade-cli/completion
+source /path/to/cli/root/completion
 ```
-
 ### Use
 Lets work through an example, given this file exists in your current directory (person.yml):
 
@@ -77,12 +74,12 @@ This will render and save the file to the same directory as a file named `person
 
 ### Custom Filename
 
-All files will get saved to the same directory as the file being rendered as `<filename>.rendered.<extension>` or simply `<filename>.rendered`. This is to avoid overwriting the file you are rendering. If you wish to save the file as a custom file name or change the directory, use the `--save-as` option to specify a file path to write the file to:
+All files will get saved to the same directory as the file being rendered as `<filename>.rendered.<extension>` or simply `<filename>.rendered`. This is to avoid overwriting the file you are rendering. If you wish to save the file as a custom file name or change the directory, use the `--save-to` option to specify a file path to write the file to:
 
 ```
 blade render ./person.yml \
             ...
-            --save-as="/home/bob/custom-name.yml"
+            --save-to="/home/bob/custom-name.yml"
 
 ```
 
@@ -179,7 +176,7 @@ $blade = new Blade(
     filePath: '/path/to/file/to/render',
     options: [
         'force'=> true, // force overwrite existing rendered file
-        'save-as'=>'save-as' // optional file path to save file as.
+        'save-to'=>'save-to' // optional file path to save file as.
     ]
 );
 
@@ -196,65 +193,14 @@ $contents = $blade->render(
 );
 
 ```
-### Unit Testing
-
-If utilizing the `\Surgiie\BladeCLI\Blade` class directly, the following methods maybe utilized to make unit testing easier:
-
-
-```php
-<?php
-
-// turns on testing mode and will write files into the given testing directory.
-Blade::fake('./testing-directory');
-
-// write ./testing-directory/example.yaml to test render call on
-Blade::putTestFile('example.yaml',
-<<<EOL
-name: {{ \$name }}
-favorite_food: {{ \$favoriteFood }}
-pets:
-    @foreach(\$dogs as \$dog)
-    - {{ \$dog }}
-    @endforeach
-contact_info:
-    phone: 1234567890
-    @if(\$includeAddress)
-    street_info: 123 Lane.
-    @endif
-EOL
-);
-
-// generates a path to the testing directory, ie ./testing-directory/example.yaml
-Blade::testPath('example.yaml');
-
-// asserts that file exists in ./testing-directory/example.rendered.yaml
-Blade::assertRendered('example.rendered.yaml');
-
-// assert the rendered file exists and matches the expected content
-Blade::assertRendered('example.rendered.yaml',
-<<<EOL
-name: Bob
-favorite_food: Pizza
-pets:
-    - Rex
-    - Charlie
-contact_info:
-    phone: 1234567890
-    street_info: 123 Lane.
-EOL);
-
-// removes current testing directory and turns off testing mode
-Blade::tearDown();
-
-```
-
-
 ### Contribute
+
 Contributions are always welcome in the following manner:
 
-- Issue Tracker
-- Pull Requests
-- Discussions
+-   Issue Tracker
+-   Pull Requests
+-   Discussions
 
 ### License
+
 The project is licensed under the MIT license.
