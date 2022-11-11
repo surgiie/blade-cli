@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use Illuminate\Console\Application as Artisan;
 use Illuminate\Support\ServiceProvider;
 use Pest\Laravel\Commands\PestDatasetCommand;
 use Pest\Laravel\Commands\PestInstallCommand;
@@ -17,18 +16,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Artisan::starting(
-            function ($artisan) {
-                $logo = base_path('logo.txt');
-
-                if (is_file($logo)) {
-                    $artisan->setName(
-                        file_get_contents($logo)
-                    );
-                }
-            }
-        );
-
         $hidden = config('commands.hidden');
 
         $devClasses = [
