@@ -5,31 +5,7 @@
 Compile and save files from the command line using Laravel's blade engine.
 ### Installation
 
-The recommended way is to download specific tag version release from releases and make available in `$PATH`:
-
-```
-# in ~/.bashrc or equivalent
-PATH=/usr/local/bin/blade-cli:$PATH
-```
-
-Install dependencies:
-
-```
-composer install
-
-# support is mostly unix based but windows is supported and best used on a terminal such as git bash/cmder:
-composer install --ignore-platform-reqs
-
-```
-
-Confirm is executable:
-
-```
-blade
-```
-
-#### Or Install Globally With Composer
-You may also install via composer globally:
+You may install via composer globally:
 
 `composer global require surgiie/blade-cli`
 
@@ -38,6 +14,23 @@ Then be sure the global composer packages path is executable:
 ```bash
 # may vary on systems:
 export PATH=~/.config/composer/vendor/bin:$PATH
+```
+
+You can also download specific tag version release from releases and make available in `$PATH`:
+
+```
+# in ~/.bashrc or equivalent
+PATH=/usr/local/bin/blade-cli:$PATH
+```
+
+Install dependencies:
+
+`composer install`
+
+Confirm is executable:
+
+```
+blade
 ```
 
 ### CLI Completion
