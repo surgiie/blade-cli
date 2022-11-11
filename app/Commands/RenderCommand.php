@@ -39,7 +39,7 @@ class RenderCommand extends ConsoleCommand
      *
      * @var string
      */
-    protected $description = 'Compile a file or directory of files and save the results to file(s).';
+    protected $description = 'Compile a file or directory of files and save the results to a file.';
 
     /**Allow arbitrary options to be passed to the command. */
     protected bool $arbitraryOptions = true;
