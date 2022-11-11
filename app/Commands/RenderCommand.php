@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use InvalidArgumentException;
 use SplFileInfo;
 use Surgiie\Blade\Blade;
-use Surgiie\Blade\Exceptions\UndefinedVariableException;
 use Surgiie\Console\Command as ConsoleCommand;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
@@ -113,11 +112,7 @@ class RenderCommand extends ConsoleCommand
         if (is_file($path)) {
             $saveFilePath = $this->computeSavePath($path, $this->data->get('save-to'));
 
-            $task = $this->renderFile($path, $variables, $saveFilePath);
-
-            if (! $task->succeeded()) {
-                $this->exit();
-            }
+            $this->renderFile($path, $variables, $saveFilePath);
 
             return 0;
         }
@@ -178,15 +173,7 @@ class RenderCommand extends ConsoleCommand
                 normalize_path("$computedDirectory/$relativePath/$fileName")
             );
 
-            $task = $this->renderFile($pathName, $variables, $saveDirectory);
-
-            $data = $task->getData();
-            // cleanup save directory if we failed to compile/save files for known failures.
-            if ($data['exception'] ?? null instanceof UndefinedVariableException) {
-                $fs->deleteDirectory($saveToPath);
-
-                return false;
-            }
+            $this->renderFile($pathName, $variables, $saveDirectory);
         }
     }
 
@@ -219,27 +206,16 @@ class RenderCommand extends ConsoleCommand
             $this->exit("The rendered file '$saveTo' already exists, use --force to overwrite.");
         }
 
-        $task = $this->runTask("Render file $path to $saveTo", function ($task) use ($path, $variables, $saveTo) {
-            try {
-                $contents = $this->blade()->compile($path, $variables);
-            } catch (\Exception $e) {
-                $task->data(['exception' => $e]);
+        try {
+            $contents = $this->blade()->compile($path, $variables);
+            $this->components->info("Rendered $path to $saveTo");
+        } catch (\Exception $e) {
+            $this->components->error('Compile Error: '.$e->getMessage());
 
-                return false;
-            }
-
-            return file_put_contents($saveTo, $contents) !== false;
-        });
-
-        $data = $task->getData();
-
-        if (! $task->succeeded() && $data['exception'] ?? false) {
-            $this->clearTerminalLine();
-
-            $this->components->error('Compile Error: '.$data['exception']->getMessage());
+            $this->exit();
         }
 
-        return $task;
+        return file_put_contents($saveTo, $contents) !== false;
     }
 
     /**

@@ -30,14 +30,11 @@ class ClearCommand extends ConsoleCommand
     public function handle()
     {
         $dir = config('app.compiled_path');
-        $this->runTask("Clear $dir directory", function () use ($dir) {
-            $fs = new Filesystem;
 
-            $fs->deleteDirectory($dir, preserve: true);
+        $fs = new Filesystem;
 
-            $this->clearTerminalLine();
+        $fs->deleteDirectory($dir, preserve: true);
 
-            return true;
-        });
+        $this->components->info("Cleared $dir directory");
     }
 }
