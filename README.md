@@ -37,10 +37,10 @@ blade
 
 ### CLI Completion
 
-You may optionally source the provided completion script for terminal completion:
+You may optionally source the completion script for terminal completion:
 
 ```bash
-source /path/to/cli/root/completion
+source <(blade completion)
 ```
 ### Use
 Lets work through an example, given this file exists in your current directory (person.yml):
