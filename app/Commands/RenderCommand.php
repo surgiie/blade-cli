@@ -58,7 +58,7 @@ class RenderCommand extends ConsoleCommand
     protected function transformers()
     {
         return [
-            'file' => ['trim', 'normalize_path', 'rtrim::value:,'.DIRECTORY_SEPARATOR],
+            'path' => ['trim', 'normalize_path', 'rtrim::value:,'.DIRECTORY_SEPARATOR],
             'from-json' => [fn ($v) => Arr::wrap($v)],
             'from-env' => [fn ($v) => Arr::wrap($v)],
             'save-to' => ['trim', 'normalize_path', 'rtrim::value:,'.DIRECTORY_SEPARATOR],
