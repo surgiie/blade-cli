@@ -7,7 +7,6 @@
         "vendor"
     ],
     "files": [
-        "completion",
         "composer.json"
     ],
     "exclude-dev-files": false,
