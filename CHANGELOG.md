@@ -1,7 +1,9 @@
 # Release Notes
 
-## [Unreleased](https://github.com/surgiie/blade-cli/compare/v3.1.0...master)
+## [Unreleased](https://github.com/surgiie/blade-cli/compare/v3.2.0...master)
 
+## [v3.2.0](https://github.com/surgiie/blade-cli/compare/v3.1.0...v3.2.0) - 2022-11-14
+- Bring back `runTask` not that flicker is fixed by @surgiie in https://github.com/surgiie/blade-cli/pull/14
 ## [v3.1.0](https://github.com/surgiie/blade-cli/compare/v3.0.0...v3.1.0) - 2022-11-09
 - Remove `runTask` usages and update surgiie/console due to overhead and bad flicker from spinner process by @surgiie in https://github.com/surgiie/blade-cli/pull/12
 

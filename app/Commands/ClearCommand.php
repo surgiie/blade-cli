@@ -29,12 +29,10 @@ class ClearCommand extends ConsoleCommand
 
     public function handle()
     {
-        $dir = config('app.compiled_path');
-
-        $fs = new Filesystem;
-
-        $fs->deleteDirectory($dir, preserve: true);
-
-        $this->components->info("Cleared $dir directory");
+        $this->runTask('Clear compiled files directory', function ($task) {
+            $dir = config('app.compiled_path');
+            $fs = new Filesystem;
+            $fs->deleteDirectory($dir, preserve: true);
+        }, finishedText: 'Cleared compiled files directory');
     }
 }

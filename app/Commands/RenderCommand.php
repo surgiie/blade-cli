@@ -152,7 +152,7 @@ class RenderCommand extends ConsoleCommand
         $fs = (new Filesystem);
         $fs->deleteDirectory($saveToPath, preserve: true);
 
-        if (! $this->data->get('force', false) && ! $this->components->confirm("Are you sure you want to render ALL files in the $path directory?")) {
+        if (! $this->data->get('force', false) && ! $this->components->confirm("Are you sure you want to render ALL files in the '$path' directory?")) {
             $this->exit('Canceled');
         }
 
@@ -206,16 +206,26 @@ class RenderCommand extends ConsoleCommand
             $this->exit("The rendered file '$saveTo' already exists, use --force to overwrite.");
         }
 
-        try {
-            $contents = $this->blade()->compile($path, $variables);
-            $this->components->info("Rendered $path to $saveTo");
-        } catch (\Exception $e) {
-            $this->components->error('Compile Error: '.$e->getMessage());
+        $task = $this->runTask("Render file $path to $saveTo", function ($task) use ($path, $variables, $saveTo) {
+            try {
+                $contents = $this->blade()->compile($path, $variables);
 
+                return file_put_contents($saveTo, $contents) !== false;
+            } catch (\Exception $e) {
+                $task->data(['exception' => $e]);
+
+                return false;
+            }
+
+            return file_put_contents($saveTo, $contents) !== false;
+        }, finishedText: "Rendered $saveTo");
+
+        $data = $task->getData();
+
+        if (! $task->succeeded() && $data['exception'] ?? false) {
+            $this->components->error('Compile Error: '.$data['exception']->getMessage());
             $this->exit();
         }
-
-        return file_put_contents($saveTo, $contents) !== false;
     }
 
     /**
@@ -267,7 +277,6 @@ class RenderCommand extends ConsoleCommand
         } else {
             $files[] = $path;
         }
-
         foreach ($files as $file) {
             $dryRun($file);
             $this->newLine();
