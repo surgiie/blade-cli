@@ -5,7 +5,7 @@
 Compile and save files from the command line using Laravel's blade engine.
 ### Installation
 
-You may install via composer globally:
+You may install the binary via composer globally:
 
 `composer global require surgiie/blade-cli`
 
@@ -18,7 +18,9 @@ Then be sure the global composer packages path is executable:
 export PATH=~/.config/composer/vendor/bin:$PATH
 ```
 
-You can also download specific tag version release from releases and make available in `$PATH`:
+### Installing Entire App
+
+You are also welcome to install the entire app if you dont want to use the standalone binary via composer global install by downloading a specific tag version release from releases and make available in `$PATH`:
 
 ```
 # in ~/.bashrc or equivalent
@@ -37,10 +39,10 @@ blade
 
 ### CLI Completion
 
-You may optionally source the provided completion script for terminal completion:
+You may optionally source the completion script for terminal completion:
 
 ```bash
-source /path/to/cli/root/completion
+source <(blade completion)
 ```
 ### Use
 Lets work through an example, given this file exists in your current directory (person.yml):
