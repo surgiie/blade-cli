@@ -11,6 +11,8 @@ You may install via composer globally:
 
 Then be sure the global composer packages path is executable:
 
+*Note* The pctnl extension is recommended to be installed, otherwise install with `composer global require surgiie/blade-cli --ignore-platform-reqs` 
+
 ```bash
 # may vary on systems:
 export PATH=~/.config/composer/vendor/bin:$PATH

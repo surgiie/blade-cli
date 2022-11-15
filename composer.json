@@ -8,7 +8,7 @@
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/http": "^9.0",
         "intonate/tinker-zero": "^1.2",
-        "surgiie/console": "^0.7.0"
+        "surgiie/console": "^0.13.0"
     },
     "require-dev": {
         "laravel-zero/framework": "^9.2",
