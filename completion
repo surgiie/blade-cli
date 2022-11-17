@@ -1,0 +1,37 @@
+#!/bin/bash 
+# Custom bash completion as suggested here https://gist.github.com/jhoff/8fbe4116d74931751ecc9e8203dfb7c4
+__get_first_word()
+{
+    while read -r first rest; do
+        echo "$first"
+    done
+}
+
+_blade()
+{
+    COMP_WORDBREAKS=${COMP_WORDBREAKS//:}
+    local cur prev words cword split
+    local debug=0
+    _init_completion -s -n : || return
+
+    case $prev in
+        blad*)
+            COMMANDS=$(blade --raw list | __get_first_word )
+            COMPREPLY=(`compgen -W "$COMMANDS" -- "$cur"`)
+            return 0
+            ;;
+    esac
+
+    case $cur in
+        -*)
+            COMMANDS=$( blade ${words[1]} --help | sed 's/[][]//g' | _parse_help - )
+            COMPREPLY=(`compgen -W "$COMMANDS" -- "$cur"`)
+            return
+            ;;
+        *)
+            _filedir
+            return
+            ;;
+    esac
+} &&
+complete -F _blade -o nospace blade
