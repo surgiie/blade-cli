@@ -39,10 +39,10 @@ blade
 
 ### CLI Completion
 
-You may optionally source the completion script for terminal completion:
+Available for bash, you may optionally source the completion script for terminal completion:
 
 ```bash
-source <(blade completion)
+source <(curl -s https://raw.githubusercontent.com/surgiie/blade-cli/master/completion)
 ```
 ### Use
 Lets work through an example, given this file exists in your current directory (person.yml):
