@@ -1,7 +1,10 @@
 # Release Notes
 
-## [Unreleased](https://github.com/surgiie/blade-cli/compare/v3.3.0...master)
+## [Unreleased](https://github.com/surgiie/blade-cli/compare/v3.4.0...master)
+## [v3.4.0](https://github.com/surgiie/blade-cli/compare/v3.3.0...v3.4.0) - 2022-11-16
+### Changed
 
+- Update `surgiie/console` to `v0.15.0` to include fix for caught exceptions are not re-thrown in `runTask` calls.
 ## [v3.3.0](https://github.com/surgiie/blade-cli/compare/v3.2.0...v3.3.0) - 2022-11-14
 ### Changed
 
