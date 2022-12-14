@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e;
+if [ -z "$1" ];
+then
+    echo "Version argument empty";
+    exit 1;
+fi
+
+echo "<?php return \"$1\";" > "version.php";
+git add .
+git commit -m "Generate new version $1"
+git push
+git fetch
+git tag -a $1 -m "$2"
+git push --tag
+echo "Published $1 and pushed to remote";
+set +e;
