@@ -18,9 +18,7 @@ Then be sure the global composer packages path is executable:
 export PATH=~/.config/composer/vendor/bin:$PATH
 ```
 
-### Installing Entire App
-
-You are also welcome to install the entire app if you dont want to use the standalone binary via composer global install by downloading a specific tag version release from releases and make available in `$PATH`:
+You may download a tag/release from releases and make available in `$PATH`:
 
 ```
 # in ~/.bashrc or equivalent
