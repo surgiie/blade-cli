@@ -13,3 +13,4 @@ if (! function_exists('normalize_path')) {
         return $path;
     }
 }
+
