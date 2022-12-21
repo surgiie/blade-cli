@@ -2,7 +2,7 @@
 
 if (! function_exists('normalize_path')) {
     /**
-     * Normalize a file path from unix style to windows if needed.
+     * Normalize a file path from unix style to windows style, if needed.
      */
     function normalize_path(string $path)
     {
