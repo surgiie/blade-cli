@@ -35,7 +35,7 @@ return [
     | number MAJOR.MINOR.PATCH when an update happens: https://semver.org.
     |
     */
-    'version' => require_once base_path('version.php'),
+    'version' => require base_path('version.php'),
     /*
     |--------------------------------------------------------------------------
     | Compiled cache path.
