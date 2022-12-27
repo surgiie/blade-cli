@@ -33,6 +33,7 @@ class RenderCommand extends ConsoleCommand
                             {--from-yaml=* : A yaml file path to load variable data from. }
                             {--from-json=* : A json file path to load variable data from. }
                             {--from-env=* : A .env file to load variable data from. }
+                            {--confirm= : Add a confirmation prompt to this render call. }
                             {--dry-run : Dump out compiled file contents only. }
                             {--force : Force render or overwrite files.}';
 
@@ -99,6 +100,10 @@ class RenderCommand extends ConsoleCommand
     public function handle()
     {
         $path = $this->data->get('path');
+
+        if($this->data->get('confirm') && ! $this->components->confirm($this->data->get('confirm'))){
+            $this->exit("Aborted");
+        }
 
         try {
             $variables = $this->gatherVariables();
