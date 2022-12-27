@@ -101,8 +101,8 @@ class RenderCommand extends ConsoleCommand
     {
         $path = $this->data->get('path');
 
-        if($this->data->get('confirm') && ! $this->components->confirm($this->data->get('confirm'))){
-            $this->exit("Aborted");
+        if ($this->data->get('confirm') && ! $this->components->confirm($this->data->get('confirm'))) {
+            $this->exit('Aborted');
         }
 
         try {
