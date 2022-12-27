@@ -207,6 +207,30 @@ it('can load variable data from json files', function () {
     EOL);
 });
 
+it('can load variable data from yaml files', function () {
+    $path = blade_cli_test_path('example.txt');
+
+    put_blade_cli_test_file('example.txt', <<<'EOL'
+    name: {{ $name }}
+    last_name: {{ $lastName }}
+    EOL);
+
+    put_blade_cli_test_file('vars.yaml', <<<'EOL'
+    "name": "Doug"
+    "last_name": "Thompson"
+    EOL);
+
+    $this->artisan('render', [
+        'path' => $path,
+        '--from-yaml' => blade_cli_test_path('vars.yaml'),
+    ])->assertExitCode(0);
+
+    expect(file_get_contents(blade_cli_test_path('example.rendered.txt')))->toBe(<<<'EOL'
+    name: Doug
+    last_name: Thompson
+    EOL);
+});
+
 it('can load variable data from env files', function () {
     $path = blade_cli_test_path('example.yaml');
 

@@ -2,20 +2,21 @@
 
 namespace App\Commands;
 
+use SplFileInfo;
 use Dotenv\Dotenv;
-use Illuminate\Filesystem\Filesystem;
+use Surgiie\Blade\Blade;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
-use SplFileInfo;
-use Surgiie\Blade\Blade;
-use Surgiie\Console\Command as ConsoleCommand;
+use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Finder\Finder;
+use Illuminate\Filesystem\Filesystem;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
-use Surgiie\Console\Concerns\WithTransformers;
 use Surgiie\Console\Concerns\WithValidation;
+use Surgiie\Console\Command as ConsoleCommand;
+use Surgiie\Console\Concerns\WithTransformers;
 use Surgiie\Console\Rules\FileOrDirectoryExists;
-use Symfony\Component\Finder\Finder;
 
 class RenderCommand extends ConsoleCommand
 {
@@ -29,7 +30,8 @@ class RenderCommand extends ConsoleCommand
     protected $signature = 'render
                             {path : The file or directory path to compile and save file(s) for. }
                             {--save-to= : The custom file or directory path to save the rendered file(s) to. }
-                            {--from-json=* : A json file to load variable data from. }
+                            {--from-yaml=* : A yaml file path to load variable data from. }
+                            {--from-json=* : A json file path to load variable data from. }
                             {--from-env=* : A .env file to load variable data from. }
                             {--dry-run : Dump out compiled file contents only. }
                             {--force : Force render or overwrite files.}';
@@ -60,6 +62,7 @@ class RenderCommand extends ConsoleCommand
         return [
             'path' => ['trim', 'normalize_path', 'rtrim::value:,'.DIRECTORY_SEPARATOR],
             'from-json' => [fn ($v) => Arr::wrap($v)],
+            'from-yaml' => [fn ($v) => Arr::wrap($v)],
             'from-env' => [fn ($v) => Arr::wrap($v)],
             'save-to' => ['trim', 'normalize_path', 'rtrim::value:,'.DIRECTORY_SEPARATOR],
         ];
@@ -319,6 +322,13 @@ class RenderCommand extends ConsoleCommand
     protected function gatherVariables()
     {
         $variables = [];
+        // laod from yaml files.
+        $yamlFiles = $this->data->get('from-yaml', []);
+
+        foreach ($yamlFiles as $file) {
+            $vars = Yaml::parseFile($file);
+            $variables = array_merge($variables, $this->normalizeVariableNames($vars));
+        }
         // laod from json files.
         $jsonFiles = $this->data->get('from-json', []);
 

@@ -6,10 +6,11 @@
     "require": {
         "php": "^8.0",
         "guzzlehttp/guzzle": "^7.4",
-        "laravel-zero/framework": "^9.2",
         "illuminate/http": "^9.0",
         "intonate/tinker-zero": "^1.2",
-        "surgiie/console": "~1.0.0"
+        "laravel-zero/framework": "^9.2",
+        "surgiie/console": "~1.0.0",
+        "symfony/yaml": "^6.2"
     },
     "require-dev": {
         "laravel/pint": "^1.2",
