@@ -86,17 +86,18 @@ blade render ./person.yml \
 There are 3 options for passing variable data to your files being rendered, in precedence order from **lowest to highest** :
 
 
-1. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files.
+1. Using yaml files via the `--from-yaml` option to pass a path to a yaml file. This maybe passed multiple times to load from many files.
 
-2. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files.
+2. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files.
 
-3. Lastly as you saw in the earlier example above, through arbitrary command line options to the `render` command. `--example-var=value`
+3. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files.
+
+4. Lastly as you saw in the earlier example above, through arbitrary command line options to the `render` command. `--example-var=value`
 
 
 #### Variable Naming Convention
 
-Command line options, env and json file keys can be defined in any naming convention you prefer, but your actual variable reference **MUST** be camel case. This is because php doesnt support kebab cased variables and since this is often the format for command line options, all variables will automatically get converted to data using camel case. For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option will be referenced
-as `$favoriteFood` in your files.
+Your env, yaml, and json file keys can be defined in any naming convention you prefer, but your actual variable references **MUST** be camel case. This is because php doesnt support kebab cased variables and since this is the format used command line options, all variables will automatically get converted to camel case. For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option should be referenced as `$favoriteFood` in your files.
 
 #### Variable Types
 
