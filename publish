@@ -7,6 +7,9 @@ then
 fi
 
 echo "<?php return \"$1\";" > "version.php";
+
+./blade app:build --build-version="$1"
+
 git add .
 git commit -m "Generate new version $1"
 git push

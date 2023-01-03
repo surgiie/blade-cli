@@ -8,11 +8,11 @@
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/http": "^9.0",
         "intonate/tinker-zero": "^1.2",
-        "laravel-zero/framework": "^9.2",
-        "surgiie/console": "~1.0.0",
+        "surgiie/console": "^1.0.0",
         "symfony/yaml": "^6.2"
     },
     "require-dev": {
+        "laravel-zero/framework": "^9.2",
         "laravel/pint": "^1.2",
         "mockery/mockery": "^1.4.4",
         "pestphp/pest": "^1.21.3"
@@ -45,5 +45,5 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "bin": ["blade"]
+    "bin": ["builds/blade"]
 }
