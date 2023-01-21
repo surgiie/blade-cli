@@ -14,7 +14,7 @@ use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 use Surgiie\Console\Concerns\WithTransformers;
 use Surgiie\Console\Concerns\WithValidation;
-use Surgiie\Console\Rules\FileOrDirectoryExists;
+use Surgiie\Console\Rules\FileOrDirectoryMustExist;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
@@ -53,7 +53,7 @@ class RenderCommand extends ConsoleCommand
         $path = $this->data->get('path');
 
         return [
-            'path' => [new FileOrDirectoryExists("The file or directory :name '$path' does not exist")],
+            'path' => [new FileOrDirectoryMustExist("The file or directory :name '$path' does not exist")],
         ];
     }
 
@@ -72,7 +72,7 @@ class RenderCommand extends ConsoleCommand
     /**Return a new blade instance.*/
     protected function blade(): Blade
     {
-        return $this->getProperty('blade', fn () => (new Blade(
+        return $this->fromArrayCache('blade', fn () => (new Blade(
             container: $this->laravel,
             filesystem: new Filesystem,
         ))->setCompiledPath(config('app.compiled_path')));
@@ -220,7 +220,7 @@ class RenderCommand extends ConsoleCommand
 
                 return file_put_contents($saveTo, $contents) !== false;
             } catch (\Exception $e) {
-                $task->data(['exception' => $e]);
+                $task->remember(['exception' => $e]);
 
                 return false;
             }
@@ -228,7 +228,7 @@ class RenderCommand extends ConsoleCommand
             return file_put_contents($saveTo, $contents) !== false;
         }, finishedText: "Rendered $saveTo");
 
-        $data = $task->getData();
+        $data = $task->data();
 
         if (! $task->succeeded() && $data['exception'] ?? false) {
             $this->components->error('Compile Error: '.$data['exception']->getMessage());
