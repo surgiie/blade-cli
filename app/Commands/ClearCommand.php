@@ -27,12 +27,19 @@ class ClearCommand extends ConsoleCommand
      */
     protected $description = 'Clear the cached compiled files directory.';
 
+    /**
+     * Execute the console command and clear compiled directory.
+     *
+     * @return int
+     */
     public function handle()
     {
-        $this->runTask('Clear compiled files directory', function ($task) {
+        $task = $this->runTask('Clear compiled files directory', function ($task) {
             $dir = config('app.compiled_path');
             $fs = new Filesystem;
             $fs->deleteDirectory($dir, preserve: true);
         }, finishedText: 'Cleared compiled files directory');
+
+        $task->succeeded() ? 0 : 1;
     }
 }

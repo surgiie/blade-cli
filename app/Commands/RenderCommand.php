@@ -47,8 +47,12 @@ class RenderCommand extends ConsoleCommand
     /**Allow arbitrary options to be passed to the command. */
     protected bool $arbitraryOptions = true;
 
-    /**The validation rules for arguments/options.*/
-    public function rules()
+    /**
+     * The validation rules for the input/options.
+     *
+     * @return array
+     */
+    public function rules(): array
     {
         $path = $this->data->get('path');
 
@@ -57,7 +61,11 @@ class RenderCommand extends ConsoleCommand
         ];
     }
 
-    /**The tranformers to run against arguments and options. */
+    /**
+     * The tranformers to run against arguments and options.
+     *
+     * @return void
+     */
     protected function transformers()
     {
         return [
@@ -69,7 +77,11 @@ class RenderCommand extends ConsoleCommand
         ];
     }
 
-    /**Return a new blade instance.*/
+    /**
+     * Return the Blade instance for rendering files with.
+     *
+     * @return \Surgiie\Blade\Blade
+     */
     protected function blade(): Blade
     {
         return $this->fromArrayCache('blade', fn () => (new Blade(
@@ -78,8 +90,14 @@ class RenderCommand extends ConsoleCommand
         ))->setCompiledPath(config('app.compiled_path')));
     }
 
-    /**Compute a save file path for file render.*/
-    protected function computeSavePath($path, $givenSavePath)
+    /**
+     * Compute a save directory for the file being rendered.
+     *
+     * @param string $path
+     * @param string|null $givenSavePath
+     * @return string
+     */
+    protected function computeSavePath(string $path, ?string $givenSavePath  = null)
     {
         $separator = DIRECTORY_SEPARATOR;
 
@@ -96,6 +114,8 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Execute the console command.
+     * 
+     * @return int
      */
     public function handle()
     {
@@ -138,6 +158,11 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Render all files within a given directory.
+     *
+     * @param string $path
+     * @param array $variables
+     * @param string|null $saveToPath
+     * @return void
      */
     protected function renderDirectoryFiles(string $path, array $variables, ?string $saveToPath)
     {
@@ -185,8 +210,13 @@ class RenderCommand extends ConsoleCommand
         }
     }
 
-    /**Expand path if its a known path that can be expanxed.*/
-    protected function expandPath($path)
+    /**
+     * Expand path if its a known path that can be expanded.
+     *
+     * @param ?string $path
+     * @return string|null
+     */
+    protected function expandPath(?string $path): string|null
     {
         // allow ~ syntax and expand accordingly
         if (Str::startsWith($path, $alias = '~'.DIRECTORY_SEPARATOR)) {
@@ -197,7 +227,14 @@ class RenderCommand extends ConsoleCommand
         return $path;
     }
 
-    /**Render a file and save it's contents to the given path.*/
+    /**
+     * Render a file and save it's contents to the given path.
+     *
+     * @param string $path
+     * @param array $variables
+     * @param string $saveTo
+     * @return void
+     */
     protected function renderFile(string $path, array $variables, string $saveTo)
     {
         $saveDirectory = dirname($saveTo);
@@ -238,6 +275,9 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the default file name that will be used for the saved file.
+     * 
+     * @param string $path
+     * @return string
      */
     protected function getDefaultSaveFileName(string $path): string
     {
@@ -250,6 +290,9 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the default file path that will be used for the saved file.
+     * 
+     * @param string $path
+     * @return string
      */
     protected function getDefaultSaveFilePath(string $path): string
     {
@@ -260,7 +303,13 @@ class RenderCommand extends ConsoleCommand
         return $saveDirectory.$this->getDefaultSaveFileName($path);
     }
 
-    /**Show the rendered contents for the given file.*/
+    /**
+     * Show the rendered contents for the given file.
+     *
+     * @param string $path
+     * @param array $variables
+     * @return static
+     */
     protected function dryRun(string $path, array $variables = []): static
     {
         $dryRun = function ($filePath) use ($variables) {
@@ -295,6 +344,8 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the variables from env files.
+     *
+     * @return array
      */
     protected function gatherEnvFileVariables(): array
     {
@@ -312,8 +363,13 @@ class RenderCommand extends ConsoleCommand
         return $env;
     }
 
-    /**Normalize variables to camel case for render.*/
-    protected function normalizeVariableNames(array $vars = [])
+    /**
+     * Normalize variables to camel case for render.
+     *
+     * @param array $vars
+     * @return array
+     */
+    protected function normalizeVariableNames(array $vars = []): array
     {
         $variables = [];
         foreach ($vars as $k => $value) {
@@ -323,8 +379,12 @@ class RenderCommand extends ConsoleCommand
         return $variables;
     }
 
-    /**Gather the variables for rendering.*/
-    protected function gatherVariables()
+    /**
+     * Gather the variables for rendering.
+     *
+     * @return array
+     */
+    protected function gatherVariables(): array
     {
         $variables = [];
         // laod from yaml files.
