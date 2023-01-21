@@ -93,11 +93,11 @@ class RenderCommand extends ConsoleCommand
     /**
      * Compute a save directory for the file being rendered.
      *
-     * @param string $path
-     * @param string|null $givenSavePath
+     * @param  string  $path
+     * @param  string|null  $givenSavePath
      * @return string
      */
-    protected function computeSavePath(string $path, ?string $givenSavePath  = null)
+    protected function computeSavePath(string $path, ?string $givenSavePath = null)
     {
         $separator = DIRECTORY_SEPARATOR;
 
@@ -114,7 +114,7 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Execute the console command.
-     * 
+     *
      * @return int
      */
     public function handle()
@@ -159,9 +159,9 @@ class RenderCommand extends ConsoleCommand
     /**
      * Render all files within a given directory.
      *
-     * @param string $path
-     * @param array $variables
-     * @param string|null $saveToPath
+     * @param  string  $path
+     * @param  array  $variables
+     * @param  string|null  $saveToPath
      * @return void
      */
     protected function renderDirectoryFiles(string $path, array $variables, ?string $saveToPath)
@@ -213,7 +213,7 @@ class RenderCommand extends ConsoleCommand
     /**
      * Expand path if its a known path that can be expanded.
      *
-     * @param ?string $path
+     * @param  ?string  $path
      * @return string|null
      */
     protected function expandPath(?string $path): string|null
@@ -230,9 +230,9 @@ class RenderCommand extends ConsoleCommand
     /**
      * Render a file and save it's contents to the given path.
      *
-     * @param string $path
-     * @param array $variables
-     * @param string $saveTo
+     * @param  string  $path
+     * @param  array  $variables
+     * @param  string  $saveTo
      * @return void
      */
     protected function renderFile(string $path, array $variables, string $saveTo)
@@ -275,8 +275,8 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the default file name that will be used for the saved file.
-     * 
-     * @param string $path
+     *
+     * @param  string  $path
      * @return string
      */
     protected function getDefaultSaveFileName(string $path): string
@@ -290,8 +290,8 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the default file path that will be used for the saved file.
-     * 
-     * @param string $path
+     *
+     * @param  string  $path
      * @return string
      */
     protected function getDefaultSaveFilePath(string $path): string
@@ -306,8 +306,8 @@ class RenderCommand extends ConsoleCommand
     /**
      * Show the rendered contents for the given file.
      *
-     * @param string $path
-     * @param array $variables
+     * @param  string  $path
+     * @param  array  $variables
      * @return static
      */
     protected function dryRun(string $path, array $variables = []): static
@@ -366,7 +366,7 @@ class RenderCommand extends ConsoleCommand
     /**
      * Normalize variables to camel case for render.
      *
-     * @param array $vars
+     * @param  array  $vars
      * @return array
      */
     protected function normalizeVariableNames(array $vars = []): array
