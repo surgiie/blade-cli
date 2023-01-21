@@ -40,6 +40,6 @@ class ClearCommand extends ConsoleCommand
             $fs->deleteDirectory($dir, preserve: true);
         }, finishedText: 'Cleared compiled files directory');
 
-        $task->succeeded() ? 0 : 1;
+        return $task->succeeded() ? 0 : 1;
     }
 }
