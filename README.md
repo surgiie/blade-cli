@@ -1,51 +1,21 @@
-### Blade CLI
+# Blade CLI
+The Blade CLI allows you to compile and save any textual files from the command line using Laravel's Blade engine.
 
 ![tests](https://github.com/surgiie/blade-cli/actions/workflows/tests.yml/badge.svg)
 
-Compile and save files from the command line using Laravel's blade engine.
-### Installation
-
-You may install the binary via composer globally:
+## Installation
+To install the binary, use composer globally:
 
 `composer global require surgiie/blade-cli`
 
-Then be sure the global composer packages path is executable:
+If the `pctnl` extension is not installed, install or use the following command instead:
 
-*Note* The pctnl extension is recommended to be installed, otherwise install with `composer global require surgiie/blade-cli --ignore-platform-reqs` 
+`composer global require surgiie/blade-cli --ignore-platform-reqs`.
 
-```bash
-# may vary on systems:
-export PATH=~/.config/composer/vendor/bin:$PATH
-```
-
-You may download a tag/release from releases and make available in `$PATH`:
-
-```
-# in ~/.bashrc or equivalent
-PATH=/usr/local/bin/blade-cli:$PATH
-```
-
-Install dependencies:
-
-`composer install`
-
-Confirm is executable:
-
-```
-blade
-```
-
-### CLI Completion
-
-Available for bash, you may optionally source the completion script for terminal completion:
+## Use
+As an example, let's say you have a file named `person.yml` in your current directory with the following content:
 
 ```bash
-source <(curl -s https://raw.githubusercontent.com/surgiie/blade-cli/master/completion)
-```
-### Use
-Lets work through an example, given this file exists in your current directory (person.yml):
-
-```yaml
 name: {{ $name }}
 relationship: {{ $relationship }}
 favorite_food: {{ $favoriteFood }}
@@ -53,111 +23,77 @@ favorite_food: {{ $favoriteFood }}
 address: "123 example lane"
 @endif
 ```
-
-You may render that file as follows:
+You can render this file using the following command:
 
 ```bash
-
 blade render ./person.yml \
                 --name="Bob" \
                 --relationship="Uncle" \
                 --favorite-food="Pizza" \
                 --include-address
-```
-
-This will render and save the file to the same directory as a file named `person.rendered.yml`
-
-
-### Custom Filename
-
-All files will get saved to the same directory as the file being rendered as `<filename>.rendered.<extension>` or simply `<filename>.rendered`. This is to avoid overwriting the file you are rendering. If you wish to save the file as a custom file name or change the directory, use the `--save-to` option to specify a file path to write the file to:
 
 ```
+This will render the file and save it in the same directory with the name `person.rendered.yml`.
+
+
+## Custom Filename
+By default, all files will be saved to the same directory as the file being rendered with the name `<filename>.rendered.<extension>` or simply `<filename>.rendered`, to prevent overwriting the original file. To use a custom file name or change the directory, use the `--save-to` option to specify a file path:
+
+```bash
 blade render ./person.yml \
             ...
             --save-to="/home/bob/custom-name.yml"
-
 ```
+**Note**: The Blade class will automatically create the necessary parent directories if it has permission, otherwise an error will be thrown.
 
-**Note** - The blade class will attempt to automatically ensure the parent directories exist if it can write them otherwise an error is thrown due to lack of permissions.
+## Variable Data
+There are three options for passing variable data to your files being rendered, in order of precedence:
 
-### Variable Data
-
-There are 3 options for passing variable data to your files being rendered, in precedence order from **lowest to highest** :
-
-
-1. Using yaml files via the `--from-yaml` option to pass a path to a yaml file. This maybe passed multiple times to load from many files.
-
-2. Using json files via the `--from-json` option to pass a path to a json file. This maybe passed multiple times to load from many files.
-
-3. Using env files via the `--from-env` option to pass a path a `.env` file. This maybe passed multiple times to load from many files.
-
-4. Lastly as you saw in the earlier example above, through arbitrary command line options to the `render` command. `--example-var=value`
+- Use YAML files with the `--from-yaml` option and pass a path to the file. This option can be used multiple times to load from multiple files.
+- Use JSON files with the `--from-json` option and pass a path to the file. This option can be used multiple times to load from multiple files.
+- Use env files with the `--from-env` option and pass a path to the .env file. This option can be used multiple times to load from multiple files.
+- Use arbitrary command line options with the render command, like `--example-var=value`.
 
 
-#### Variable Naming Convention
+## Variable Naming Convention
 
-Your env, yaml, and json file keys can be defined in any naming convention you prefer, but your actual variable references **MUST** be camel case. This is because php doesnt support kebab cased variables and since this is the format used command line options, all variables will automatically get converted to camel case. For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option should be referenced as `$favoriteFood` in your files.
+Your env, YAML, and JSON file keys can be defined in any naming convention, but the actual variable references MUST be in camel case. This is because PHP does not support kebab case variables and since this is the format used in command line options, all variables will automatically be converted to camel case. For example, if you pass an option or define a variable name in your files in any of these formats: favorite-food, favoriteFood, or favorite_food, the variable for that option should be referenced as $favoriteFood in your files.
 
-#### Variable Types
+### Variable Types
+The following types of variables are currently supported:
 
-These are the current supported way to pass variables for different types/purposes:
+- String/Single Value Variables: Use a single option key/value format, e.g. --foo=bar --bar=baz
+- Array Value Variables: Pass the option multiple times, e.g. --names=Steve --names=Ricky --names=Bob
+- True Boolean Value Variables: Pass the option with no value, e.g. --should-do-thing
 
-##### String/Single Value Variables
+**Note**: Since variable options are dynamic, "negate/false" options are not supported. Instead, use something like {{ $shouldDoSomething ?? false }} in your files to default to false and use true options to "negate" the value.
 
-Use single option key/value format for passing variables for single string values:
+## Force Write
+If you try to render a file that already exists, an exception will be raised. To force overwrite an existing file, use the --force flag:
 
-`--foo=bar --bar=baz`
-
-##### Array Value Variables
-
-For array variables, just pass the option more than once:
-
-`--names=Steve --names=Ricky --names=Bob`
-
-##### True Boolean Value Variables
-
-For boolean true variables, just pass the option with no value:
-
-`--should-do-thing`
-
-**Note** Since variable options are dynamic the "negate/false" options are not supported. Instead do something like this in your files `{{ $shouldDoSomething ?? false }}` to default
-to false and then use true options to "negate" the value.
-
-### Force write
-
-If you try to render a file that already exists an exception will be raised, you may consider force write via the `--force` flag.
-
-```
+```bash
 blade render ./person.yml \
                 --name="Bob" \
                 --relationship="Uncle" \
                 --favorite-food="Pizza" \
                 --include-address \
                 --force # force overwrite person.rendered.yml if it already exists.
-
 ```
-
-
-### Dry Run/Show Rendered Contents
-
-If you would like to output the contents of a rendered file to your terminal and not actually save the file, you may add the `--dry-run` flag when rendering a single file:
+## Dry Run/Show Rendered Contents
+To view the contents of a rendered file without saving it, use the --dry-run flag when rendering a single file:
 
 `blade render example.yaml --some-var=example --dry-run`
 
-This will echo/output the rendered contents of `example.yaml` only.
+This will display the contents of example.yaml on the terminal without saving it.
 
-
-### Processing an entire directory of files
-
-You may also pass the path to a directory instead of a single file. This might be useful if you like to group template files in a directory and want to render them all with a single command:
+## Processing an entire directory of files
+You can also pass a directory path instead of a single file when running the command. This can be useful when you want to render multiple template files at once.
 
 `blade render ./templates --save-dir="/home/bob/templates" --some-data=foo`
 
-**Note** This will prompt you for confirmation, you may skip confirmation by adding the `--force` flag.
+**Note**: This command will prompt you for confirmation. To skip confirmation, add the `--force` flag.
 
-**Note** When rendering an entire directory the `--save-dir` option is **required** so that the cli exports all rendered files to a separate directory than the one being processed. The directory the files get saved in will mirror the directory structure of the directory being processed.  In the above example `/home/bob/templates` will have a directory structure that matches `./templates`.
-
+**Note**: When rendering an entire directory, the `--save-dir` option is required to export all rendered files to a separate directory. The directory structure of the directory being processed will be mirrored in the directory where the files are saved. In the above example, `/home/bob/templates` will have the same directory structure as `./templates`.
 
 ### Contribute
 
