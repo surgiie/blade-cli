@@ -157,39 +157,8 @@ You may also pass the path to a directory instead of a single file. This might b
 **Note** This will prompt you for confirmation, you may skip confirmation by adding the `--force` flag.
 
 **Note** When rendering an entire directory the `--save-dir` option is **required** so that the cli exports all rendered files to a separate directory than the one being processed. The directory the files get saved in will mirror the directory structure of the directory being processed.  In the above example `/home/bob/templates` will have a directory structure that matches `./templates`.
-### Direct Use/Manually Rendering
 
-If you wish to use the api directly, you may utilize the Blade class directly in your apps:
 
-```php
-
-use Surgiie\BladeCLI\Blade;
-use Illuminate\Container\Container;
-use Illuminate\Filesystem\Filesystem;
-
-$blade = new Blade(
-    container: new Container,
-    filesystem: new Filesystem,
-    filePath: '/path/to/file/to/render',
-    options: [
-        'force'=> true, // force overwrite existing rendered file
-        'save-to'=>'save-to' // optional file path to save file as.
-    ]
-);
-
-// render and save the file with this data/vars
-$contents = $blade->render([
-    'var'=>'example'
-]);
-
-// you may prevent the file from being saved, by passing false to the 2nd argument of the render method
-// this is useful if you wish to process the contents of the rendered file yourself and do specific custom tasks.
-$contents = $blade->render(
-    ['var'=>'example'],
-    false
-);
-
-```
 ### Contribute
 
 Contributions are always welcome in the following manner:
