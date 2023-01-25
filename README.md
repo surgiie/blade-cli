@@ -15,7 +15,7 @@ If the `pctnl` extension is not installed, install or use the following command 
 ## Use
 As an example, let's say you have a file named `person.yml` in your current directory with the following content:
 
-```bash
+```yaml
 name: {{ $name }}
 relationship: {{ $relationship }}
 favorite_food: {{ $favoriteFood }}
@@ -44,7 +44,7 @@ blade render ./person.yml \
             ...
             --save-to="/home/bob/custom-name.yml"
 ```
-**Note**: The Blade class will automatically create the necessary parent directories if it has permission, otherwise an error will be thrown.
+**Note**: The cli will automatically create the necessary parent directories if it has permission, otherwise an error will be thrown.
 
 ## Variable Data
 There are three options for passing variable data to your files being rendered, in order of precedence:
