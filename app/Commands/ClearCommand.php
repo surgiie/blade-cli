@@ -2,14 +2,14 @@
 
 namespace App\Commands;
 
+use App\Support\BaseCommand;
 use Illuminate\Filesystem\Filesystem;
-use Surgiie\Console\Command as ConsoleCommand;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 use Surgiie\Console\Concerns\WithTransformers;
 use Surgiie\Console\Concerns\WithValidation;
 
-class ClearCommand extends ConsoleCommand
+class ClearCommand extends BaseCommand
 {
     use WithValidation, WithTransformers, LoadsJsonFiles, LoadsEnvFiles;
 
@@ -18,7 +18,7 @@ class ClearCommand extends ConsoleCommand
      *
      * @var string
      */
-    protected $signature = 'clear';
+    protected $signature = 'clear {--compile-path= : Custom directory for cached/compiled files. }';
 
     /**
      * The description of the command.
@@ -34,10 +34,9 @@ class ClearCommand extends ConsoleCommand
      */
     public function handle()
     {
-        $task = $this->runTask('Clear compiled files directory', function ($task) {
-            $dir = config('app.compiled_path');
+        $task = $this->runTask('Clear compiled files directory', function () {
             $fs = new Filesystem;
-            $fs->deleteDirectory($dir, preserve: true);
+            $fs->deleteDirectory($this->blade()->getCompiledPath(), preserve: true);
         }, finishedText: 'Cleared compiled files directory');
 
         return $task->succeeded() ? 0 : 1;

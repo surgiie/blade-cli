@@ -2,14 +2,13 @@
 
 namespace App\Commands;
 
+use App\Support\BaseCommand;
 use Dotenv\Dotenv;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use SplFileInfo;
-use Surgiie\Blade\Blade;
-use Surgiie\Console\Command as ConsoleCommand;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 use Surgiie\Console\Concerns\WithTransformers;
@@ -18,7 +17,7 @@ use Surgiie\Console\Rules\FileOrDirectoryMustExist;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
-class RenderCommand extends ConsoleCommand
+class RenderCommand extends BaseCommand
 {
     use WithValidation, WithTransformers, LoadsJsonFiles, LoadsEnvFiles;
 
@@ -32,6 +31,7 @@ class RenderCommand extends ConsoleCommand
                             {--save-to= : The custom file or directory path to save the rendered file(s) to. }
                             {--from-yaml=* : A yaml file path to load variable data from. }
                             {--from-json=* : A json file path to load variable data from. }
+                            {--compile-path= : Custom directory for cached/compiled files. }
                             {--from-env=* : A .env file to load variable data from. }
                             {--confirm= : Add a confirmation prompt to this render call. }
                             {--dry-run : Dump out compiled file contents only. }
@@ -42,15 +42,13 @@ class RenderCommand extends ConsoleCommand
      *
      * @var string
      */
-    protected $description = 'Compile a file or directory of files and save the results to a file.';
+    protected $description = 'Render a file or directory of files.';
 
     /**Allow arbitrary options to be passed to the command. */
     protected bool $arbitraryOptions = true;
 
     /**
      * The validation rules for the input/options.
-     *
-     * @return array
      */
     public function rules(): array
     {
@@ -78,23 +76,8 @@ class RenderCommand extends ConsoleCommand
     }
 
     /**
-     * Return the Blade instance for rendering files with.
-     *
-     * @return \Surgiie\Blade\Blade
-     */
-    protected function blade(): Blade
-    {
-        return $this->fromArrayCache('blade', fn () => (new Blade(
-            container: $this->laravel,
-            filesystem: new Filesystem,
-        ))->setCompiledPath(config('app.compiled_path')));
-    }
-
-    /**
      * Compute a save directory for the file being rendered.
      *
-     * @param  string  $path
-     * @param  string|null  $givenSavePath
      * @return string
      */
     protected function computeSavePath(string $path, ?string $givenSavePath = null)
@@ -159,9 +142,6 @@ class RenderCommand extends ConsoleCommand
     /**
      * Render all files within a given directory.
      *
-     * @param  string  $path
-     * @param  array  $variables
-     * @param  string|null  $saveToPath
      * @return void
      */
     protected function renderDirectoryFiles(string $path, array $variables, ?string $saveToPath)
@@ -214,7 +194,6 @@ class RenderCommand extends ConsoleCommand
      * Expand path if its a known path that can be expanded.
      *
      * @param  ?string  $path
-     * @return string|null
      */
     protected function expandPath(?string $path): string|null
     {
@@ -230,9 +209,6 @@ class RenderCommand extends ConsoleCommand
     /**
      * Render a file and save it's contents to the given path.
      *
-     * @param  string  $path
-     * @param  array  $variables
-     * @param  string  $saveTo
      * @return void
      */
     protected function renderFile(string $path, array $variables, string $saveTo)
@@ -275,9 +251,6 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the default file name that will be used for the saved file.
-     *
-     * @param  string  $path
-     * @return string
      */
     protected function getDefaultSaveFileName(string $path): string
     {
@@ -290,9 +263,6 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the default file path that will be used for the saved file.
-     *
-     * @param  string  $path
-     * @return string
      */
     protected function getDefaultSaveFilePath(string $path): string
     {
@@ -305,10 +275,6 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Show the rendered contents for the given file.
-     *
-     * @param  string  $path
-     * @param  array  $variables
-     * @return static
      */
     protected function dryRun(string $path, array $variables = []): static
     {
@@ -344,8 +310,6 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Get the variables from env files.
-     *
-     * @return array
      */
     protected function gatherEnvFileVariables(): array
     {
@@ -365,9 +329,6 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Normalize variables to camel case for render.
-     *
-     * @param  array  $vars
-     * @return array
      */
     protected function normalizeVariableNames(array $vars = []): array
     {
@@ -381,8 +342,6 @@ class RenderCommand extends ConsoleCommand
 
     /**
      * Gather the variables for rendering.
-     *
-     * @return array
      */
     protected function gatherVariables(): array
     {

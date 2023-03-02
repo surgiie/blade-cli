@@ -57,16 +57,16 @@ There are three options for passing variable data to your files being rendered, 
 
 ## Variable Naming Convention
 
-Your env, YAML, and JSON file keys can be defined in any naming convention, but the actual variable references MUST be in camel case. This is because PHP does not support kebab case variables and since this is the format used in command line options, all variables will automatically be converted to camel case. For example, if you pass an option or define a variable name in your files in any of these formats: favorite-food, favoriteFood, or favorite_food, the variable for that option should be referenced as $favoriteFood in your files.
+Your env, YAML, and JSON file keys can be defined in any naming convention, but the actual variable references MUST be in camel case. This is because PHP does not support kebab case variables and since this is the format used in command line options, all variables will automatically be converted to camel case. For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option should be referenced as `$favoriteFood` in your files.
 
 ### Variable Types
 The following types of variables are currently supported:
 
-- String/Single Value Variables: Use a single option key/value format, e.g. --foo=bar --bar=baz
-- Array Value Variables: Pass the option multiple times, e.g. --names=Steve --names=Ricky --names=Bob
-- True Boolean Value Variables: Pass the option with no value, e.g. --should-do-thing
+- String/Single Value Variables: Use a single option key/value format, e.g. `--foo=bar --bar=baz`
+- Array Value Variables: Pass the option multiple times, e.g. `--names=Steve --names=Ricky --names=Bob`
+- True Boolean Value Variables: Pass the option with no value, e.g. `--should-do-thing`
 
-**Note**: Since variable options are dynamic, "negate/false" options are not supported. Instead, use something like {{ $shouldDoSomething ?? false }} in your files to default to false and use true options to "negate" the value.
+**Note**: Since variable options are dynamic, "negate/false" options are not supported. Instead, use something like `{{ $shouldDoSomething ?? false }}` in your files to default to false and use true options to "negate" the value.
 
 ## Force Write
 If you try to render a file that already exists, an exception will be raised. To force overwrite an existing file, use the --force flag:
@@ -94,6 +94,18 @@ You can also pass a directory path instead of a single file when running the com
 **Note**: This command will prompt you for confirmation. To skip confirmation, add the `--force` flag.
 
 **Note**: When rendering an entire directory, the `--save-dir` option is required to export all rendered files to a separate directory. The directory structure of the directory being processed will be mirrored in the directory where the files are saved. In the above example, `/home/bob/templates` will have the same directory structure as `./templates`.
+
+
+## Custom Compiled/Cached Directory
+
+When blade compiles a file down to plain php, it stores the compiled file by default in `/tmp/.compiled`, if you wish to use a custom directory for these files, you may use the `--compile-path` option but youll be responsible to include it in your scripts/usages:
+
+`blade render myfile --var=foo --compile-path="/custom/directory"`
+
+When clearing the directory, this will also be required:
+
+`blade clear --compile-path="/custom/directory"`
+
 
 ### Contribute
 

@@ -36,16 +36,6 @@ return [
     |
     */
     'version' => require base_path('version.php'),
-    /*
-    |--------------------------------------------------------------------------
-    | Compiled cache path.
-    |--------------------------------------------------------------------------
-    |
-    | This value determines where to put compiled results for caching and
-    | returing results to subsequent runs if the content has not changed/produces
-    | same result.
-    */
-    'compiled_path' => storage_path('app/.compiled'),
 
     /*
     |--------------------------------------------------------------------------
@@ -59,7 +49,7 @@ return [
     |
     */
 
-    'env' => 'development',
+    'env' => env('APP_ENV', 'development'),
 
     /*
     |--------------------------------------------------------------------------
