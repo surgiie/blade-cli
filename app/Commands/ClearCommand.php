@@ -6,12 +6,10 @@ use App\Support\BaseCommand;
 use Illuminate\Filesystem\Filesystem;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
-use Surgiie\Console\Concerns\WithTransformers;
-use Surgiie\Console\Concerns\WithValidation;
 
 class ClearCommand extends BaseCommand
 {
-    use WithValidation, WithTransformers, LoadsJsonFiles, LoadsEnvFiles;
+    use LoadsJsonFiles, LoadsEnvFiles;
 
     /**
      * The signature of the command.

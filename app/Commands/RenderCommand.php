@@ -11,15 +11,13 @@ use InvalidArgumentException;
 use SplFileInfo;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
-use Surgiie\Console\Concerns\WithTransformers;
-use Surgiie\Console\Concerns\WithValidation;
 use Surgiie\Console\Rules\FileOrDirectoryMustExist;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
 class RenderCommand extends BaseCommand
 {
-    use WithValidation, WithTransformers, LoadsJsonFiles, LoadsEnvFiles;
+    use LoadsJsonFiles, LoadsEnvFiles;
 
     /**
      * The signature of the command.
@@ -62,9 +60,9 @@ class RenderCommand extends BaseCommand
     /**
      * The tranformers to run against arguments and options.
      *
-     * @return void
+     * @return array
      */
-    protected function transformers()
+    protected function transformers(): array
     {
         return [
             'path' => ['trim', 'normalize_path', 'rtrim::value:,'.DIRECTORY_SEPARATOR],
