@@ -59,8 +59,6 @@ class RenderCommand extends BaseCommand
 
     /**
      * The tranformers to run against arguments and options.
-     *
-     * @return array
      */
     protected function transformers(): array
     {
