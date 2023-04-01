@@ -16,7 +16,7 @@ class ClearCommand extends BaseCommand
      *
      * @var string
      */
-    protected $signature = 'clear {--compile-path= : Custom directory for cached/compiled files. }';
+    protected $signature = 'clear';
 
     /**
      * The description of the command.

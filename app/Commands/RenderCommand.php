@@ -117,70 +117,68 @@ class RenderCommand extends BaseCommand
         }
 
         if (is_file($path)) {
-            $saveFilePath = $this->computeSavePath($path, $this->data->get('save-to'));
-
-            $this->renderFile($path, $variables, $saveFilePath);
+            $this->renderFile($path, $variables, $this->computeSavePath($path, $this->data->get('save-to')));
 
             return 0;
         }
 
-        if (is_dir($path)) {
-            $saveFilePath = $this->expandPath($this->data->get('save-to'));
-
-            $this->renderDirectoryFiles($path, $variables, $saveFilePath);
-
-            return 0;
+        if (! is_dir($path)) {
+            return 1;
         }
 
-        return 1;
+        $saveFilePath = $this->expandPath($this->data->get('save-to'));
+
+        if (! $saveFilePath) {
+            $this->exit('The --save-to directory option is required when rendering all files in a directory.');
+        }
+
+        $this->renderDirectoryFiles($path, $variables, $saveFilePath);
+
+        return 0;
     }
 
     /**
      * Render all files within a given directory.
-     *
-     * @return void
      */
-    protected function renderDirectoryFiles(string $path, array $variables, ?string $saveToPath)
+    protected function renderDirectoryFiles(string $path, array $variables, string $saveToPath)
     {
-        if (rtrim($path, DIRECTORY_SEPARATOR) == rtrim($saveToPath, DIRECTORY_SEPARATOR)) {
+        // Ensure the path being processed isn't the same as the save directory
+        if (rtrim($path, DIRECTORY_SEPARATOR) === rtrim($saveToPath, DIRECTORY_SEPARATOR)) {
             $this->exit('The path being processed is also the --save-to directory, use a different save directory.');
         }
 
-        if (! $saveToPath) {
-            $this->exit('The --save-to directory option is required when rendering all files in a directory.');
-        }
-
-        if ($path == $saveToPath) {
+        // Ensure the path being processed isn't the same as the save directory
+        if ($path === $saveToPath) {
             $this->exit('The path being processed is also the save directory, use a different save directory.');
         }
 
-        if (is_dir($saveToPath) && $path != $saveToPath && ! $this->data->get('force', false)) {
+        // Check if save directory already exists and confirm overwrite
+        if (is_dir($saveToPath) && $path !== $saveToPath && ! $this->data->get('force', false)) {
             $this->exit("The save to directory '$saveToPath' already exists, use --force to overwrite.");
         }
 
-        $fs = (new Filesystem);
-        $fs->deleteDirectory($saveToPath, preserve: true);
+        // Delete the save directory
+        (new Filesystem)->deleteDirectory($saveToPath, preserve: true);
 
+        // Confirm rendering all files in the path directory
         if (! $this->data->get('force', false) && ! $this->components->confirm("Are you sure you want to render ALL files in the '$path' directory?")) {
             $this->exit('Canceled');
         }
 
-        // validate save directory isnt the current directory being processed.
-        if ($saveToPath == $path) {
+        // Ensure the save directory isn't the same as the directory being processed
+        if ($saveToPath === $path) {
             return $this->exit('The --save-to is the directory you are rendering, select different save directory.');
         }
 
+        // Render each file within the directory
         foreach ((new Finder())->in($path)->files() as $file) {
             $fileName = $file->getFileName();
             $pathName = $file->getPathName();
 
-            // compute a save as location that mirrors the current location of this file.
+            // Compute a save as location that mirrors the current location of this file
             $computedDirectory = rtrim($saveToPath, DIRECTORY_SEPARATOR);
-
             $relativePath = ltrim(Str::after($pathName, $path), DIRECTORY_SEPARATOR);
-            $saveDirectory = dirname(
-                normalize_path("$computedDirectory/$relativePath/$fileName")
-            );
+            $saveDirectory = dirname(normalize_path("$computedDirectory/$relativePath/$fileName"));
 
             $this->renderFile($pathName, $variables, $saveDirectory);
         }
@@ -188,26 +186,18 @@ class RenderCommand extends BaseCommand
 
     /**
      * Expand path if its a known path that can be expanded.
-     *
-     * @param  ?string  $path
      */
     protected function expandPath(?string $path): string|null
     {
-        // allow ~ syntax and expand accordingly
-        if (Str::startsWith($path, $alias = '~'.DIRECTORY_SEPARATOR)) {
-            $home = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? getenv('USERPROFILE') : getenv('HOME');
-            $path = str_replace($alias, rtrim($home, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR, $path);
-        }
+        $env = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? 'USERPROFILE' : 'HOME';
 
-        return $path;
+        return str_replace(['~/', '~/'], [getenv($env).'/', getenv($env).'/'], $path);
     }
 
     /**
-     * Render a file and save it's contents to the given path.
-     *
-     * @return void
+     * Render a file and save its contents to the given path.
      */
-    protected function renderFile(string $path, array $variables, string $saveTo)
+    protected function renderFile(string $path, array $variables, string $saveTo): void
     {
         $saveDirectory = dirname($saveTo);
 
@@ -228,20 +218,17 @@ class RenderCommand extends BaseCommand
                 $contents = $this->blade()->compile($path, $variables);
 
                 return file_put_contents($saveTo, $contents) !== false;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $task->remember(['exception' => $e]);
 
                 return false;
             }
-
-            return file_put_contents($saveTo, $contents) !== false;
         }, finishedText: "Rendered $saveTo");
 
         $data = $task->data();
 
-        if (! $task->succeeded() && $data['exception'] ?? false) {
-            $this->components->error('Compile Error: '.$data['exception']->getMessage());
-            $this->exit();
+        if (! $task->succeeded() && isset($data['exception'])) {
+            $this->exit('Compile Error: '.$data['exception']->getMessage());
         }
     }
 
@@ -250,11 +237,17 @@ class RenderCommand extends BaseCommand
      */
     protected function getDefaultSaveFileName(string $path): string
     {
-        $info = (new SplFileInfo($path));
+        $info = new SplFileInfo($path);
 
-        $basename = rtrim($info->getBasename($ext = $info->getExtension()), '.');
+        $basename = $info->getBasename('.'.$ext = $info->getExtension());
 
-        return $basename.'.rendered'.($ext ? ".$ext" : '');
+        if (strpos($basename, '.') === 0 && ".$ext" == $basename) {
+            return $basename.'.rendered';
+        } else {
+            $basename .= '.rendered';
+        }
+
+        return $basename.($ext ? '.'.$ext : '');
     }
 
     /**

@@ -7,3 +7,5 @@ testing
 storage/testing/mock
 .compiled
 composer.lock
+*.rendered
+*.rendered.*
