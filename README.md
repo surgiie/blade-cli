@@ -96,16 +96,17 @@ You can also pass a directory path instead of a single file when running the com
 **Note**: When rendering an entire directory, the `--save-dir` option is required to export all rendered files to a separate directory. The directory structure of the directory being processed will be mirrored in the directory where the files are saved. In the above example, `/home/bob/templates` will have the same directory structure as `./templates`.
 
 
-## Custom Compiled/Cached Directory
+## Custom Compiled Directory
 
-When blade compiles a file down to plain php, it stores the compiled file by default in `/tmp/.compiled`, if you wish to use a custom directory for these files, you may use the `--compile-path` option but youll be responsible to include it in your scripts/usages:
+When compiling a file down to plain php, the compiled file is stored by default in `/tmp/.compiled`, if you wish to use a custom directory for these files, you may use the `--compiled-path` option:
 
-`blade render myfile --var=foo --compile-path="/custom/directory"`
+`blade render myfile --var=foo --compiled-path="/custom/directory"`
 
 When clearing the directory, this will also be required:
 
-`blade clear --compile-path="/custom/directory"`
+`blade clear --compiled-path="/custom/directory"`
 
+Or you can persist the path via the `BLADE_CLI_COMPILED_PATH` environment variable if you dont wish to pass it to every command call.
 
 ### Contribute
 

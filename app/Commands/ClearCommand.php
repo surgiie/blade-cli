@@ -16,8 +16,10 @@ class ClearCommand extends BaseCommand
      *
      * @var string
      */
-    protected $signature = 'clear';
+    protected $signature = 'clear {--compiled-path= : Custom directory for cached/compiled files. }';
 
+    /**Allow arbitrary options to be passed to the command. */
+    protected bool $arbitraryOptions = true;
     /**
      * The description of the command.
      *
@@ -34,7 +36,8 @@ class ClearCommand extends BaseCommand
     {
         $task = $this->runTask('Clear compiled files directory', function () {
             $fs = new Filesystem;
-            $fs->deleteDirectory($this->blade()->getCompiledPath(), preserve: true);
+            $fs->deleteDirectory($this->blade()->getCompiledPath());
+
         }, finishedText: 'Cleared compiled files directory');
 
         return $task->succeeded() ? 0 : 1;

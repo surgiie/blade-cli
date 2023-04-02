@@ -29,7 +29,7 @@ class RenderCommand extends BaseCommand
                             {--save-to= : The custom file or directory path to save the rendered file(s) to. }
                             {--from-yaml=* : A yaml file path to load variable data from. }
                             {--from-json=* : A json file path to load variable data from. }
-                            {--compile-path= : Custom directory for cached/compiled files. }
+                            {--compiled-path= : Custom directory for the compiled/cached files. }
                             {--from-env=* : A .env file to load variable data from. }
                             {--confirm= : Add a confirmation prompt to this render call. }
                             {--dry-run : Dump out compiled file contents only. }
