@@ -33,6 +33,7 @@ class RenderCommand extends BaseCommand
                             {--from-env=* : A .env file to load variable data from. }
                             {--confirm= : Add a confirmation prompt to this render call. }
                             {--dry-run : Dump out compiled file contents only. }
+                            {--no-cache : Force recompile/dont use compiled cache file. }
                             {--force : Force render or overwrite files.}';
 
     /**
@@ -215,7 +216,7 @@ class RenderCommand extends BaseCommand
 
         $task = $this->runTask("Render file $path to $saveTo", function ($task) use ($path, $variables, $saveTo) {
             try {
-                $contents = $this->blade()->compile($path, $variables);
+                $contents = $this->blade()->compile($path, $variables, cache: $this->data->get('no-cache') == false);
 
                 return file_put_contents($saveTo, $contents) !== false;
             } catch (\Throwable $e) {
@@ -269,7 +270,7 @@ class RenderCommand extends BaseCommand
     {
         $dryRun = function ($filePath) use ($variables) {
             try {
-                $contents = $this->blade()->compile($filePath, $variables);
+                $contents = $this->blade()->compile($filePath, $variables, cache: $this->data->get('no-cache') == false);
                 $this->message('DRY RUN', "Contents for $filePath:", bg: 'yellow', fg: 'black');
                 foreach (explode(PHP_EOL, $contents) as $line) {
                     $this->line('  '.$line);
