@@ -20,7 +20,7 @@ name: {{ $name }}
 relationship: {{ $relationship }}
 favorite_food: {{ $favoriteFood }}
 @if($includeAddress)
-address: "123 example lane"
+address: 123 example lane
 @endif
 ```
 You can render this file using the following command:
@@ -33,7 +33,15 @@ blade render ./person.yml \
                 --include-address
 
 ```
-This will render the file and save it in the same directory with the name `person.rendered.yml`.
+This will render the file and save it in the same directory with the name `person.rendered.yml` with the following contents:
+
+```yaml
+name: Bob
+relationship: Uncle
+favorite_food: Pizza
+address: 123 example lane
+
+```
 
 
 ## Custom Filename
