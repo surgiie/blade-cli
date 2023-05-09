@@ -67,7 +67,7 @@ There are three options for passing variable data to your files being rendered, 
 
 Your env, YAML, and JSON file keys can be defined in any naming convention, but the actual variable references MUST be in camel case. This is because PHP does not support kebab case variables and since this is the format used in command line options, all variables will automatically be converted to camel case. For example, if you pass an option or define a variable name in your files in any of these formats: `favorite-food`, `favoriteFood`, or `favorite_food`, the variable for that option should be referenced as `$favoriteFood` in your files.
 
-### Variable Types
+### Command Line Variable Types
 The following types of variables are currently supported:
 
 - String/Single Value Variables: Use a single option key/value format, e.g. `--foo=bar --bar=baz`
