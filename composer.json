@@ -3,12 +3,18 @@
     "description": "Use Laravel's blade engine from the command line to render files.",
     "type": "project",
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jals-es/surgiie-console.git"
+        }
+    ],
     "require": {
         "php": "^8.0",
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/http": "^10.0",
         "intonate/tinker-zero": "^1.2",
-        "surgiie/console": "^3.1.0",
+        "surgiie/console": "dev-master",
         "symfony/yaml": "^6.2"
     },
     "require-dev": {
