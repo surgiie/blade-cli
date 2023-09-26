@@ -1,12 +1,11 @@
 {
-    "name": "surgiie/blade-cli",
+    "name": "maat/blade-cli",
     "description": "Use Laravel's blade engine from the command line to render files.",
     "type": "project",
     "license": "MIT",
     "require": {
         "php": "^8.0",
         "guzzlehttp/guzzle": "^7.4",
-        "illuminate/http": "^9.0",
         "intonate/tinker-zero": "^1.2",
         "surgiie/console": "^3.1.0",
         "symfony/yaml": "^6.2"
