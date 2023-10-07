@@ -1,8 +1,5 @@
 <?php
 
-use Surgiie\Console\Command;
-
-beforeAll(fn () => Command::disableConcurrentTasks());
 beforeEach(fn () => blade_cli_test_cleanup());
 
 it('throws error when file doesnt exist', function () {

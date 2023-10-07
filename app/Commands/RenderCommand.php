@@ -2,6 +2,8 @@
 
 namespace App\Commands;
 
+use function Laravel\Prompts\text;
+
 use App\Support\BaseCommand;
 use Dotenv\Dotenv;
 use Illuminate\Filesystem\Filesystem;
@@ -25,7 +27,7 @@ class RenderCommand extends BaseCommand
      * @var string
      */
     protected $signature = 'render
-                            {path : The file or directory path to compile and save file(s) for. }
+                            {path? : The file or directory path to compile and save file(s) for. }
                             {--save-to= : The custom file or directory path to save the rendered file(s) to. }
                             {--from-yaml=* : A yaml file path to load variable data from. }
                             {--from-json=* : A json file path to load variable data from. }
@@ -59,7 +61,7 @@ class RenderCommand extends BaseCommand
     }
 
     /**
-     * The tranformers to run against arguments and options.
+     * The transformers to run against arguments and options.
      */
     protected function transformers(): array
     {
@@ -99,7 +101,14 @@ class RenderCommand extends BaseCommand
      */
     public function handle()
     {
-        $path = $this->data->get('path');
+        $path = $this->data->get('path') ?: text(
+            label: 'What is the path to the file or directory you want to render?',
+            placeholder: 'example.template',
+        );
+
+        if(!file_exists($path)){
+            $this->exit("The file or directory '$path' does not exist");
+        }
 
         if ($this->data->get('confirm') && ! $this->components->confirm($this->data->get('confirm'))) {
             $this->exit('Aborted');
@@ -214,22 +223,12 @@ class RenderCommand extends BaseCommand
             $this->exit("The rendered file '$saveTo' already exists, use --force to overwrite.");
         }
 
-        $task = $this->runTask("Render file $path to $saveTo", function ($task) use ($path, $variables, $saveTo) {
-            try {
-                $contents = $this->blade()->compile($path, $variables, cache: $this->data->get('no-cache') == false);
-
-                return file_put_contents($saveTo, $contents) !== false;
-            } catch (\Throwable $e) {
-                $task->remember(['exception' => $e]);
-
-                return false;
-            }
-        }, finishedText: "Rendered $saveTo");
-
-        $data = $task->data();
-
-        if (! $task->succeeded() && isset($data['exception'])) {
-            $this->exit('Compile Error: '.$data['exception']->getMessage());
+        try {
+            $contents = $this->blade()->compile($path, $variables, cache: $this->data->get('no-cache') == false);
+            file_put_contents($saveTo, $contents);
+            $this->components->info("Rendered file: $saveTo");
+        } catch (\Throwable $e) {
+            $this->exit('Compile Error: '.$e->getMessage());
         }
     }
 
@@ -343,7 +342,7 @@ class RenderCommand extends BaseCommand
             $vars = Yaml::parseFile($file);
             $variables = array_merge($variables, $this->normalizeVariableNames($vars));
         }
-        // laod from json files.
+        // load from json files.
         $jsonFiles = $this->data->get('from-json', []);
 
         foreach ($jsonFiles as $file) {
