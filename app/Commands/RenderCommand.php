@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use function Laravel\Prompts\text;
-
 use App\Support\BaseCommand;
 use Dotenv\Dotenv;
 use Illuminate\Filesystem\Filesystem;
@@ -17,9 +15,11 @@ use Surgiie\Console\Rules\FileOrDirectoryMustExist;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Yaml\Yaml;
 
+use function Laravel\Prompts\text;
+
 class RenderCommand extends BaseCommand
 {
-    use LoadsJsonFiles, LoadsEnvFiles;
+    use LoadsEnvFiles, LoadsJsonFiles;
 
     /**
      * The signature of the command.
@@ -79,7 +79,7 @@ class RenderCommand extends BaseCommand
      *
      * @return string
      */
-    protected function computeSavePath(string $path, ?string $givenSavePath = null)
+    protected function computeSavePath(string $path, string $givenSavePath = null)
     {
         $separator = DIRECTORY_SEPARATOR;
 
@@ -106,7 +106,7 @@ class RenderCommand extends BaseCommand
             placeholder: 'example.template',
         );
 
-        if(!file_exists($path)){
+        if (! file_exists($path)) {
             $this->exit("The file or directory '$path' does not exist");
         }
 
@@ -192,7 +192,7 @@ class RenderCommand extends BaseCommand
     /**
      * Expand path if its a known path that can be expanded.
      */
-    protected function expandPath(?string $path): string|null
+    protected function expandPath(?string $path): ?string
     {
         $env = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? 'USERPROFILE' : 'HOME';
 
