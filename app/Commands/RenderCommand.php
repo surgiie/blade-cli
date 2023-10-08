@@ -153,13 +153,8 @@ class RenderCommand extends BaseCommand
     protected function renderDirectoryFiles(string $path, array $variables, string $saveToPath)
     {
         // Ensure the path being processed isn't the same as the save directory
-        if (rtrim($path, DIRECTORY_SEPARATOR) === rtrim($saveToPath, DIRECTORY_SEPARATOR)) {
+        if ($path === $saveToPath || rtrim($path, DIRECTORY_SEPARATOR) === rtrim($saveToPath, DIRECTORY_SEPARATOR)) {
             $this->exit('The path being processed is also the --save-to directory, use a different save directory.');
-        }
-
-        // Ensure the path being processed isn't the same as the save directory
-        if ($path === $saveToPath) {
-            $this->exit('The path being processed is also the save directory, use a different save directory.');
         }
 
         // Check if save directory already exists and confirm overwrite
