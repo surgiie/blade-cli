@@ -1,0 +1,183 @@
+#!/bin/bash
+# Run blade-cli in a docker container and uses volume mounts and docker cp to copy the rendered file back to the host.
+# The version of blade-cli to use.
+blade_cli_version="4.0.0"
+# The temporary container name to use.
+container_name="blade-cli-$(date +%s)"
+# The file path to the directory/file to render.
+path="$1"
+shift
+
+# Validate path is provided and exists.
+if [ -z "$path" ]
+then
+    echo "Please provide a path to a file or directory."
+    exit 1;
+fi
+
+if [ ! -d "$path" ] && [ ! -f "$path" ]
+then
+    echo "The '$path' file or directory does not exist."
+    exit 1;
+fi
+
+# Prefix current directory if path is relative.
+if [[ ! $path == /* ]]; then
+    path="./$path"
+fi
+
+# Is TTY supported?
+test -t 1 && USE_TTY="-t"
+
+# Parse special options that blade-cli supports that we need to manually handle.
+var_files=()
+parse_opt_value(){
+    value="${arg#--${option_name}=\"}"
+    value="${value%\"}"
+    echo "${value##*=}"
+}
+
+cli_args=()
+for arg; do
+    if [[ $arg == "--save-to="* ]]; then
+        save_to="$(parse_opt_value "save-to")"
+    elif [[ $arg == "--from-json="* ]]; then
+        var_files+=("$(parse_opt_value "from-json"):json")
+    elif [[ $arg == "--from-env="* ]]; then
+        var_files+=("$(parse_opt_value "from-env"):env")
+    elif [[ $arg == "--from-yaml="* ]]; then
+        var_files+=("$(parse_opt_value "from-yaml"):yaml")
+    else
+        cli_args+=("$arg")
+    fi
+done
+
+# Create a workspace area for temporary files to do build with.
+workspace="./.blade"
+mkdir -p $workspace
+
+cd $workspace
+
+# Write temporary build/dependency files to do the build.
+cat > composer.json <<EOF
+{
+    "require": {
+        "surgiie/blade-cli": "^$blade_cli_version"
+    }
+}
+EOF
+
+cat > Dockerfile <<EOF
+FROM php:8.1-cli-alpine
+
+RUN addgroup -g 1000 php && adduser -u 1000 -S php -G php
+
+WORKDIR /app
+ARG PHP_EXTS="pcntl sockets"
+ARG DEBIAN_FRONTEND=noninteractive
+
+COPY --chown=php:php composer.json composer.json
+
+RUN apk --no-cache update \\
+    apk add --no-cache linux-headers \\
+    && CFLAGS="\$CFLAGS -D_GNU_SOURCE" docker-php-ext-install -j\$(nproc) \${PHP_EXTS} \\
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \\
+    && chown -R php:php /app/
+
+USER php
+
+RUN composer install
+ENV PATH=\$PATH:/app/vendor/bin
+
+EOF
+# Create a sha1sum of the Dockerfile to use as the image tag so any changes to dockerfile will automatically rebuild.
+sha1sum=$(sha1sum Dockerfile | awk '{print $1}')
+image_tag="blade-cli:$blade_cli_version-$sha1sum"
+
+# Build docker image for the cli if not already present or if specified.
+if  [ -z "$(docker images -q $image_tag)" ] || [[ " $@ " =~ "--docker-build" ]]
+then
+    docker build -t $image_tag .
+fi
+
+# If specified to run build only, exit we are done.
+if [[ " $@ " =~ "--docker-build" ]]
+then
+    exit 0;
+fi
+
+# Change back to the original directory after we have built the docker image.
+cd - > /dev/null
+
+# Remove the workspace after we have built the docker image, these files are no longer needed.
+rm -rf $workspace
+
+# Render file if the given path is a file.
+base_name="$(basename -- $path)"
+container_file_path="/app/$base_name"
+
+if [ -f "$path" ]
+then
+    extension="${base_name##*.}"
+
+    if [ "$extension" == "$base_name" ];
+    then
+        extension=""
+        save_name="$base_name.rendered"
+    else
+        save_name="${base_name%.*}.rendered.$extension"
+    fi
+
+    container_rendered_path="/app/$save_name"
+
+    if [ -z $save_to ]
+    then
+        save_to="$(realpath $(dirname $path))/$save_name"
+    fi
+else
+    if [ -z $save_to ]
+    then
+        echo "Please provide a --save-to directory when rendering a directory."
+        exit 1;
+    fi
+    container_rendered_path="/app/$(basename $save_to)"
+    cli_args=("--save-to=$container_rendered_path" "${cli_args[@]}")
+fi
+
+volumes=()
+for file in "${var_files[@]}"; do
+    var_file_path="${file%:*}"
+    type="${file##*:}"
+
+
+    if [[ ! $var_file_path == /* ]]; then
+        var_file_path="./$var_file_path"
+    fi
+
+    if [ ! -f "$var_file_path" ]
+    then
+        echo "The --from-$type file '$var_file_path' does not exist."
+        exit 1;
+    fi
+
+    volumes+=("--volume $var_file_path:/app/vars/$(basename $var_file_path)")
+    cli_args+=("--from-$type=/app/vars/$(basename $var_file_path)")
+done
+
+# Run the container render call.
+echo "Running (Container): blade render $container_file_path ${cli_args[@]} "
+docker run --name $container_name -i ${USE_TTY} --user $(id -u):$(id -g) \
+        --volume "$path:$container_file_path" \
+        ${volumes[@]} \
+        $image_tag "blade" "render" "$container_file_path" "${cli_args[@]}"
+
+
+# If successful, copy the rendered file back to the host.
+if [ $? -eq 0 ]; then
+    docker cp $container_name:$container_rendered_path $save_to
+fi
+
+# # Remove the container and workspace after copy and were done.
+docker rm -f $container_name > /dev/null
+
+exit 0;
