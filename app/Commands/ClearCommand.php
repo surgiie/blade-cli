@@ -9,7 +9,7 @@ use Surgiie\Console\Concerns\LoadsJsonFiles;
 
 class ClearCommand extends BaseCommand
 {
-    use LoadsJsonFiles, LoadsEnvFiles;
+    use LoadsEnvFiles, LoadsJsonFiles;
 
     /**
      * The signature of the command.

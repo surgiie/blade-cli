@@ -30,5 +30,4 @@ abstract class BaseCommand extends Command
 
         return $blade;
     }
-
 }
