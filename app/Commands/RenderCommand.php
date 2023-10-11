@@ -330,7 +330,7 @@ class RenderCommand extends BaseCommand
     protected function gatherVariables(): array
     {
         $variables = [];
-        // laod from yaml files.
+        // load from yaml files.
         $yamlFiles = $this->data->get('from-yaml', []);
 
         foreach ($yamlFiles as $file) {

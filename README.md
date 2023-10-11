@@ -12,6 +12,8 @@ If the `pctnl` extension is not installed, install or use the following command 
 
 `composer global require surgiie/blade-cli --ignore-platform-reqs`.
 
+
+
 ## Use
 As an example, let's say you have a file named `person.yml` in your current directory with the following content:
 
@@ -42,6 +44,25 @@ favorite_food: Pizza
 address: 123 example lane
 
 ```
+
+
+## Rendering With Docker:
+
+If you don't have or want to install php, you can run render files using the provided script which will run the cli render command in a temporary docker container and use volumes to mount the neccessary files and then sync them back to your host machine:
+
+
+```bash
+cd /tmp
+
+wget https://raw.githubusercontent.com/surgiie/blade-cli/master/docker
+
+chmod +x ./docker
+
+mv ./docker /usr/local/bin/blade
+
+blade <path> --var="example"
+```
+
 
 
 ## Custom Filename
