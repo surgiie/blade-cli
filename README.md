@@ -8,12 +8,6 @@ To install the binary, use composer globally:
 
 `composer global require surgiie/blade-cli`
 
-If the `pctnl` extension is not installed, install or use the following command instead:
-
-`composer global require surgiie/blade-cli --ignore-platform-reqs`.
-
-
-
 ## Use
 As an example, let's say you have a file named `person.yml` in your current directory with the following content:
 
