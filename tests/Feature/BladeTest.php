@@ -94,7 +94,7 @@ it('can render file with custom save path', function () {
     EOL);
 });
 
-it('save directory is required when rendering directory', function () {
+it('validates save directory is required when rendering directory', function () {
     mkdir(blade_cli_test_path('directory'));
 
     put_blade_cli_test_file('directory/example.yaml', <<<'EOL'
@@ -108,7 +108,7 @@ it('save directory is required when rendering directory', function () {
     ])->expectsOutputToContain('The --save-to directory option is required when rendering all files in a directory');
 });
 
-it('save directory must not be directory being processed', function () {
+it('validates save directory must not be directory being processed', function () {
     mkdir(blade_cli_test_path('directory'));
 
     put_blade_cli_test_file('directory/example.yaml', <<<'EOL'
