@@ -99,7 +99,11 @@ if  [ -z "$(docker images -q $image_tag)" ] || [[ " $@ " =~ "--docker-build" ]]
 then
     docker build -t $image_tag .
 fi
-
+if [ $? -ne 0 ];
+then
+    echo "Failed to build docker image $image_tag"
+    exit 1
+fi
 # If specified to run build only, exit we are done.
 if [[ " $@ " =~ "--docker-build" ]]
 then
