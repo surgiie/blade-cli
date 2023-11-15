@@ -23,7 +23,7 @@ class ClearCommand extends BaseCommand
 
         $succeeded = Blade::deleteCacheDirectory();
 
-        $this->components->info("Cleared compiled files directory");
+        $this->components->info('Cleared compiled files directory');
 
         return $succeeded === false ? 1 : 0;
     }

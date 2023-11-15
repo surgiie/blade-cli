@@ -2,21 +2,21 @@
 
 namespace App\Commands;
 
-use SplFileInfo;
+use App\Support\BaseCommand;
 use Dotenv\Dotenv;
-use Surgiie\Blade\Blade;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use App\Support\BaseCommand;
 use InvalidArgumentException;
-use Symfony\Component\Yaml\Yaml;
-use function Laravel\Prompts\text;
-use Symfony\Component\Finder\Finder;
-use Illuminate\Filesystem\Filesystem;
+use SplFileInfo;
+use Surgiie\Blade\Blade;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
-
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 use Surgiie\Console\Rules\FileOrDirectoryMustExist;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Yaml;
+
+use function Laravel\Prompts\text;
 
 class RenderCommand extends BaseCommand
 {
@@ -178,7 +178,7 @@ class RenderCommand extends BaseCommand
             $this->exit("The rendered file '$saveTo' already exists, use --force to overwrite.");
         }
 
-        if($this->data->get("no-cache")){
+        if ($this->data->get('no-cache')) {
             Blade::deleteCacheDirectory();
         }
 
@@ -217,7 +217,7 @@ class RenderCommand extends BaseCommand
 
     protected function dryRun(string $path, array $variables = []): static
     {
-        if($this->data->get("no-cache")){
+        if ($this->data->get('no-cache')) {
             Blade::deleteCacheDirectory();
         }
 
@@ -251,7 +251,6 @@ class RenderCommand extends BaseCommand
         return $this;
     }
 
-
     protected function gatherEnvFileVariables(): array
     {
         $env = [];
@@ -267,7 +266,6 @@ class RenderCommand extends BaseCommand
 
         return $env;
     }
-
 
     protected function normalizeVariableNames(array $vars = []): array
     {
