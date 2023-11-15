@@ -8,7 +8,7 @@
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/http": "^10.0",
         "intonate/tinker-zero": "^1.2",
-        "surgiie/console": "^4.0.0",
+        "surgiie/console": "^4.1.0",
         "symfony/yaml": "^6.2"
     },
     "require-dev": {

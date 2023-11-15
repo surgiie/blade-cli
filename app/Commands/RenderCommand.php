@@ -2,30 +2,26 @@
 
 namespace App\Commands;
 
-use App\Support\BaseCommand;
+use SplFileInfo;
 use Dotenv\Dotenv;
-use Illuminate\Filesystem\Filesystem;
+use Surgiie\Blade\Blade;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use App\Support\BaseCommand;
 use InvalidArgumentException;
-use SplFileInfo;
+use Symfony\Component\Yaml\Yaml;
+use function Laravel\Prompts\text;
+use Symfony\Component\Finder\Finder;
+use Illuminate\Filesystem\Filesystem;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
+
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 use Surgiie\Console\Rules\FileOrDirectoryMustExist;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Yaml\Yaml;
-
-use function Laravel\Prompts\text;
 
 class RenderCommand extends BaseCommand
 {
     use LoadsEnvFiles, LoadsJsonFiles;
 
-    /**
-     * The signature of the command.
-     *
-     * @var string
-     */
     protected $signature = 'render
                             {path? : The file or directory path to compile and save file(s) for. }
                             {--save-to= : The custom file or directory path to save the rendered file(s) to. }
@@ -38,19 +34,10 @@ class RenderCommand extends BaseCommand
                             {--no-cache : Force recompile/dont use compiled cache file. }
                             {--force : Force render or overwrite files.}';
 
-    /**
-     * The description of the command.
-     *
-     * @var string
-     */
     protected $description = 'Render a file or directory of files.';
 
-    /**Allow arbitrary options to be passed to the command. */
     protected bool $arbitraryOptions = true;
 
-    /**
-     * The validation rules for the input/options.
-     */
     public function rules(): array
     {
         $path = $this->data->get('path');
@@ -60,9 +47,6 @@ class RenderCommand extends BaseCommand
         ];
     }
 
-    /**
-     * The transformers to run against arguments and options.
-     */
     protected function transformers(): array
     {
         return [
@@ -74,11 +58,6 @@ class RenderCommand extends BaseCommand
         ];
     }
 
-    /**
-     * Compute a save directory for the file being rendered.
-     *
-     * @return string
-     */
     protected function computeSavePath(string $path, string $givenSavePath = null)
     {
         $separator = DIRECTORY_SEPARATOR;
@@ -94,11 +73,6 @@ class RenderCommand extends BaseCommand
         return $this->expandPath($saveToPath);
     }
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
     public function handle()
     {
         $path = $this->data->get('path') ?: text(
@@ -147,9 +121,6 @@ class RenderCommand extends BaseCommand
         return 0;
     }
 
-    /**
-     * Render all files within a given directory.
-     */
     protected function renderDirectoryFiles(string $path, array $variables, string $saveToPath)
     {
         // Ensure the path being processed isn't the same as the save directory
@@ -170,11 +141,6 @@ class RenderCommand extends BaseCommand
             $this->exit('Canceled');
         }
 
-        // Ensure the save directory isn't the same as the directory being processed
-        if ($saveToPath === $path) {
-            return $this->exit('The --save-to is the directory you are rendering, select different save directory.');
-        }
-
         // Render each file within the directory
         foreach ((new Finder())->in($path)->files() as $file) {
             $fileName = $file->getFileName();
@@ -189,19 +155,13 @@ class RenderCommand extends BaseCommand
         }
     }
 
-    /**
-     * Expand path if its a known path that can be expanded.
-     */
     protected function expandPath(?string $path): ?string
     {
-        $env = strncasecmp(PHP_OS, 'WIN', 3) == 0 ? 'USERPROFILE' : 'HOME';
+        $env = $this->isWindows() ? 'USERPROFILE' : 'HOME';
 
         return str_replace(['~/', '~/'], [getenv($env).'/', getenv($env).'/'], $path);
     }
 
-    /**
-     * Render a file and save its contents to the given path.
-     */
     protected function renderFile(string $path, array $variables, string $saveTo): void
     {
         $saveDirectory = dirname($saveTo);
@@ -218,8 +178,12 @@ class RenderCommand extends BaseCommand
             $this->exit("The rendered file '$saveTo' already exists, use --force to overwrite.");
         }
 
+        if($this->data->get("no-cache")){
+            Blade::deleteCacheDirectory();
+        }
+
         try {
-            $contents = $this->blade()->compile($path, $variables, cache: $this->data->get('no-cache') == false);
+            $contents = $this->blade()->render($path, $variables);
             file_put_contents($saveTo, $contents);
             $this->components->info("Rendered file: $saveTo");
         } catch (\Throwable $e) {
@@ -227,9 +191,6 @@ class RenderCommand extends BaseCommand
         }
     }
 
-    /**
-     * Get the default file name that will be used for the saved file.
-     */
     protected function getDefaultSaveFileName(string $path): string
     {
         $info = new SplFileInfo($path);
@@ -245,9 +206,6 @@ class RenderCommand extends BaseCommand
         return $basename.($ext ? '.'.$ext : '');
     }
 
-    /**
-     * Get the default file path that will be used for the saved file.
-     */
     protected function getDefaultSaveFilePath(string $path): string
     {
         $info = (new SplFileInfo($path));
@@ -257,14 +215,15 @@ class RenderCommand extends BaseCommand
         return $saveDirectory.$this->getDefaultSaveFileName($path);
     }
 
-    /**
-     * Show the rendered contents for the given file.
-     */
     protected function dryRun(string $path, array $variables = []): static
     {
+        if($this->data->get("no-cache")){
+            Blade::deleteCacheDirectory();
+        }
+
         $dryRun = function ($filePath) use ($variables) {
             try {
-                $contents = $this->blade()->compile($filePath, $variables, cache: $this->data->get('no-cache') == false);
+                $contents = $this->blade()->render($filePath, $variables);
                 $this->message('DRY RUN', "Contents for $filePath:", bg: 'yellow', fg: 'black');
                 foreach (explode(PHP_EOL, $contents) as $line) {
                     $this->line('  '.$line);
@@ -292,9 +251,7 @@ class RenderCommand extends BaseCommand
         return $this;
     }
 
-    /**
-     * Get the variables from env files.
-     */
+
     protected function gatherEnvFileVariables(): array
     {
         $env = [];
@@ -311,9 +268,7 @@ class RenderCommand extends BaseCommand
         return $env;
     }
 
-    /**
-     * Normalize variables to camel case for render.
-     */
+
     protected function normalizeVariableNames(array $vars = []): array
     {
         $variables = [];
@@ -324,9 +279,6 @@ class RenderCommand extends BaseCommand
         return $variables;
     }
 
-    /**
-     * Gather the variables for rendering.
-     */
     protected function gatherVariables(): array
     {
         $variables = [];

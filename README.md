@@ -121,15 +121,15 @@ You can also pass a directory path instead of a single file when running the com
 
 ## Custom Compiled Directory
 
-When compiling a file down to plain php, the compiled file is stored by default in `/tmp/.compiled`, if you wish to use a custom directory for these files, you may use the `--compiled-path` option:
+When compiling a file down to plain php, the compiled file is stored by default in `/tmp/.blade-cli`, if you wish to use a custom directory for these files, you may use the `--cache-path` option:
 
-`blade render myfile --var=foo --compiled-path="/custom/directory"`
+`blade render myfile --var=foo --cache-path="/custom/directory"`
 
 When clearing the directory, this will also be required:
 
-`blade clear --compiled-path="/custom/directory"`
+`blade clear --cache-path="/custom/directory"`
 
-Or you can persist the path via the `BLADE_CLI_COMPILED_PATH` environment variable if you dont wish to pass it to every command call.
+Or you can persist the path via the `BLADE_CLI_CACHE_PATH` environment variable if you dont wish to pass it to every command call.
 
 ### Contribute
 

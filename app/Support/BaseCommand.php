@@ -7,27 +7,43 @@ use Surgiie\Console\Command;
 
 abstract class BaseCommand extends Command
 {
-    /**
-     * Return the Blade instance for rendering files with.
-     */
-    protected function blade(): Blade
+    protected function bladeCachePath()
     {
-        $blade = parent::blade();
-
         $env = getenv('BLADE_CLI_COMPILED_PATH');
 
         if ($env) {
-            $blade->setCompiledPath($env);
+            $this->components->warn('The BLADE_CLI_COMPILED_PATH env has been renamed to BLADE_CLI_CACHE_PATH and will be removed in a future release. Use the BLADE_CLI_CACHE_PATH env instead.');
+
+            return $env;
         }
 
-        if ($compiledPath = $this->data->get('compiled-path')) {
-            $blade->setCompiledPath($compiledPath);
+        $env = getenv('BLADE_CLI_CACHE_PATH');
+
+        if ($env) {
+            return $env;
+        }
+
+        if ($compiledPath = $this->arbitraryData->get('compiled-path')) {
+            $this->components->warn('The --compiled-path option is deprecated and will be removed in future release. Use the --cache-path option.');
+
+            return $compiledPath;
+        }
+
+        if ($cachePath = $this->data->get('cache-path')) {
+            return $cachePath;
         }
 
         if ($this->app->runningUnitTests()) {
-            $blade->setCompiledPath(base_path('tests/.compiled'));
+            return base_path('tests/.compiled');
         }
 
-        return $blade;
+        return rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'.blade-cli';
+    }
+
+    protected function blade(): Blade
+    {
+        Blade::setCachePath($this->bladeCachePath());
+
+        return parent::blade();
     }
 }

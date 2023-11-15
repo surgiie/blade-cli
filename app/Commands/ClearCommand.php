@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Support\BaseCommand;
-use Illuminate\Filesystem\Filesystem;
+use Surgiie\Blade\Blade;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 
@@ -11,35 +11,20 @@ class ClearCommand extends BaseCommand
 {
     use LoadsEnvFiles, LoadsJsonFiles;
 
-    /**
-     * The signature of the command.
-     *
-     * @var string
-     */
-    protected $signature = 'clear {--compiled-path= : Custom directory for cached/compiled files. }';
+    protected $signature = 'clear {--cache-path= : Custom directory for cached/compiled files. }';
 
-    /**Allow arbitrary options to be passed to the command. */
     protected bool $arbitraryOptions = true;
 
-    /**
-     * The description of the command.
-     *
-     * @var string
-     */
     protected $description = 'Clear the cached compiled files directory.';
 
-    /**
-     * Execute the console command and clear compiled directory.
-     *
-     * @return int
-     */
     public function handle()
     {
-        $task = $this->runTask('Clear compiled files directory', function () {
-            $fs = new Filesystem;
-            $fs->deleteDirectory($this->blade()->getCompiledPath());
-        }, finishedText: 'Cleared compiled files directory');
+        Blade::setCachePath($this->bladeCachePath());
 
-        return $task->succeeded() ? 0 : 1;
+        $succeeded = Blade::deleteCacheDirectory();
+
+        $this->components->info("Cleared compiled files directory");
+
+        return $succeeded === false ? 1 : 0;
     }
 }
