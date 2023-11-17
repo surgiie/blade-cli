@@ -7,6 +7,11 @@ use Surgiie\Console\Command;
 
 abstract class BaseCommand extends Command
 {
+    /**
+     * Return the blade cache path to use for cached compiled files.
+     *
+     * @return string
+     */
     protected function bladeCachePath()
     {
         $env = getenv('BLADE_CLI_COMPILED_PATH');
@@ -40,6 +45,9 @@ abstract class BaseCommand extends Command
         return rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'.blade-cli';
     }
 
+    /**
+     * Return a new instance of the Blade engine.
+     */
     protected function blade(): Blade
     {
         Blade::setCachePath($this->bladeCachePath());

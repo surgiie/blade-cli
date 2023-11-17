@@ -2,26 +2,31 @@
 
 namespace App\Commands;
 
-use SplFileInfo;
+use App\Support\BaseCommand;
 use Dotenv\Dotenv;
-use Surgiie\Blade\Blade;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use App\Support\BaseCommand;
 use InvalidArgumentException;
-use Symfony\Component\Yaml\Yaml;
-use function Laravel\Prompts\text;
-use Symfony\Component\Finder\Finder;
-use Illuminate\Filesystem\Filesystem;
+use SplFileInfo;
+use Surgiie\Blade\Blade;
 use Surgiie\Console\Concerns\LoadsEnvFiles;
-
 use Surgiie\Console\Concerns\LoadsJsonFiles;
 use Surgiie\Console\Rules\FileOrDirectoryMustExist;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Yaml;
+
+use function Laravel\Prompts\text;
 
 class RenderCommand extends BaseCommand
 {
     use LoadsEnvFiles, LoadsJsonFiles;
 
+    /**
+     * The command's signature text.
+     *
+     * @var string
+     */
     protected $signature = 'render
                             {path? : The file or directory path to compile and save file(s) for. }
                             {--save-to= : The custom file or directory path to save the rendered file(s) to. }
@@ -34,10 +39,21 @@ class RenderCommand extends BaseCommand
                             {--no-cache : Force recompile/dont use compiled cache file. }
                             {--force : Force render or overwrite files.}';
 
+    /**
+     * The command's description text.
+     *
+     * @var string
+     */
     protected $description = 'Render a file or directory of files.';
 
+    /**
+     * Allow the command to accept arbitrary options.
+     */
     protected bool $arbitraryOptions = true;
 
+    /**
+     * Define the command's validation rules for the argument/options data.
+     */
     public function rules(): array
     {
         $path = $this->data->get('path');
@@ -47,6 +63,9 @@ class RenderCommand extends BaseCommand
         ];
     }
 
+    /**
+     * The transformers to apply on the argument/options data.
+     */
     protected function transformers(): array
     {
         return [
@@ -58,12 +77,17 @@ class RenderCommand extends BaseCommand
         ];
     }
 
+    /**
+     * Compute a save path that mirrors the current path.
+     *
+     * @return string
+     */
     protected function computeSavePath(string $path, string $givenSavePath = null)
     {
         $separator = DIRECTORY_SEPARATOR;
 
         if ($givenSavePath && is_dir($givenSavePath)) {
-            $saveToPath = rtrim($givenSavePath, $separator).$separator.$this->getDefaultSaveFileName($path);
+            $saveToPath = rtrim($givenSavePath, $separator).$separator.$this->computeDefaultSaveFileName($path);
         } elseif ($givenSavePath) {
             $saveToPath = $givenSavePath;
         } else {
@@ -73,6 +97,11 @@ class RenderCommand extends BaseCommand
         return $this->expandPath($saveToPath);
     }
 
+    /**
+     * Execute the command.
+     *
+     * @return int
+     */
     public function handle()
     {
         $path = $this->data->get('path') ?: text(
@@ -121,6 +150,11 @@ class RenderCommand extends BaseCommand
         return 0;
     }
 
+    /**
+     * Render files in a directory.
+     *
+     * @return void
+     */
     protected function renderDirectoryFiles(string $path, array $variables, string $saveToPath)
     {
         // Ensure the path being processed isn't the same as the save directory
@@ -155,6 +189,9 @@ class RenderCommand extends BaseCommand
         }
     }
 
+    /**
+     * Expand a file path if needed.
+     */
     protected function expandPath(?string $path): ?string
     {
         $env = $this->isWindows() ? 'USERPROFILE' : 'HOME';
@@ -162,6 +199,9 @@ class RenderCommand extends BaseCommand
         return str_replace(['~/', '~/'], [getenv($env).'/', getenv($env).'/'], $path);
     }
 
+    /**
+     * Render a single file using the given variables.
+     */
     protected function renderFile(string $path, array $variables, string $saveTo): void
     {
         $saveDirectory = dirname($saveTo);
@@ -178,7 +218,7 @@ class RenderCommand extends BaseCommand
             $this->exit("The rendered file '$saveTo' already exists, use --force to overwrite.");
         }
 
-        if($this->data->get("no-cache")){
+        if ($this->data->get('no-cache')) {
             Blade::deleteCacheDirectory();
         }
 
@@ -191,7 +231,10 @@ class RenderCommand extends BaseCommand
         }
     }
 
-    protected function getDefaultSaveFileName(string $path): string
+    /**
+     * Compute the default save file name for a given path.
+     */
+    protected function computeDefaultSaveFileName(string $path): string
     {
         $info = new SplFileInfo($path);
 
@@ -206,18 +249,24 @@ class RenderCommand extends BaseCommand
         return $basename.($ext ? '.'.$ext : '');
     }
 
+    /**
+     * Get the default save file path for a file.
+     */
     protected function getDefaultSaveFilePath(string $path): string
     {
         $info = (new SplFileInfo($path));
 
         $saveDirectory = dirname($info->getRealPath()).DIRECTORY_SEPARATOR;
 
-        return $saveDirectory.$this->getDefaultSaveFileName($path);
+        return $saveDirectory.$this->computeDefaultSaveFileName($path);
     }
 
+    /**
+     * Show the contents of a rendered file without saving it.
+     */
     protected function dryRun(string $path, array $variables = []): static
     {
-        if($this->data->get("no-cache")){
+        if ($this->data->get('no-cache')) {
             Blade::deleteCacheDirectory();
         }
 
@@ -251,7 +300,9 @@ class RenderCommand extends BaseCommand
         return $this;
     }
 
-
+    /**
+     * Gather variables from .env files passed in via the --from-env option.
+     */
     protected function gatherEnvFileVariables(): array
     {
         $env = [];
@@ -261,14 +312,12 @@ class RenderCommand extends BaseCommand
             $env = array_merge($env, Dotenv::parse(file_get_contents($file)));
         }
 
-        foreach ($env as $k => $v) {
-            $env[$k] = $v;
-        }
-
         return $env;
     }
 
-
+    /**
+     * Normalize variable names to camel case.
+     */
     protected function normalizeVariableNames(array $vars = []): array
     {
         $variables = [];
@@ -279,6 +328,9 @@ class RenderCommand extends BaseCommand
         return $variables;
     }
 
+    /**
+     * Gather the variables needed for rendering.
+     */
     protected function gatherVariables(): array
     {
         $variables = [];

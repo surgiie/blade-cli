@@ -3,9 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Pest\Laravel\Commands\PestDatasetCommand;
-use Pest\Laravel\Commands\PestInstallCommand;
-use Pest\Laravel\Commands\PestTestCommand;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,20 +13,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $hidden = config('commands.hidden');
-
-        $devClasses = [
-            PestInstallCommand::class,
-            PestDatasetCommand::class,
-            PestTestCommand::class,
-        ];
-        foreach ($devClasses as $class) {
-            if (class_exists($class)) {
-                $hidden[] = $class;
-            }
-        }
-
-        config(['commands.hidden' => $hidden]);
     }
 
     /**
