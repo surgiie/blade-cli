@@ -1,4 +1,9 @@
 # Blade CLI
+
+# Abandoned
+
+This has moved and been reworked and is no longer maintained, please use [laravel-blade-cli](https://github.com/surgiie/laravel-blade-cli)
+
 The Blade CLI allows you to compile and save any textual files from the command line using Laravel's Blade engine.
 
 ![tests](https://github.com/surgiie/blade-cli/actions/workflows/tests.yml/badge.svg)

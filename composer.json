@@ -2,6 +2,7 @@
     "name": "surgiie/blade-cli",
     "description": "Use Laravel's blade engine from the command line to render files.",
     "type": "project",
+    "abandoned": "surgiie/laravel-blade-cli",
     "license": "MIT",
     "require": {
         "php": "^8.1",
