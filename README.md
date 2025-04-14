@@ -2,7 +2,7 @@
 
 # Abandoned
 
-This has moved and been reworked and is no longer maintained, please use [laravel-blade-cli](https://github.com/surgiie/laravel-blade-cli)
+This has moved and been reworked and is no longer maintained, please use [illuminate-cli](https://github.com/surgiie/illuminate-cli)
 
 The Blade CLI allows you to compile and save any textual files from the command line using Laravel's Blade engine.
 
